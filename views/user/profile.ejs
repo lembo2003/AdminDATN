@@ -1,0 +1,148 @@
+<%- include('../partials/header') %>
+
+<div class="container py-5">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <!-- Page Header -->
+      <div class="mb-4 text-center">
+        <h1 class="fw-bold">My Profile</h1>
+        <p class="lead text-muted">Manage your personal information</p>
+      </div>
+
+      <!-- Flash Messages -->
+      <% if(success_msg != ''){ %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= success_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <% if(error_msg != ''){ %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= error_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+
+      <!-- Profile Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white py-3">
+          <h5 class="mb-0">Personal Information</h5>
+        </div>
+        <div class="card-body p-4">
+          <form action="/users/profile" method="POST">
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="name" name="name" value="<%= userData.name || '' %>">
+              </div>
+              <div class="col-md-6">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="email" value="<%= userData.email %>" disabled>
+                <div class="form-text">Email cannot be changed</div>
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="gender" class="form-label">Gender</label>
+                <select class="form-select" id="gender" name="gender">
+                  <option value="" <%= !userData.gender ? 'selected' : '' %>>Select Gender</option>
+                  <option value="male" <%= userData.gender === 'male' ? 'selected' : '' %>>Male</option>
+                  <option value="female" <%= userData.gender === 'female' ? 'selected' : '' %>>Female</option>
+                  <option value="other" <%= userData.gender === 'other' ? 'selected' : '' %>>Other</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phone" name="phone" value="<%= userData.phone || '' %>">
+              </div>
+            </div>
+            
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label for="province" class="form-label">Province/State</label>
+                <input type="text" class="form-control" id="province" name="province" value="<%= userData.province || '' %>">
+              </div>
+              <div class="col-md-6">
+                <label for="country" class="form-label">Country</label>
+                <input type="text" class="form-control" id="country" name="country" value="<%= userData.country || '' %>">
+              </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">Update Profile</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Security Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white py-3">
+          <h5 class="mb-0">Security</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0">Password</h6>
+              <a href="/users/change-password" class="btn btn-sm btn-outline-info">Change Password</a>
+            </div>
+            <p class="text-muted small mb-0">Last updated: N/A</p>
+          </div>
+          
+          <div class="mb-0">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="mb-0">Two-Factor Authentication</h6>
+              <button type="button" class="btn btn-sm btn-outline-secondary" disabled>Coming Soon</button>
+            </div>
+            <p class="text-muted small mb-0">Status: Not enabled</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Account Actions -->
+      <div class="card shadow-sm">
+        <div class="card-header bg-light py-3">
+          <h5 class="mb-0">Account Actions</h5>
+        </div>
+        <div class="card-body p-4">
+          <div class="list-group">
+            <a href="/users/dashboard" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <div>
+                <i class="fas fa-tachometer-alt me-2 text-primary"></i>
+                Go to Dashboard
+              </div>
+              <i class="fas fa-chevron-right"></i>
+            </a>
+            <a href="/bookings/my-bookings" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <div>
+                <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                My Bookings
+              </div>
+              <i class="fas fa-chevron-right"></i>
+            </a>
+            <a href="/orders/my-orders" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+              <div>
+                <i class="fas fa-shopping-cart me-2 text-primary"></i>
+                My Orders
+              </div>
+              <i class="fas fa-chevron-right"></i>
+            </a>
+            <a href="/auth/logout" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center text-danger">
+              <div>
+                <i class="fas fa-sign-out-alt me-2"></i>
+                Logout
+              </div>
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

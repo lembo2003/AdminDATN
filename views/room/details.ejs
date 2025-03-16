@@ -1,0 +1,307 @@
+<%- include('../partials/header') %>
+
+<div class="container py-5">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item"><a href="/rooms">Rooms</a></li>
+      <li class="breadcrumb-item active" aria-current="page"><%= room.roomName %></li>
+    </ol>
+  </nav>
+
+  <!-- Flash Messages -->
+  <% if(success_msg != ''){ %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <%= success_msg %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+  
+  <% if(error_msg != ''){ %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <%= error_msg %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <div class="row">
+    <!-- Room Details -->
+    <div class="col-lg-8">
+      <!-- Room Images -->
+      <div class="card shadow-sm mb-4">
+        <img src="<%= room.imageUrl %>" class="card-img-top" alt="<%= room.roomName %>" style="height: 400px; object-fit: cover;">
+        <div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <h1 class="h3 fw-bold mb-2"><%= room.roomName %></h1>
+              <p class="text-muted mb-2">
+                <i class="fas fa-tag me-1"></i> <%= room.roomType ? room.roomType.roomTypeName : 'Standard Room' %>
+              </p>
+            </div>
+            <div class="text-end">
+              <h3 class="text-primary mb-0">$<%= room.price %></h3>
+              <small class="text-muted">per night</small>
+            </div>
+          </div>
+          
+          <hr>
+          
+          <!-- Room Description -->
+          <h5>Description</h5>
+          <p><%= room.description %></p>
+          
+          <!-- Room Features -->
+          <h5 class="mt-4">Amenities</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <ul class="list-unstyled amenities-list">
+                <li><i class="fas fa-bed"></i> Comfortable King-size Bed</li>
+                <li><i class="fas fa-wifi"></i> Free High-speed WiFi</li>
+                <li><i class="fas fa-tv"></i> 55" Smart TV</li>
+                <li><i class="fas fa-coffee"></i> Coffee Machine</li>
+                <li><i class="fas fa-snowflake"></i> Air Conditioning</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-unstyled amenities-list">
+                <li><i class="fas fa-shower"></i> En-suite Bathroom</li>
+                <li><i class="fas fa-bath"></i> Luxury Toiletries</li>
+                <li><i class="fas fa-concierge-bell"></i> Room Service</li>
+                <li><i class="fas fa-dumbbell"></i> Fitness Center Access</li>
+                <li><i class="fas fa-swimming-pool"></i> Swimming Pool Access</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">Guest Reviews</h5>
+        </div>
+        <div class="card-body p-4">
+          <% if(room.comments && room.comments.length > 0) { %>
+            <div class="d-flex align-items-center mb-4">
+              <div class="me-3">
+                <h4 class="mb-0">4.8</h4>
+                <div class="rating">
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star"></i>
+                  <i class="fas fa-star-half-alt"></i>
+                </div>
+              </div>
+              <div>
+                <p class="mb-0"><%= room.comments.length %> reviews</p>
+              </div>
+            </div>
+            
+            <% room.comments.forEach(comment => { %>
+              <div class="card mb-3 comment-card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between">
+                    <h6 class="card-title">
+                      <%= comment.user ? (comment.user.name || comment.user.email) : 'Anonymous Guest' %>
+                    </h6>
+                    <small class="text-muted">
+                      <%= new Date(comment.createdAt).toLocaleDateString() %>
+                    </small>
+                  </div>
+                  <div class="rating mb-2">
+                    <% for(let i = 1; i <= 5; i++) { %>
+                      <% if(i <= comment.rating) { %>
+                        <i class="fas fa-star"></i>
+                      <% } else if(i - 0.5 === comment.rating) { %>
+                        <i class="fas fa-star-half-alt"></i>
+                      <% } else { %>
+                        <i class="far fa-star"></i>
+                      <% } %>
+                    <% } %>
+                  </div>
+                  <p class="card-text"><%= comment.text %></p>
+                </div>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <p class="text-muted">No reviews yet. Be the first to review this room!</p>
+          <% } %>
+          
+          <!-- Add Review Form -->
+          <% if(user) { %>
+            <h5 class="mt-4">Write a Review</h5>
+            <form action="/rooms/<%= room.id %>/comment" method="POST">
+              <div class="mb-3">
+                <label for="rating" class="form-label">Rating</label>
+                <select class="form-select" id="rating" name="rating" required>
+                  <option value="5">5 - Excellent</option>
+                  <option value="4">4 - Very Good</option>
+                  <option value="3">3 - Good</option>
+                  <option value="2">2 - Fair</option>
+                  <option value="1">1 - Poor</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="text" class="form-label">Your Review</label>
+                <textarea class="form-control" id="text" name="text" rows="3" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Submit Review</button>
+            </form>
+          <% } else { %>
+            <div class="alert alert-info mt-4">
+              <p class="mb-0">Please <a href="/auth/login">login</a> to write a review.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Booking Card -->
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Book This Room</h5>
+        </div>
+        <div class="card-body p-4">
+          <form action="/bookings/create/<%= room.id %>" method="GET">
+            <div class="mb-3">
+              <label for="checkIn" class="form-label">Check In</label>
+              <input type="date" class="form-control" id="checkIn" name="checkIn" required 
+                    min="<%= new Date().toISOString().split('T')[0] %>">
+            </div>
+            <div class="mb-3">
+              <label for="checkOut" class="form-label">Check Out</label>
+              <input type="date" class="form-control" id="checkOut" name="checkOut" required
+                    min="<%= new Date().toISOString().split('T')[0] %>">
+            </div>
+            <div class="mb-3">
+              <label for="guests" class="form-label">Guests</label>
+              <select class="form-select" id="guests" name="guests">
+                <option value="1">1 Guest</option>
+                <option value="2" selected>2 Guests</option>
+                <option value="3">3 Guests</option>
+                <option value="4">4 Guests</option>
+              </select>
+            </div>
+            
+            <div class="alert alert-info mb-3">
+              <div class="d-flex justify-content-between mb-2">
+                <span>$<%= room.price %> x <span id="nightsCount">1</span> night(s)</span>
+                <span>$<span id="totalPrice"><%= room.price %></span></span>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Taxes & fees</span>
+                <span>$<span id="taxes"><%= Math.round(room.price * 0.12) %></span></span>
+              </div>
+              <hr>
+              <div class="d-flex justify-content-between fw-bold">
+                <span>Total</span>
+                <span>$<span id="grandTotal"><%= room.price + Math.round(room.price * 0.12) %></span></span>
+              </div>
+            </div>
+            
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg">Book Now</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Room Type Info -->
+      <% if (room.roomType) { %>
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0"><%= room.roomType.roomTypeName %></h5>
+          </div>
+          <div class="card-body p-4">
+            <p class="card-text"><%= room.roomType.description %></p>
+          </div>
+        </div>
+      <% } %>
+      
+      <!-- Similar Rooms -->
+      <% if (similarRooms && similarRooms.length > 0) { %>
+        <div class="card shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Similar Rooms</h5>
+          </div>
+          <div class="card-body p-3">
+            <% similarRooms.forEach(similar => { %>
+              <div class="d-flex mb-3">
+                <img src="<%= similar.imageUrl %>" alt="<%= similar.roomName %>" 
+                      style="width: 80px; height: 60px; object-fit: cover;" class="rounded me-3">
+                <div>
+                  <h6 class="mb-1"><%= similar.roomName %></h6>
+                  <p class="mb-1 text-primary">$<%= similar.price %> / night</p>
+                  <a href="/rooms/<%= similar.id %>" class="btn btn-sm btn-outline-primary">View</a>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Calculate price based on selected dates
+  const checkInInput = document.getElementById('checkIn');
+  const checkOutInput = document.getElementById('checkOut');
+  const nightsCountElement = document.getElementById('nightsCount');
+  const totalPriceElement = document.getElementById('totalPrice');
+  const taxesElement = document.getElementById('taxes');
+  const grandTotalElement = document.getElementById('grandTotal');
+  
+  const roomPrice = <%= room.price %>;
+  
+  function updatePriceCalculation() {
+    if (checkInInput.value && checkOutInput.value) {
+      const checkIn = new Date(checkInInput.value);
+      const checkOut = new Date(checkOutInput.value);
+      
+      // Calculate nights difference
+      const timeDiff = checkOut.getTime() - checkIn.getTime();
+      const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+      
+      if (nights > 0) {
+        // Update display
+        nightsCountElement.textContent = nights;
+        
+        const roomTotal = roomPrice * nights;
+        const taxes = Math.round(roomTotal * 0.12);
+        const grandTotal = roomTotal + taxes;
+        
+        totalPriceElement.textContent = roomTotal;
+        taxesElement.textContent = taxes;
+        grandTotalElement.textContent = grandTotal;
+      }
+    }
+  }
+  
+  // Set min check-out date when check-in date selected
+  checkInInput.addEventListener('change', function() {
+    if (this.value) {
+      const nextDay = new Date(this.value);
+      nextDay.setDate(nextDay.getDate() + 1);
+      
+      const nextDayFormatted = nextDay.toISOString().split('T')[0];
+      checkOutInput.min = nextDayFormatted;
+      
+      // If check-out is before new check-in, update it
+      if (checkOutInput.value && new Date(checkOutInput.value) <= new Date(this.value)) {
+        checkOutInput.value = nextDayFormatted;
+      }
+      
+      updatePriceCalculation();
+    }
+  });
+  
+  // Update price calculation when check-out date changes
+  checkOutInput.addEventListener('change', updatePriceCalculation);
+</script>
+
+<%- include('../partials/footer') %>

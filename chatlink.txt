@@ -1,0 +1,607 @@
+https://claude.ai/chat/e95e083b-46c9-49db-93a9-2b85a76c299e
+
+Please recreate roadmap, and make a context file(saying comprehensive about what we've done, how we done it, what we going to do, how to do it,...), project structure of existing file,saying so I can start a new session chat and continue this development(ask for files that needed to be show if needed for implement/bug fixing)
+
+
+chat 2(room type): https://claude.ai/chat/89ae1644-9462-43d4-8768-595912cbd720
+
+ 
+
+chat 3(room): https://claude.ai/chat/e7450fa6-8396-487a-bdd7-75103dbcf9b1
+
+i want to apply the package summernote to the room description. And also, want to add a model amenities with route and controllers, views(just like roomtype), for room model. Ask for any file if needed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+project requirement document: (example);# TÀI LIỆU YÊU CẦU SẢN PHẨM (PRD)
+# WEBSITE PHIM MOVIEFLIX
+
+**Phiên bản:** 1.0  
+**Ngày cập nhật:** 14/03/2025  
+**Người soạn thảo:** Claude  
+
+## TỔNG QUAN SẢN PHẨM
+
+### 1.1. Giới thiệu
+
+MovieFlix là một nền tảng xem phim trực tuyến hiện đại được phát triển với giao diện người dùng đẹp mắt sử dụng Vue.js 3 và Nuxt 3. Nền tảng này cung cấp cho người dùng trải nghiệm xem phim mượt mà, thông tin phim đa dạng và tính năng tương tác xã hội.
+
+### 1.2. Tầm nhìn sản phẩm
+
+Trở thành nền tảng xem phim hàng đầu với giao diện hiện đại, tốc độ nhanh và đa nền tảng. MovieFlix hướng đến việc cung cấp trải nghiệm người dùng tuyệt vời cùng với nội dung phim đa dạng, được cá nhân hóa.
+
+### 1.3. Mục tiêu kinh doanh
+
+- Xây dựng cộng đồng người dùng tích cực với 100,000 người dùng đăng ký trong năm đầu tiên
+- Tăng thời gian sử dụng trung bình lên 30 phút mỗi phiên
+- Cung cấp gói dịch vụ premium với tỷ lệ chuyển đổi 15% người dùng miễn phí
+- Tối ưu hóa SEO để tăng lưu lượng truy cập hữu cơ 20% mỗi quý
+
+### 1.4. Đối tượng người dùng
+
+#### Người dùng phổ thông
+- **Độ tuổi:** 18-45
+- **Hành vi:** Thường xuyên xem phim online, ưu tiên giao diện dễ sử dụng và tốc độ tải nhanh
+- **Nhu cầu:** Tìm kiếm phim nhanh chóng, xem thông tin chi tiết về phim, chất lượng hình ảnh tốt
+
+#### Người hâm mộ điện ảnh
+- **Độ tuổi:** 25-50
+- **Hành vi:** Quan tâm đến thông tin chi tiết về phim, diễn viên, đạo diễn
+- **Nhu cầu:** Bình luận/đánh giá phim, chia sẻ quan điểm, tìm kiếm phim theo nhiều tiêu chí chuyên sâu
+
+#### Người dùng di động
+- **Độ tuổi:** 18-35
+- **Hành vi:** Xem phim trên thiết bị di động, thường xem trong thời gian ngắn
+- **Nhu cầu:** Giao diện tối ưu cho di động, tính năng tải xuống để xem offline, tiêu thụ ít dữ liệu
+
+## YÊU CẦU VÀ ĐẶC ĐIỂM SẢN PHẨM
+
+### 2.1. Yêu cầu chức năng
+
+#### 2.1.1. Quản lý người dùng
+
+| ID | Chức năng | Mô tả | Ưu tiên |
+|----|-----------|-------|---------|
+| US-01 | Đăng ký tài khoản | Cho phép người dùng đăng ký tài khoản mới bằng email hoặc tài khoản mạng xã hội | Cao |
+| US-02 | Đăng nhập | Cho phép người dùng đăng nhập bằng email/mật khẩu hoặc tài khoản mạng xã hội | Cao |
+| US-03 | Quên mật khẩu | Cho phép người dùng khôi phục mật khẩu qua email | Cao |
+| US-04 | Quản lý hồ sơ | Cho phép người dùng xem và chỉnh sửa thông tin cá nhân, ảnh đại diện | Trung bình |
+| US-05 | Đăng xuất | Cho phép người dùng đăng xuất khỏi tài khoản | Cao |
+| US-06 | Xóa tài khoản | Cho phép người dùng xóa tài khoản và dữ liệu cá nhân | Thấp |
+
+#### 2.1.2. Khám phá và tìm kiếm phim
+
+| ID | Chức năng | Mô tả | Ưu tiên |
+|----|-----------|-------|---------|
+| DS-01 | Trang chủ động | Hiển thị phim nổi bật, phim mới, phim đang thịnh hành, được cá nhân hóa theo lịch sử xem | Cao |
+| DS-02 | Tìm kiếm cơ bản | Cho phép người dùng tìm kiếm phim theo tên | Cao |
+| DS-03 | Tìm kiếm nâng cao | Cho phép người dùng tìm kiếm phim theo năm phát hành, thể loại, đạo diễn, diễn viên, quốc gia | Trung bình |
+| DS-04 | Lọc phim | Cho phép người dùng lọc danh sách phim theo nhiều tiêu chí (xếp hạng, năm, thể loại) | Trung bình |
+| DS-05 | Phân loại phim | Hiển thị phim theo danh mục: phim đang hot, phim mới phát hành, phim được đánh giá cao | Cao |
+| DS-06 | Khám phá theo thể loại | Cho phép người dùng duyệt phim theo thể loại | Cao |
+| DS-07 | Đề xuất phim | Đề xuất phim dựa trên lịch sử xem và sở thích của người dùng | Trung bình |
+
+#### 2.1.3. Xem phim và thông tin phim
+
+| ID | Chức năng | Mô tả | Ưu tiên |
+|----|-----------|-------|---------|
+| VW-01 | Thông tin chi tiết phim | Hiển thị thông tin chi tiết về phim: poster, trailer, nội dung, thể loại, năm, đạo diễn, diễn viên, thời lượng | Cao |
+| VW-02 | Xem trailer | Cho phép xem trailer phim trực tiếp trên nền tảng | Cao |
+| VW-03 | Xem phim | Cho phép xem phim với nhiều tùy chọn chất lượng | Cao |
+| VW-04 | Điều khiển player | Cung cấp các chức năng: play/pause, tua nhanh/lùi, điều chỉnh âm lượng, chế độ toàn màn hình | Cao |
+| VW-05 | Chọn chất lượng | Cho phép người dùng chọn chất lượng video (SD, HD, Full HD) | Trung bình |
+| VW-06 | Xem thông tin diễn viên | Hiển thị thông tin chi tiết về diễn viên và các phim đã tham gia | Thấp |
+| VW-07 | Tiếp tục xem | Ghi nhớ thời điểm dừng xem và cho phép tiếp tục xem từ vị trí đó | Trung bình |
+| VW-08 | Phụ đề | Hỗ trợ hiển thị phụ đề cho phim | Trung bình |
+
+#### 2.1.4. Tính năng xã hội và tương tác
+
+| ID | Chức năng | Mô tả | Ưu tiên |
+|----|-----------|-------|---------|
+| SC-01 | Đánh giá phim | Cho phép người dùng đánh giá phim bằng sao (1-5) | Cao |
+| SC-02 | Bình luận | Cho phép người dùng bình luận về phim | Trung bình |
+| SC-03 | Thích/Không thích | Cho phép người dùng bày tỏ ý kiến thích/không thích về phim | Trung bình |
+| SC-04 | Chia sẻ phim | Cho phép người dùng chia sẻ phim lên mạng xã hội | Trung bình |
+| SC-05 | Phản hồi bình luận | Cho phép người dùng phản hồi bình luận của người khác | Thấp |
+| SC-06 | Báo cáo nội dung | Cho phép người dùng báo cáo nội dung không phù hợp | Thấp |
+
+#### 2.1.5. Quản lý danh sách cá nhân
+
+| ID | Chức năng | Mô tả | Ưu tiên |
+|----|-----------|-------|---------|
+| PL-01 | Danh sách yêu thích | Cho phép người dùng thêm/xóa phim vào danh sách yêu thích | Cao |
+| PL-02 | Danh sách xem sau | Cho phép người dùng thêm phim vào danh sách xem sau | Cao |
+| PL-03 | Lịch sử xem | Hiển thị danh sách phim đã xem gần đây | Cao |
+| PL-04 | Xóa lịch sử xem | Cho phép người dùng xóa lịch sử xem | Trung bình |
+| PL-05 | Tạo danh sách tùy chỉnh | Cho phép người dùng tạo danh sách phim riêng và đặt tên | Thấp |
+| PL-06 | Đồng bộ hóa danh sách | Đồng bộ danh sách phim giữa các thiết bị | Thấp |
+
+#### 2.1.6. Cài đặt và tùy chọn người dùng
+
+| ID | Chức năng | Mô tả | Ưu tiên |
+|----|-----------|-------|---------|
+| ST-01 | Chế độ tối/sáng | Cho phép người dùng chuyển đổi giữa chế độ tối và sáng | Trung bình |
+| ST-02 | Ngôn ngữ giao diện | Cho phép người dùng chọn ngôn ngữ giao diện | Trung bình |
+| ST-03 | Thông báo | Cài đặt tùy chọn nhận thông báo về phim mới, phim được đề xuất | Thấp |
+| ST-04 | Chất lượng video mặc định | Cho phép người dùng cài đặt chất lượng video mặc định | Thấp |
+| ST-05 | Tự động phát | Bật/tắt tính năng tự động phát tập tiếp theo hoặc phim đề xuất | Thấp |
+
+### 2.2. Yêu cầu phi chức năng
+
+#### 2.2.1. Hiệu suất
+
+| ID | Yêu cầu | Mô tả | Ưu tiên |
+|----|---------|-------|---------|
+| PF-01 | Thời gian tải trang | Trang chủ và các trang chính phải tải trong vòng 2 giây | Cao |
+| PF-02 | Thời gian phản hồi | Hệ thống phải phản hồi trong vòng 0.5 giây cho các tương tác người dùng | Cao |
+| PF-03 | Thời gian tải video | Video phải bắt đầu phát trong vòng 3 giây sau khi người dùng nhấn play | Cao |
+| PF-04 | Tối ưu hóa hình ảnh | Hình ảnh phải được tối ưu và nén phù hợp để tải nhanh | Trung bình |
+| PF-05 | Caching | Sử dụng caching để cải thiện tốc độ tải trang và dữ liệu | Trung bình |
+
+#### 2.2.2. Khả năng truy cập và tương thích
+
+| ID | Yêu cầu | Mô tả | Ưu tiên |
+|----|---------|-------|---------|
+| AC-01 | Responsive Design | Website phải hoạt động tốt trên tất cả kích thước màn hình (desktop, tablet, mobile) | Cao |
+| AC-02 | Trình duyệt | Tương thích với các trình duyệt phổ biến: Chrome, Firefox, Safari, Edge (phiên bản mới nhất và 2 phiên bản trước) | Cao |
+| AC-03 | Tiêu chuẩn WCAG | Tuân thủ các tiêu chuẩn WCAG 2.1 AA về khả năng truy cập | Trung bình |
+| AC-04 | Tương thích thiết bị | Hỗ trợ các thiết bị chạy Android 7.0+, iOS 12.0+, Smart TV phổ biến | Trung bình |
+| AC-05 | Đa ngôn ngữ | Hỗ trợ ít nhất 3 ngôn ngữ: Tiếng Việt, Tiếng Anh, Tiếng Trung | Thấp |
+
+#### 2.2.3. Bảo mật và quyền riêng tư
+
+| ID | Yêu cầu | Mô tả | Ưu tiên |
+|----|---------|-------|---------|
+| SC-01 | Bảo vệ dữ liệu | Mã hóa dữ liệu nhạy cảm như mật khẩu, thông tin thanh toán | Cao |
+| SC-02 | Xác thực | Sử dụng xác thực 2 yếu tố cho các tài khoản premium | Trung bình |
+| SC-03 | Quản lý phiên | Tự động đăng xuất sau thời gian không hoạt động | Trung bình |
+| SC-04 | GDPR Compliance | Tuân thủ quy định GDPR về quyền riêng tư và bảo vệ dữ liệu | Cao |
+| SC-05 | Chính sách quyền riêng tư | Cung cấp chính sách quyền riêng tư rõ ràng và dễ hiểu | Cao |
+| SC-06 | Quyền kiểm soát dữ liệu | Cho phép người dùng tải xuống, xóa dữ liệu cá nhân | Trung bình |
+
+#### 2.2.4. Khả năng mở rộng và bảo trì
+
+| ID | Yêu cầu | Mô tả | Ưu tiên |
+|----|---------|-------|---------|
+| SM-01 | Kiến trúc module | Thiết kế kiến trúc theo module để dễ dàng mở rộng và bảo trì | Cao |
+| SM-02 | Khả năng mở rộng | Hệ thống phải hỗ trợ tối thiểu 10,000 người dùng đồng thời | Cao |
+| SM-03 | Ghi log | Triển khai hệ thống ghi log toàn diện để dễ dàng debug và theo dõi | Trung bình |
+| SM-04 | Backup | Thực hiện backup dữ liệu hàng ngày và có kế hoạch khôi phục dữ liệu | Trung bình |
+| SM-05 | Thời gian hoạt động | Đảm bảo thời gian hoạt động 99.9% | Cao |
+
+### 2.3. Yêu cầu giao diện người dùng
+
+#### 2.3.1. Nguyên tắc thiết kế
+
+- **Tính nhất quán**: Giao diện nhất quán trên toàn bộ ứng dụng với hệ thống design system rõ ràng
+- **Tính đơn giản**: Giao diện trực quan, dễ sử dụng, tránh phức tạp không cần thiết
+- **Phản hồi trực quan**: Cung cấp phản hồi rõ ràng cho tất cả tương tác người dùng
+- **Hiệu quả**: Giảm thiểu số lần click/tap để hoàn thành tác vụ
+- **Khả năng tiếp cận**: Đảm bảo giao diện dễ sử dụng cho mọi người dùng
+
+#### 2.3.2. Bố cục và thành phần giao diện
+
+##### Trang chủ
+- Hero banner với phim nổi bật (slideshow)
+- Thanh tìm kiếm nổi bật
+- Các phần danh sách phim theo danh mục (slider)
+- Phần giới thiệu tính năng nổi bật
+- Footer với thông tin liên hệ, liên kết hữu ích
+
+##### Trang chi tiết phim
+- Banner phim lớn với poster và backdrop
+- Thông tin cơ bản: tên, năm, thời lượng, thể loại, đánh giá
+- Button xem phim và trailer nổi bật
+- Nội dung tóm tắt phim
+- Thông tin chi tiết về diễn viên, đạo diễn
+- Phần bình luận và đánh giá
+- Phim liên quan/đề xuất
+
+##### Trang tìm kiếm/danh mục
+- Bộ lọc nâng cao rõ ràng
+- Hiển thị kết quả dạng lưới với nhiều tùy chọn sắp xếp
+- Phân trang hoặc tải thêm (infinite scroll)
+- Hiển thị số lượng kết quả tìm kiếm
+
+##### Player phim
+- Controls trực quan, dễ sử dụng
+- Tùy chọn chất lượng video
+- Điều khiển phụ đề
+- Chế độ toàn màn hình
+- Thông tin phim đang xem
+
+#### 2.3.3. Các yếu tố thiết kế
+
+##### Màu sắc
+- **Màu chính**: #ff4757 (Đỏ)
+- **Màu phụ**: #2f3542 (Xám đậm)
+- **Màu nền**: #1e272e (Đen xanh) cho dark mode, #f1f2f6 (Xám nhạt) cho light mode
+- **Màu văn bản**: #ffffff (Trắng) trên nền tối, #2f3542 (Xám đậm) trên nền sáng
+- **Màu nhấn**: #ffa502 (Vàng cam)
+- **Màu thành công**: #2ed573 (Xanh lá)
+- **Màu cảnh báo**: #ff9f43 (Cam)
+- **Màu lỗi**: #ff6b81 (Đỏ nhạt)
+
+##### Typography
+- **Font chính**: Roboto
+- **Font tiêu đề**: Montserrat
+- **Hệ thống kích thước font**:
+  - Heading 1: 2.5rem (40px)
+  - Heading 2: 2rem (32px)
+  - Heading 3: 1.5rem (24px)
+  - Body: 1rem (16px)
+  - Small: 0.875rem (14px)
+
+##### Iconography
+- Sử dụng bộ icon nhất quán (Material Design Icons hoặc Font Awesome)
+- Icon đơn giản, dễ nhận biết
+- Kích thước icon phù hợp với ngữ cảnh sử dụng
+
+##### Spacing
+- Hệ thống spacing nhất quán dựa trên đơn vị 4px
+- Padding và margin được chuẩn hóa: 4px, 8px, 16px, 24px, 32px, 48px, 64px
+
+## LUỒNG NGƯỜI DÙNG VÀ TRẢI NGHIỆM
+
+### 3.1. Sơ đồ luồng người dùng
+
+#### 3.1.1. Đăng ký và đăng nhập
+
+1. Người dùng truy cập website
+2. Người dùng nhấn vào "Đăng ký" hoặc "Đăng nhập"
+3. Người dùng điền thông tin hoặc đăng nhập bằng mạng xã hội
+4. Sau khi đăng nhập thành công, chuyển hướng về trang chủ với trạng thái đã đăng nhập
+
+#### 3.1.2. Khám phá và xem phim
+
+1. Người dùng duyệt phim trên trang chủ hoặc trang danh mục
+2. Người dùng nhấn vào poster phim để xem thông tin chi tiết
+3. Trên trang chi tiết, người dùng xem trailer hoặc bắt đầu xem phim
+4. Người dùng tương tác với player: điều chỉnh âm lượng, chất lượng, phụ đề
+5. Sau khi xem xong, hệ thống gợi ý các phim liên quan
+
+#### 3.1.3. Tìm kiếm phim
+
+1. Người dùng nhập từ khóa vào ô tìm kiếm
+2. Hệ thống hiển thị kết quả tìm kiếm
+3. Người dùng có thể lọc/sắp xếp kết quả theo nhiều tiêu chí
+4. Người dùng chọn phim từ kết quả tìm kiếm
+
+#### 3.1.4. Tương tác xã hội
+
+1. Người dùng xem thông tin phim
+2. Người dùng đánh giá phim bằng sao
+3. Người dùng viết bình luận về phim
+4. Người dùng đọc và phản hồi bình luận của người khác
+5. Người dùng chia sẻ phim lên mạng xã hội
+
+### 3.2. Trải nghiệm người dùng đặc biệt
+
+#### 3.2.1. Trải nghiệm người dùng mới
+
+- Hiển thị hướng dẫn ngắn gọn về cách sử dụng website
+- Gợi ý phim phổ biến/được đánh giá cao
+- Khuyến khích hoàn thiện hồ sơ để nhận đề xuất phim phù hợp
+
+#### 3.2.2. Trải nghiệm người dùng thường xuyên
+
+- Hiển thị phim đang xem dở để tiếp tục
+- Đề xuất phim dựa trên lịch sử xem và sở thích
+- Thông báo về phim mới từ đạo diễn/diễn viên yêu thích
+
+#### 3.2.3. Trải nghiệm người dùng trên thiết bị di động
+
+- Giao diện tối ưu cho màn hình nhỏ
+- Tính năng xem offline (cho người dùng premium)
+- Điều khiển player được thiết kế phù hợp cho màn hình cảm ứng
+
+## ROADMAP VÀ PHÂN GIAI ĐOẠN
+
+### 4.1. Giai đoạn 1: MVP (Minimum Viable Product)
+
+**Thời gian**: 3 tháng
+**Mục tiêu**: Xây dựng website với các chức năng cơ bản nhất để ra mắt sớm và lấy phản hồi
+
+**Các tính năng chính**:
+- Đăng ký/đăng nhập cơ bản
+- Trang chủ với phim nổi bật và phân loại
+- Trang chi tiết phim với thông tin cơ bản
+- Tìm kiếm đơn giản
+- Player phim cơ bản
+- Responsive cho desktop và mobile
+
+### 4.2. Giai đoạn 2: Tương tác và Trải nghiệm người dùng
+
+**Thời gian**: 2 tháng
+**Mục tiêu**: Nâng cao trải nghiệm người dùng và thêm tính năng tương tác
+
+**Các tính năng chính**:
+- Hệ thống đánh giá và bình luận
+- Danh sách yêu thích và xem sau
+- Tìm kiếm nâng cao và bộ lọc
+- Cải thiện player (chất lượng, phụ đề)
+- Đề xuất phim cơ bản
+- Chế độ tối/sáng
+
+### 4.3. Giai đoạn 3: Cá nhân hóa và Mở rộng
+
+**Thời gian**: 3 tháng
+**Mục tiêu**: Cá nhân hóa trải nghiệm và mở rộng tính năng
+
+**Các tính năng chính**:
+- Hệ thống đề xuất thông minh
+- Hồ sơ người dùng nâng cao
+- Tính năng xã hội (chia sẻ, theo dõi)
+- Tích hợp đa nền tảng
+- Hỗ trợ đa ngôn ngữ
+- Tính năng premium (xem offline, không quảng cáo)
+
+### 4.4. Giai đoạn 4: Tối ưu hóa và Mở rộng thị trường
+
+**Thời gian**: 2 tháng
+**Mục tiêu**: Tối ưu hóa hiệu suất và mở rộng đối tượng người dùng
+
+**Các tính năng chính**:
+- Tối ưu hóa SEO
+- Cải thiện hiệu suất tổng thể
+- Phát triển tính năng cho Smart TV
+- Tính năng mới dựa trên phản hồi người dùng
+- Mở rộng nội dung và đối tượng người dùng
+
+## PHÂN TÍCH RỦI RO
+
+### 5.1. Rủi ro kỹ thuật
+
+| Rủi ro | Mức độ ảnh hưởng | Khả năng xảy ra | Chiến lược giảm thiểu |
+|--------|-----------------|-----------------|------------------------|
+| Hiệu suất website kém trên thiết bị cũ/yếu | Cao | Trung bình | Tối ưu hóa tải trang, lazy loading, giảm kích thước bundle |
+| Vấn đề tương thích trình duyệt | Trung bình | Trung bình | Testing đa nền tảng, polyfill cho trình duyệt cũ |
+| Thời gian phát video chậm | Cao | Thấp | CDN cho video, adaptive streaming, preloading |
+| Lỗi bảo mật | Cao | Thấp | Audit bảo mật thường xuyên, tuân thủ best practices |
+| Khó khăn khi mở rộng hệ thống | Trung bình | Trung bình | Thiết kế kiến trúc module, microservices |
+
+### 5.2. Rủi ro sản phẩm
+
+| Rủi ro | Mức độ ảnh hưởng | Khả năng xảy ra | Chiến lược giảm thiểu |
+|--------|-----------------|-----------------|------------------------|
+| Không đáp ứng nhu cầu người dùng | Cao | Trung bình | User testing thường xuyên, thu thập phản hồi và điều chỉnh sản phẩm |
+| Cạnh tranh cao từ các nền tảng khác | Cao | Cao | Tập trung vào các tính năng độc đáo, UX tốt hơn đối thủ |
+| Thiếu nội dung hấp dẫn | Cao | Trung bình | Đảm bảo nguồn nội dung đa dạng, cập nhật thường xuyên |
+| Tỷ lệ chuyển đổi thấp (người dùng miễn phí -> premium) | Trung bình | Trung bình | Tối ưu trải nghiệm, cung cấp giá trị rõ ràng cho gói premium |
+| Người dùng không quay lại sau lần sử dụng đầu tiên | Cao | Trung bình | Cải thiện onboarding, gửi email nhắc nhở, thông báo nội dung mới |
+
+### 5.3. Rủi ro pháp lý và tuân thủ
+
+| Rủi ro | Mức độ ảnh hưởng | Khả năng xảy ra | Chiến lược giảm thiểu |
+|--------|-----------------|-----------------|------------------------|
+| Vi phạm bản quyền nội dung | Rất cao | Trung bình | Đảm bảo quyền phát hành hợp pháp, kiểm duyệt nội dung người dùng |
+| Không tuân thủ GDPR và quy định bảo vệ dữ liệu | Cao | Trung bình | Làm việc với chuyên gia pháp lý, cập nhật chính sách thường xuyên |
+| Nội dung không phù hợp | Cao | Thấp | Hệ thống kiểm duyệt, báo cáo nội dung, phân loại độ tuổi phim |
+| Thay đổi quy định của app store | Trung bình | Trung bình | Theo dõi thay đổi chính sách, chuẩn bị phương án dự phòng |
+| Vấn đề với thanh toán quốc tế | Trung bình | Thấp | Sử dụng các cổng thanh toán uy tín, tuân thủ quy định tài chính |
+
+## CHIẾN LƯỢC KIỂM THỬ
+
+### 6.1. Kiểm thử giao diện người dùng
+
+| Loại kiểm thử | Phạm vi | Công cụ | Tần suất |
+|---------------|---------|---------|----------|
+| Kiểm thử tương thích trình duyệt | Chrome, Firefox, Safari, Edge trên desktop và mobile | BrowserStack, Selenium | Mỗi sprint |
+| Kiểm thử responsive | Desktop, tablet, mobile, các kích thước màn hình khác nhau | Chrome DevTools, Responsively App | Mỗi sprint |
+| Kiểm thử trải nghiệm người dùng | Tất cả luồng chính của người dùng | UserTesting, Hotjar | Mỗi tháng |
+| Kiểm thử khả năng truy cập | WCAG 2.1 AA | Axe, Lighthouse | Mỗi sprint |
+| Kiểm thử hiệu suất giao diện | Thời gian tải, FCP, LCP, TTI | Lighthouse, WebPageTest | Mỗi sprint |
+
+### 6.2. Kiểm thử chức năng
+
+| Loại kiểm thử | Phạm vi | Công cụ | Tần suất |
+|---------------|---------|---------|----------|
+| Kiểm thử đơn vị | Components, helpers, utilities | Jest, Vue Test Utils | Liên tục (CI/CD) |
+| Kiểm thử tích hợp | Tương tác giữa các components | Cypress | Mỗi sprint |
+| Kiểm thử end-to-end | Luồng người dùng chính | Cypress, Playwright | Mỗi sprint |
+| Kiểm thử API | Tất cả endpoints API | Postman, Jest | Liên tục (CI/CD) |
+| Kiểm thử player | Chức năng player trên các thiết bị và trình duyệt | TestCafe | Mỗi sprint |
+
+### 6.3. Kiểm thử phi chức năng
+
+| Loại kiểm thử | Phạm vi | Công cụ | Tần suất |
+|---------------|---------|---------|----------|
+| Kiểm thử hiệu suất | Tốc độ tải trang, thời gian phản hồi | Lighthouse, k6 | Mỗi sprint |
+| Kiểm thử tải | Hệ thống dưới tải cao | k6, Artillery | Mỗi quý |
+| Kiểm thử bảo mật | Lỗ hổng bảo mật phổ biến | OWASP ZAP, SonarQube | Mỗi quý |
+| Kiểm thử khả năng phục hồi | Khả năng phục hồi sau lỗi | Chaos Monkey | Mỗi quý |
+| Kiểm thử đồng thời | Nhiều người dùng cùng lúc | JMeter | Mỗi quý |
+
+### 6.4. Quy trình đảm bảo chất lượng
+
+1. **Phát triển tính năng**:
+   - Unit testing trong quá trình phát triển
+   - Code review trước khi merge
+
+2. **Kiểm thử tích hợp**:
+   - Chạy automation test sau khi merge
+   - Kiểm thử tương thích trình duyệt
+
+3. **Kiểm thử UAT (User Acceptance Testing)**:
+   - Kiểm thử bởi QA team
+   - Kiểm thử beta với người dùng thực
+
+4. **Phát hành**:
+   - Triển khai theo giai đoạn (phased rollout)
+   - Theo dõi metrics và lỗi sau phát hành
+
+5. **Theo dõi liên tục**:
+   - Giám sát hiệu suất và lỗi trong production
+   - Thu thập phản hồi người dùng
+
+## YÊU CẦU HỆ THỐNG VÀ KỸ THUẬT
+
+### 7.1. Yêu cầu công nghệ
+
+#### 7.1.1. Frontend
+- **Framework**: Vue.js 3 và Nuxt 3
+- **State Management**: Pinia
+- **CSS Framework**: Tailwind CSS hoặc Vuetify 3
+- **Build Tools**: Vite, Webpack
+- **Testing**: Jest, Cypress
+- **API Client**: Fetch API, Axios
+
+#### 7.1.2. Backend (nếu có)
+- **API**: REST hoặc GraphQL
+- **Authentication**: JWT, OAuth 2.0
+- **Database**: MongoDB, PostgreSQL
+- **Caching**: Redis
+- **Search Engine**: Elasticsearch
+
+#### 7.1.3. DevOps
+- **CI/CD**: GitHub Actions, GitLab CI
+- **Containerization**: Docker
+- **Hosting**: Vercel, Netlify, AWS
+- **CDN**: Cloudflare, AWS CloudFront
+- **Monitoring**: Sentry, Datadog
+
+### 7.2. Yêu cầu hạ tầng
+
+#### 7.2.1. Hosting
+- **Web Server**: Nginx
+- **SSL/TLS**: Let's Encrypt
+- **Load Balancer**: AWS ELB, Nginx
+- **Auto-scaling**: AWS Auto Scaling, Kubernetes
+
+#### 7.2.2. Lưu trữ và xử lý video
+- **Storage**: AWS S3, Google Cloud Storage
+- **Transcoding**: AWS MediaConvert, FFmpeg
+- **Streaming**: HLS, DASH
+- **CDN**: Cloudflare, AWS CloudFront, Akamai
+
+#### 7.2.3. Bảo mật
+- **WAF**: Cloudflare, AWS WAF
+- **DDoS Protection**: Cloudflare, AWS Shield
+- **Data Encryption**: HTTPS, Database encryption
+- **Auth Provider**: Auth0, Firebase Auth
+
+### 7.3. Tích hợp bên thứ ba
+
+#### 7.3.1. Nội dung phim
+- **API Dữ liệu phim**: TMDB, OMDB, IMDb
+- **Cung cấp video**: Własne, Các dịch vụ streaming
+
+#### 7.3.2. Thanh toán
+- **Payment Gateway**: Stripe, PayPal, VNPay
+- **Subscription Management**: Stripe Billing, Chargebee
+
+#### 7.3.3. Analytics
+- **User Analytics**: Google Analytics, Mixpanel
+- **Performance Monitoring**: New Relic, Datadog
+- **Error Tracking**: Sentry, Rollbar
+
+#### 7.3.4. Marketing
+- **Email Marketing**: Mailchimp, SendGrid
+- **Push Notifications**: Firebase Cloud Messaging, OneSignal
+- **Social Media**: Facebook, Twitter API
+
+## CHIẾN LƯỢC TRIỂN KHAI VÀ PHÁT HÀNH
+
+### 8.1. Môi trường triển khai
+
+| Môi trường | Mục đích | Quy trình cập nhật |
+|------------|----------|-------------------|
+| Development | Phát triển tính năng mới | Continuous Integration |
+| Staging | Kiểm thử và QA | Sau khi vượt qua tất cả automation tests |
+| UAT | User Acceptance Testing | Sau khi QA team xác nhận |
+| Production | Phiên bản chính thức | Triển khai theo giai đoạn sau khi UAT |
+
+### 8.2. Chiến lược phát hành
+
+#### 8.2.1. Phát hành theo giai đoạn
+1. **Canary Release**: Triển khai cho 5% người dùng
+2. **Extended Release**: Mở rộng lên 25% người dùng
+3. **Full Release**: Triển khai cho 100% người dùng
+
+#### 8.2.2. Feature Flags
+- Sử dụng feature flags để bật/tắt tính năng mới
+- Giúp thử nghiệm A/B và rollback nhanh chóng nếu cần
+
+#### 8.2.3. Quy trình rollback
+- Quy trình rollback tự động khi phát hiện lỗi nghiêm trọng
+- Theo dõi metrics để phát hiện lỗi sau triển khai
+
+### 8.3. Kế hoạch bảo trì
+
+#### 8.3.1. Cập nhật thường xuyên
+- Hotfix: Triển khai ngay khi cần để sửa lỗi nghiêm trọng
+- Minor updates: Hàng tuần (bug fixes, cải tiến nhỏ)
+- Major updates: Hàng tháng hoặc quý (tính năng mới lớn)
+
+#### 8.3.2. Backup và khôi phục
+- Daily backups: Database và user data
+- Disaster recovery plan
+- Thử nghiệm khôi phục hàng quý
+
+## KẾT LUẬN VÀ KHUYẾN NGHỊ
+
+### 9.1. Tóm tắt
+
+MovieFlix là một nền tảng xem phim hiện đại với giao diện người dùng đẹp mắt được phát triển bằng Vue.js 3 và Nuxt 3. Dự án sẽ được phát triển theo các giai đoạn, bắt đầu với MVP có các tính năng cơ bản và dần bổ sung các tính năng nâng cao để cải thiện trải nghiệm người dùng và cạnh tranh trên thị trường.
+
+### 9.2. Yếu tố thành công quan trọng
+
+1. **Trải nghiệm người dùng xuất sắc**: Giao diện đẹp mắt, dễ sử dụng và tốc độ nhanh
+2. **Nội dung phong phú**: Đa dạng thể loại phim và cập nhật thường xuyên
+3. **Hiệu suất tốt**: Website tải nhanh, player mượt mà trên mọi thiết bị
+4. **Cá nhân hóa**: Đề xuất phim phù hợp với sở thích của từng người dùng
+5. **Tương tác xã hội**: Xây dựng cộng đồng người dùng tích cực
+
+### 9.3. Khuyến nghị
+
+1. **Tập trung vào Mobile-First**: Thiết kế trước tiên cho mobile vì đa số người dùng sẽ truy cập qua thiết bị di động
+2. **Đầu tư vào UX Research**: Nghiên cứu kỹ nhu cầu người dùng trước khi phát triển tính năng mới
+3. **Tối ưu hóa SEO từ đầu**: Lên kế hoạch SEO ngay từ giai đoạn đầu để tăng lưu lượng tự nhiên
+4. **Hệ thống phân tích dữ liệu**: Xây dựng hệ thống analytics toàn diện để theo dõi hành vi người dùng
+5. **Chiến lược nội dung**: Xây dựng chiến lược nội dung rõ ràng và lịch cập nhật thường xuyên
+
+### 9.4. Các bước tiếp theo
+
+1. Phê duyệt PRD và thiết lập team
+2. Tạo wireframes và mockups chi tiết
+3. Thiết lập môi trường phát triển và CI/CD pipeline
+4. Phát triển MVP trong 3 tháng đầu tiên
+5. Thử nghiệm với nhóm người dùng beta
+6. Ra mắt phiên bản MVP và thu thập phản hồi
+7. Lên kế hoạch chi tiết cho giai đoạn 2

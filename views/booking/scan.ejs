@@ -1,0 +1,385 @@
+<%- include('../../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Admin Sidebar -->
+    <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+      <%- include('../../partials/admin-sidebar', {path: '/admin/bookings'}) %>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">QR Code Scanner</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/bookings" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Bookings
+          </a>
+        </div>
+      </div>
+      
+      <!-- Flash Messages -->
+      <div id="alert-container">
+        <% if(success_msg != ''){ %>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= success_msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% } %>
+        
+        <% if(error_msg != ''){ %>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <%= error_msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% } %>
+      </div>
+      
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Scan Guest QR Code</h5>
+            </div>
+            <div class="card-body">
+              <p class="mb-3">Use this scanner to check in or check out guests by scanning their booking QR code.</p>
+              
+              <div id="scanner-container" class="mb-4">
+                <div id="qr-reader" style="width: 100%; max-width: 500px; margin: 0 auto;"></div>
+              </div>
+              
+              <div class="d-flex justify-content-center mb-3">
+                <button id="start-scanner" class="btn btn-primary me-2">
+                  <i class="fas fa-camera me-1"></i> Start Scanner
+                </button>
+                <button id="stop-scanner" class="btn btn-secondary" style="display: none;">
+                  <i class="fas fa-stop me-1"></i> Stop Scanner
+                </button>
+              </div>
+              
+              <div class="text-center text-muted small">
+                <p class="mb-0">If you're having trouble with the scanner, ask the guest to show their QR code from the booking confirmation page.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-6">
+          <div class="card">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">Booking Details</h5>
+            </div>
+            <div class="card-body">
+              <div id="booking-details-loading" style="display: none;">
+                <div class="d-flex justify-content-center">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+                <p class="text-center mt-2">Loading booking details...</p>
+              </div>
+              
+              <div id="booking-details-content" style="display: none;">
+                <div class="mb-3">
+                  <h6>Guest Information</h6>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>Name:</strong> <span id="guest-name"></span></p>
+                      <p class="mb-1"><strong>Email:</strong> <span id="guest-email"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>Booking ID:</strong> <span id="booking-id"></span></p>
+                      <p class="mb-1"><strong>Guests:</strong> <span id="guest-count"></span></p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <h6>Room Information</h6>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>Room:</strong> <span id="room-name"></span></p>
+                      <p class="mb-1"><strong>Room Type:</strong> <span id="room-type"></span></p>
+                    </div>
+                    <div class="col-md-6">
+                      <p class="mb-1"><strong>Check-in:</strong> <span id="check-in-date"></span></p>
+                      <p class="mb-1"><strong>Check-out:</strong> <span id="check-out-date"></span></p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <h6>Status</h6>
+                  <p class="mb-1"><strong>Current Status:</strong> <span id="booking-status" class="badge"></span></p>
+                </div>
+                
+                <div class="mb-3">
+                  <h6>Action</h6>
+                  <div id="action-buttons">
+                    <!-- Action buttons will be dynamically inserted here -->
+                  </div>
+                </div>
+              </div>
+              
+              <div id="booking-details-empty" class="text-center py-5">
+                <i class="fas fa-qrcode fa-3x text-muted mb-3"></i>
+                <h5>No Booking Scanned</h5>
+                <p class="text-muted">Scan a guest's QR code to view booking details</p>
+              </div>
+              
+              <div id="booking-details-error" class="text-center py-5" style="display: none;">
+                <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                <h5>Invalid QR Code</h5>
+                <p class="text-muted">The scanned QR code is not a valid booking QR code</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Include Html5QrcodeScanner -->
+<script src="https://unpkg.com/html5-qrcode@2.3.4/html5-qrcode.min.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    let html5QrCodeScanner = null;
+    
+    const startScannerButton = document.getElementById('start-scanner');
+    const stopScannerButton = document.getElementById('stop-scanner');
+    const bookingDetailsLoading = document.getElementById('booking-details-loading');
+    const bookingDetailsContent = document.getElementById('booking-details-content');
+    const bookingDetailsEmpty = document.getElementById('booking-details-empty');
+    const bookingDetailsError = document.getElementById('booking-details-error');
+    
+    // Initialize scanner when start button is clicked
+    startScannerButton.addEventListener('click', function() {
+      // Hide empty state and show loading state
+      bookingDetailsEmpty.style.display = 'none';
+      bookingDetailsError.style.display = 'none';
+      bookingDetailsContent.style.display = 'none';
+      
+      // Initialize scanner if not already initialized
+      if (!html5QrCodeScanner) {
+        html5QrCodeScanner = new Html5QrcodeScanner(
+          "qr-reader",
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          /* verbose= */ false
+        );
+      }
+      
+      html5QrCodeScanner.render(onScanSuccess, onScanFailure);
+      
+      // Hide start button and show stop button
+      startScannerButton.style.display = 'none';
+      stopScannerButton.style.display = 'block';
+    });
+    
+    // Stop scanner when stop button is clicked
+    stopScannerButton.addEventListener('click', function() {
+      if (html5QrCodeScanner) {
+        html5QrCodeScanner.clear();
+      }
+      
+      // Show start button and hide stop button
+      startScannerButton.style.display = 'block';
+      stopScannerButton.style.display = 'none';
+    });
+    
+    // Handle successful scan
+    function onScanSuccess(decodedText, decodedResult) {
+      // Stop scanner
+      if (html5QrCodeScanner) {
+        html5QrCodeScanner.clear();
+      }
+      
+      // Show start button and hide stop button
+      startScannerButton.style.display = 'block';
+      stopScannerButton.style.display = 'none';
+      
+      // Show loading state
+      bookingDetailsEmpty.style.display = 'none';
+      bookingDetailsError.style.display = 'none';
+      bookingDetailsContent.style.display = 'none';
+      bookingDetailsLoading.style.display = 'block';
+      
+      // Process QR code data
+      processQrCode(decodedText);
+    }
+    
+    // Handle scan failure
+    function onScanFailure(error) {
+      console.warn(`QR scan error: ${error}`);
+    }
+    
+    // Process QR code data
+    function processQrCode(qrData) {
+      try {
+        // Try to parse QR data as JSON
+        const jsonData = JSON.parse(qrData);
+        
+        // Verify if it's a valid booking QR code
+        if (!jsonData.bookingId) {
+          showError('Invalid booking QR code');
+          return;
+        }
+        
+        // Fetch booking details
+        fetch('/bookings/verify-qr', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ qrData })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.booking) {
+            // Display booking details
+            displayBookingDetails(data.booking);
+          } else {
+            showError(data.error || 'Invalid booking QR code');
+          }
+        })
+        .catch(error => {
+          console.error('Error verifying QR code:', error);
+          showError('Error processing QR code');
+        });
+      } catch (error) {
+        console.error('Error parsing QR code:', error);
+        showError('Invalid QR code format');
+      }
+    }
+    
+    // Display booking details
+    function displayBookingDetails(booking) {
+      // Hide loading state and show content
+      bookingDetailsLoading.style.display = 'none';
+      bookingDetailsError.style.display = 'none';
+      bookingDetailsEmpty.style.display = 'none';
+      bookingDetailsContent.style.display = 'block';
+      
+      // Populate guest information
+      document.getElementById('guest-name').textContent = booking.user ? (booking.user.name || booking.user.email) : 'Unknown';
+      document.getElementById('guest-email').textContent = booking.user ? booking.user.email : 'Unknown';
+      document.getElementById('booking-id').textContent = booking.bookingId.substring(0, 8) + '...';
+      document.getElementById('guest-count').textContent = booking.numberOfGuests;
+      
+      // Populate room information
+      document.getElementById('room-name').textContent = booking.room ? booking.room.roomName : 'Unknown';
+      document.getElementById('room-type').textContent = booking.room && booking.room.roomType ? booking.room.roomType.roomTypeName : 'Unknown';
+      document.getElementById('check-in-date').textContent = new Date(booking.checkInDate).toLocaleDateString();
+      document.getElementById('check-out-date').textContent = new Date(booking.checkOutDate).toLocaleDateString();
+      
+      // Populate status
+      const statusEl = document.getElementById('booking-status');
+      statusEl.textContent = booking.status.charAt(0).toUpperCase() + booking.status.slice(1);
+      
+      if (booking.status === 'booked') {
+        statusEl.className = 'badge bg-info';
+      } else if (booking.status === 'checked-in') {
+        statusEl.className = 'badge bg-success';
+      } else if (booking.status === 'checked-out') {
+        statusEl.className = 'badge bg-secondary';
+      } else if (booking.status === 'cancelled') {
+        statusEl.className = 'badge bg-danger';
+      }
+      
+      // Populate action buttons
+      const actionButtons = document.getElementById('action-buttons');
+      actionButtons.innerHTML = '';
+      
+      if (booking.status === 'booked') {
+        // Check-in button
+        const checkInForm = document.createElement('form');
+        checkInForm.method = 'POST';
+        checkInForm.action = `/admin/bookings/update-status/${booking.id}`;
+        
+        const statusInput = document.createElement('input');
+        statusInput.type = 'hidden';
+        statusInput.name = 'status';
+        statusInput.value = 'checked-in';
+        checkInForm.appendChild(statusInput);
+        
+        const checkInButton = document.createElement('button');
+        checkInButton.type = 'submit';
+        checkInButton.className = 'btn btn-success btn-lg w-100';
+        checkInButton.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i> Check In Guest';
+        checkInForm.appendChild(checkInButton);
+        
+        actionButtons.appendChild(checkInForm);
+      } else if (booking.status === 'checked-in') {
+        // Check-out button
+        const checkOutForm = document.createElement('form');
+        checkOutForm.method = 'POST';
+        checkOutForm.action = `/admin/bookings/update-status/${booking.id}`;
+        
+        const statusInput = document.createElement('input');
+        statusInput.type = 'hidden';
+        statusInput.name = 'status';
+        statusInput.value = 'checked-out';
+        checkOutForm.appendChild(statusInput);
+        
+        const checkOutButton = document.createElement('button');
+        checkOutButton.type = 'submit';
+        checkOutButton.className = 'btn btn-primary btn-lg w-100';
+        checkOutButton.innerHTML = '<i class="fas fa-sign-out-alt me-2"></i> Check Out Guest';
+        checkOutForm.appendChild(checkOutButton);
+        
+        actionButtons.appendChild(checkOutForm);
+      } else if (booking.status === 'checked-out') {
+        // View details button
+        const detailsLink = document.createElement('a');
+        detailsLink.href = `/admin/bookings/details/${booking.id}`;
+        detailsLink.className = 'btn btn-outline-primary btn-lg w-100';
+        detailsLink.innerHTML = '<i class="fas fa-eye me-2"></i> View Details';
+        
+        actionButtons.appendChild(detailsLink);
+      } else if (booking.status === 'cancelled') {
+        // Cancelled message
+        const cancelledMessage = document.createElement('div');
+        cancelledMessage.className = 'alert alert-danger mb-0';
+        cancelledMessage.innerHTML = '<i class="fas fa-ban me-2"></i> This booking has been cancelled';
+        
+        actionButtons.appendChild(cancelledMessage);
+      }
+      
+      // Add view details button at the bottom
+      const viewDetailsLink = document.createElement('a');
+      viewDetailsLink.href = `/admin/bookings/details/${booking.id}`;
+      viewDetailsLink.className = 'btn btn-outline-secondary w-100 mt-2';
+      viewDetailsLink.textContent = 'View Full Details';
+      
+      actionButtons.appendChild(viewDetailsLink);
+    }
+    
+    // Show error message
+    function showError(message) {
+      // Hide loading and content, show error
+      bookingDetailsLoading.style.display = 'none';
+      bookingDetailsContent.style.display = 'none';
+      bookingDetailsEmpty.style.display = 'none';
+      bookingDetailsError.style.display = 'block';
+      
+      // Show alert
+      const alertContainer = document.getElementById('alert-container');
+      const alertDiv = document.createElement('div');
+      alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+      alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      `;
+      
+      alertContainer.appendChild(alertDiv);
+      
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 5000);
+    }
+  });
+</script>
+
+<%- include('../../partials/footer') %>

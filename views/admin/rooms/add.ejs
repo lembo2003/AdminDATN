@@ -1,0 +1,173 @@
+<%- include('../../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Admin Sidebar -->
+    <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+      <%- include('../../partials/admin-sidebar', {path: '/admin/rooms'}) %>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Add New Room</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/rooms" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Rooms
+          </a>
+        </div>
+      </div>
+      
+      <!-- Flash Messages -->
+      <% if(success_msg != ''){ %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= success_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <% if(error_msg != ''){ %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= error_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Room Information</h5>
+            </div>
+            <div class="card-body">
+              <form action="/admin/rooms/add" method="POST" enctype="multipart/form-data">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="roomName" class="form-label">Room Name</label>
+                    <input type="text" class="form-control" id="roomName" name="roomName" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="roomTypeId" class="form-label">Room Type</label>
+                    <select class="form-select" id="roomTypeId" name="roomTypeId" required>
+                      <option value="">Select Room Type</option>
+                      <% roomTypes.forEach(type => { %>
+                        <option value="<%= type.id %>"><%= type.roomTypeName %></option>
+                      <% }); %>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="price" class="form-label">Price (per night)</label>
+                    <div class="input-group">
+                      <span class="input-group-text">$</span>
+                      <input type="number" class="form-control" id="price" name="price" min="0" step="0.01" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="bookingState" class="form-label">Booking State</label>
+                    <select class="form-select" id="bookingState" name="bookingState">
+                      <option value="available" selected>Available</option>
+                      <option value="booked">Booked</option>
+                      <option value="maintenance">Maintenance</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="description" class="form-label">Description</label>
+                  <textarea class="form-control" id="description" name="description" rows="5"></textarea>
+                </div>
+                
+                <!-- Amenities Selection -->
+                <div class="mb-3">
+                  <label class="form-label">Amenities</label>
+                  <div class="row">
+                    <% amenities.forEach(amenity => { %>
+                      <div class="col-md-4 mb-2">
+                        <div class="form-check">
+                          <input class="form-check-input" type="checkbox" name="amenityIds" value="<%= amenity.id %>" id="amenity<%= amenity.id %>">
+                          <label class="form-check-label" for="amenity<%= amenity.id %>">
+                            <i class="<%= amenity.icon %> me-2"></i> <%= amenity.name %>
+                          </label>
+                        </div>
+                      </div>
+                    <% }); %>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="image" class="form-label">Room Image</label>
+                  <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                  <div class="form-text">Please upload an image of the room (max 5MB).</div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Create Room</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">Room Preview</h5>
+            </div>
+            <div class="card-body">
+              <div class="text-center">
+                <img id="imagePreview" src="/img/room-placeholder.jpg" alt="Room Preview" class="img-fluid rounded mb-3" style="max-height: 250px; object-fit: cover;">
+              </div>
+              <div class="alert alert-info">
+                <h6 class="mb-2"><i class="fas fa-info-circle me-2"></i>Adding a New Room</h6>
+                <p class="small mb-0">Complete the form to add a new room to your inventory. Make sure to select the appropriate room type and upload a high-quality image to showcase the room to potential guests.</p>
+              </div>
+              <div class="small text-muted mt-3">
+                <p><strong>Tips:</strong></p>
+                <ul>
+                  <li>Use descriptive room names</li>
+                  <li>Provide detailed descriptions</li>
+                  <li>Upload high-quality images</li>
+                  <li>Set competitive prices</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- JavaScript for image preview -->
+<script>
+  document.getElementById('image').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('imagePreview').src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+  
+  // Initialize Summernote
+  $(document).ready(function() {
+    $('#description').summernote({
+      placeholder: 'Enter detailed room description here...',
+      height: 200,
+      toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'underline', 'clear']],
+        ['color', ['color']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']],
+        ['insert', ['link']],
+        ['view', ['fullscreen', 'codeview', 'help']]
+      ]
+    });
+  });
+</script>
+
+<%- include('../../partials/footer') %>

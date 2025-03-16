@@ -1,0 +1,127 @@
+# Development Session Guide
+
+This guide explains how to continue development in future chat sessions. Follow these instructions to seamlessly pick up development where you left off.
+
+## Starting a New Development Session
+
+When starting a new chat session to continue development, provide the following context:
+
+1. Reference this project and its current state
+2. Mention which component you want to work on
+3. Share relevant files if needed for context
+
+## Example Prompt for a New Session
+
+Here's an example of how to start a new session:
+
+```
+I'm continuing development on the Hotel Management System project. 
+Currently, I'm working on implementing the Room Type management functionality.
+
+Here are the relevant files for context:
+1. models/roomType.js - The existing Room Type model
+2. routes/admin.js - Admin routes file that needs to be updated
+3. controllers/adminController.js - Contains some room management code
+
+Can you help me create the roomTypeController.js file and the necessary views?
+```
+
+## Files to Share for Different Tasks
+
+Depending on the component you're working on, you may need to share different files for context:
+
+### Room Type Management
+- models/roomType.js
+- controllers/adminController.js (partial)
+- views/admin/rooms/index.ejs (for reference)
+
+### Room Management Completion
+- models/room.js
+- controllers/roomController.js
+- views/admin/rooms/edit.ejs
+
+### Booking Management
+- models/booking.js
+- controllers/bookingController.js
+- views/booking/confirmation.ejs
+
+### Order System
+- models/order.js
+- models/orderItem.js
+- controllers/orderController.js
+
+### User Profile
+- models/user.js
+- controllers/userController.js
+- views/user/profile.ejs
+
+## Addressing Bugs or Errors
+
+If you encounter a bug or error, provide:
+
+1. The error message
+2. The file where the error occurs
+3. The context around the error
+4. Any steps to reproduce the error
+
+Example:
+```
+I'm getting this error when trying to add a room:
+"TypeError: Cannot read property 'filename' of undefined"
+
+It happens in the roomController.js file, in the postAddRoom function.
+Here's the relevant code from the controller:
+[paste code]
+
+I'm submitting a form with an image upload.
+```
+
+## Implementing New Features
+
+When implementing a new feature, share:
+
+1. Which feature you want to implement
+2. Related existing files for context
+3. Any specific requirements or designs
+
+## Continuing Implementation Progress
+
+1. Regularly check the UPDATED_ROADMAP.md to see what needs to be implemented next
+2. Mark items as completed when they're done
+3. Update the PROJECT_CONTEXT.md when significant progress is made
+
+## Getting Help with Specific Components
+
+### Firebase Integration Issues
+If you have Firebase integration issues, share:
+- config/firebase.js
+- The specific error message
+- Whether you've confirmed your service_account.json file is properly set up
+
+### Authentication Issues
+If you have authentication problems, share:
+- controllers/authController.js
+- middleware/auth.js (and/or middleware/isAdmin.js)
+- The specific error or behavior you're experiencing
+
+### File Upload Issues
+If you have file upload problems, share:
+- middleware/fileUpload.js
+- The specific controller using file uploads
+- Any error messages
+
+## Testing Your Implementation
+
+When testing:
+
+1. Describe what you're testing
+2. Share relevant code if needed
+3. Describe expected vs actual behavior
+4. Share any error messages
+
+## Deployment Questions
+
+For deployment questions, provide:
+- Your target deployment platform
+- Any specific concerns or requirements
+- Current project structure or configurations relevant to deployment

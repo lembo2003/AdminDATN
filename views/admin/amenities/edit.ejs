@@ -1,0 +1,137 @@
+<%- include('../../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Admin Sidebar -->
+    <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+      <%- include('../../partials/admin-sidebar', {path: '/admin/amenities'}) %>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Edit Amenity</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/amenities" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Amenities
+          </a>
+        </div>
+      </div>
+      
+      <!-- Flash Messages -->
+      <% if(success_msg != ''){ %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= success_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <% if(error_msg != ''){ %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= error_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <div class="row">
+        <div class="col-md-8">
+          <div class="card">
+            <div class="card-header bg-primary text-white">
+              <h5 class="mb-0">Amenity Information</h5>
+            </div>
+            <div class="card-body">
+              <form action="/admin/amenities/edit/<%= amenity.id %>" method="POST">
+                <div class="mb-3">
+                  <label for="name" class="form-label">Amenity Name</label>
+                  <input type="text" class="form-control" id="name" name="name" value="<%= amenity.name %>" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="icon" class="form-label">Icon Class</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i id="iconPreview" class="<%= amenity.icon %>"></i></span>
+                    <input type="text" class="form-control" id="icon" name="icon" placeholder="fas fa-wifi" value="<%= amenity.icon %>">
+                  </div>
+                  <div class="form-text">Enter a Font Awesome icon class (e.g., "fas fa-wifi", "fas fa-shower")</div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="description" class="form-label">Description</label>
+                  <textarea class="form-control" id="description" name="description" rows="3"><%= amenity.description %></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Update Amenity</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">Icon Reference</h5>
+            </div>
+            <div class="card-body">
+              <p class="small">Here are some commonly used icons for hotel amenities:</p>
+              <div class="row row-cols-2 g-3 mb-3">
+                <div class="col text-center">
+                  <i class="fas fa-wifi fa-2x mb-2"></i>
+                  <p class="mb-0 small">fas fa-wifi</p>
+                </div>
+                <div class="col text-center">
+                  <i class="fas fa-swimming-pool fa-2x mb-2"></i>
+                  <p class="mb-0 small">fas fa-swimming-pool</p>
+                </div>
+                <div class="col text-center">
+                  <i class="fas fa-parking fa-2x mb-2"></i>
+                  <p class="mb-0 small">fas fa-parking</p>
+                </div>
+                <div class="col text-center">
+                  <i class="fas fa-coffee fa-2x mb-2"></i>
+                  <p class="mb-0 small">fas fa-coffee</p>
+                </div>
+                <div class="col text-center">
+                  <i class="fas fa-utensils fa-2x mb-2"></i>
+                  <p class="mb-0 small">fas fa-utensils</p>
+                </div>
+                <div class="col text-center">
+                  <i class="fas fa-shower fa-2x mb-2"></i>
+                  <p class="mb-0 small">fas fa-shower</p>
+                </div>
+                <div class="col text-center">
+                  <i class="fas fa-tv fa-2x mb-2"></i>
+                  <p class="mb-0 small">fas fa-tv</p>
+                </div>
+                <div class="col text-center">
+                  <i class="fas fa-dumbbell fa-2x mb-2"></i>
+                  <p class="mb-0 small">fas fa-dumbbell</p>
+                </div>
+              </div>
+              <p class="small">For more icons, visit <a href="https://fontawesome.com/icons" target="_blank">Font Awesome</a>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+  // Update icon preview
+  document.getElementById('icon').addEventListener('input', function() {
+    const iconPreview = document.getElementById('iconPreview');
+    const iconClass = this.value.trim();
+    
+    // Remove previous classes
+    iconPreview.className = '';
+    
+    // Add new class if valid
+    if (iconClass) {
+      iconPreview.className = iconClass;
+    } else {
+      iconPreview.className = 'fas fa-check';
+    }
+  });
+</script>
+
+<%- include('../../partials/footer') %>

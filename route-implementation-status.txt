@@ -1,0 +1,141 @@
+# Route Implementation Status
+
+This document outlines which routes have been implemented and which still need to be created. Use this as a guide for what to implement next.
+
+## Implemented Routes
+
+### Authentication Routes (Complete)
+- ✅ `/auth/login` - Login page and authentication
+- ✅ `/auth/signup` - Registration page and user creation
+- ✅ `/auth/logout` - User logout
+- ✅ `/auth/forgot-password` - Forgot password functionality
+- ✅ `/auth/reset-password` - Reset password functionality
+
+## Partially Implemented Routes
+
+### User Routes
+- ⚠️ `/users/profile` - View model implemented, needs route and controller
+- ⚠️ `/users/dashboard` - View implemented, needs route and controller
+- ❌ `/users/change-password` - Not implemented yet
+
+### Room Routes
+- ⚠️ `/rooms` - View and model implemented, needs route
+- ⚠️ `/rooms/:roomId` - Details view implemented, needs route
+- ❌ `/rooms/search` - Not implemented yet
+
+### Booking Routes
+- ⚠️ `/bookings/create/:roomId` - View implemented, needs route
+- ⚠️ `/bookings/confirmation/:bookingId` - View implemented, needs route
+- ⚠️ `/bookings/my-bookings` - View implemented, needs route
+- ❌ `/bookings/verify-qr` - Not implemented yet
+
+### Admin Routes
+- ⚠️ `/admin/dashboard` - View implemented, needs route
+- ⚠️ `/admin/rooms` - View implemented, needs route
+- ⚠️ `/admin/rooms/add` - Not implemented yet
+- ⚠️ `/admin/rooms/edit/:roomId` - Not implemented yet
+- ✅ `/admin/room-types` - Fully implemented with views and controller functions
+- ❌ `/admin/bookings` - Not implemented yet
+- ❌ `/admin/users` - Not implemented yet
+- ❌ `/admin/orders` - Not implemented yet
+- ❌ `/admin/staff` - Not implemented yet
+
+### Order Routes
+- ⚠️ `/orders/menu` - View implemented, needs route
+- ❌ `/orders/cart` - Not implemented yet
+- ❌ `/orders/checkout` - Not implemented yet
+- ❌ `/orders/confirmation/:orderId` - Not implemented yet
+- ❌ `/orders/my-orders` - Not implemented yet
+
+## Route Files To Create
+
+For each set of routes, you need to create the corresponding route file:
+
+1. **User Routes** - Create `routes/user.js`:
+```javascript
+const express = require('express');
+const router = express.Router();
+const userController = require('../controllers/userController');
+const auth = require('../middleware/auth');
+
+router.get('/profile', auth, userController.getProfile);
+router.post('/profile', auth, userController.updateProfile);
+router.get('/dashboard', auth, userController.getDashboard);
+// Add more routes as needed
+
+module.exports = router;
+```
+
+2. **Room Routes** - Create `routes/room.js`:
+```javascript
+const express = require('express');
+const router = express.Router();
+const roomController = require('../controllers/roomController');
+const auth = require('../middleware/auth');
+
+router.get('/', roomController.getRooms);
+router.get('/:roomId', roomController.getRoomDetails);
+// Add more routes as needed
+
+module.exports = router;
+```
+
+3. **Booking Routes** - Create `routes/booking.js`:
+```javascript
+const express = require('express');
+const router = express.Router();
+const bookingController = require('../controllers/bookingController');
+const auth = require('../middleware/auth');
+
+router.get('/create/:roomId', auth, bookingController.getBookingForm);
+router.post('/create/:roomId', auth, bookingController.createBooking);
+router.get('/confirmation/:bookingId', auth, bookingController.getBookingConfirmation);
+router.get('/my-bookings', auth, bookingController.getMyBookings);
+// Add more routes as needed
+
+module.exports = router;
+```
+
+4. **Admin Routes** - Create `routes/admin.js`:
+```javascript
+const express = require('express');
+const router = express.Router();
+const adminController = require('../controllers/adminController');
+const isAdmin = require('../middleware/isAdmin');
+
+router.use(isAdmin); // Apply admin middleware to all routes
+
+router.get('/dashboard', adminController.getDashboard);
+router.get('/rooms', adminController.getRooms);
+// Add more routes as needed
+
+module.exports = router;
+```
+
+5. **Order Routes** - Create `routes/order.js`:
+```javascript
+const express = require('express');
+const router = express.Router();
+const orderController = require('../controllers/orderController');
+const auth = require('../middleware/auth');
+
+router.get('/menu', orderController.getMenu);
+// Add more routes as needed
+
+module.exports = router;
+```
+
+## Next Steps
+
+1. Focus on implementing the most important routes first:
+   - User profile
+   - Room listing and details
+   - Admin dashboard
+
+2. For each route you implement:
+   - Create the route file if it doesn't exist
+   - Implement the controller functions
+   - Make sure the views are in place
+   - Test the route functionality
+
+3. Update this document as you complete each route

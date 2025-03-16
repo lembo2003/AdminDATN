@@ -1,0 +1,412 @@
+<%- include('../partials/header') %>
+
+<div class="container py-5">
+  <!-- Page Header -->
+  <div class="row mb-4">
+    <div class="col">
+      <h1 class="fw-bold">My Dashboard</h1>
+      <p class="lead text-muted">Welcome back, <%= user.name || user.email.split('@')[0] %></p>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  <% if(success_msg != ''){ %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <%= success_msg %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+  
+  <% if(error_msg != ''){ %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <%= error_msg %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <!-- Dashboard Stats -->
+  <div class="row row-cols-1 row-cols-md-4 g-4 mb-4">
+    <div class="col">
+      <div class="card shadow-sm user-dashboard-card">
+        <div class="card-header">
+          <h5 class="mb-0">Bookings</h5>
+        </div>
+        <div class="card-body text-center">
+          <div class="display-4 fw-bold mb-0"><%= bookingsCount || 0 %></div>
+          <p class="text-muted mb-0">Total Reservations</p>
+        </div>
+        <div class="card-footer bg-white text-center">
+          <a href="/bookings/my-bookings" class="btn btn-sm btn-primary">View All</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col">
+      <div class="card shadow-sm user-dashboard-card">
+        <div class="card-header">
+          <h5 class="mb-0">Orders</h5>
+        </div>
+        <div class="card-body text-center">
+          <div class="display-4 fw-bold mb-0"><%= ordersCount || 0 %></div>
+          <p class="text-muted mb-0">Total Orders</p>
+        </div>
+        <div class="card-footer bg-white text-center">
+          <a href="/orders/my-orders" class="btn btn-sm btn-primary">View All</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col">
+      <div class="card shadow-sm user-dashboard-card">
+        <div class="card-header">
+          <h5 class="mb-0">Menu</h5>
+        </div>
+        <div class="card-body text-center">
+          <i class="fas fa-utensils fa-3x text-primary mb-3"></i>
+          <p class="text-muted mb-0">Room Service Menu</p>
+        </div>
+        <div class="card-footer bg-white text-center">
+          <a href="/orders/menu" class="btn btn-sm btn-primary">Browse Menu</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col">
+      <div class="card shadow-sm user-dashboard-card">
+        <div class="card-header">
+          <h5 class="mb-0">Account</h5>
+        </div>
+        <div class="card-body text-center">
+          <i class="fas fa-user-circle fa-3x text-primary mb-3"></i>
+          <p class="text-muted mb-0">Manage Profile</p>
+        </div>
+        <div class="card-footer bg-white text-center">
+          <a href="/users/profile" class="btn btn-sm btn-primary">Edit Profile</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Booking -->
+  <% if (activeBooking) { %>
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Current Stay</h5>
+          </div>
+          <div class="card-body">
+            <div class="row g-4">
+              <div class="col-md-4">
+                <img src="<%= activeBooking.room.imageUrl %>" alt="<%= activeBooking.room.roomName %>" class="img-fluid rounded">
+              </div>
+              <div class="col-md-8">
+                <h4><%= activeBooking.room.roomName %></h4>
+                <p class="text-muted mb-3">
+                  <i class="fas fa-tag me-1"></i> 
+                  <%= activeBooking.room.roomType ? activeBooking.room.roomType.roomTypeName : 'Standard Room' %>
+                </p>
+                
+                <div class="row mb-3">
+                  <div class="col-md-6 mb-2 mb-md-0">
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                      <div>
+                        <div class="small text-muted">Check-in</div>
+                        <div><strong><%= new Date(activeBooking.checkInDate).toLocaleDateString() %></strong></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                      <div>
+                        <div class="small text-muted">Check-out</div>
+                        <div><strong><%= new Date(activeBooking.checkOutDate).toLocaleDateString() %></strong></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="d-flex align-items-center mb-3">
+                  <i class="fas fa-user me-2 text-primary"></i>
+                  <div>
+                    <div class="small text-muted">Guests</div>
+                    <div><%= activeBooking.numberOfGuests %> <%= activeBooking.numberOfGuests === 1 ? 'Person' : 'People' %></div>
+                  </div>
+                </div>
+                
+                <div class="d-flex flex-wrap">
+                  <a href="/bookings/confirmation/<%= activeBooking.id %>" class="btn btn-outline-primary me-2 mb-2">
+                    <i class="fas fa-qrcode me-1"></i> Show QR Code
+                  </a>
+                  <a href="/orders/menu" class="btn btn-primary me-2 mb-2">
+                    <i class="fas fa-utensils me-1"></i> Room Service
+                  </a>
+                  <a href="/rooms" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-info-circle me-1"></i> Hotel Info
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% } %>
+  
+  <!-- Active Order -->
+  <% if (activeOrder) { %>
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Active Order</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-8">
+                <div class="mb-3">
+                  <h5>Order #<%= activeOrder.orderId.substring(0, 8) %></h5>
+                  <p class="text-muted mb-0">
+                    <i class="fas fa-clock me-1"></i> Ordered on <%= new Date(activeOrder.createdAt).toLocaleString() %>
+                  </p>
+                </div>
+                
+                <div class="mb-3">
+                  <h6>Items:</h6>
+                  <ul class="list-group mb-3">
+                    <% activeOrder.items.forEach(item => { %>
+                      <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                          <span class="me-2"><%= item.quantity %>x</span>
+                          <%= item.name %>
+                        </div>
+                        <span>$<%= item.total %></span>
+                      </li>
+                    <% }); %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
+                      <div>Total</div>
+                      <span>$<%= activeOrder.totalPrice %></span>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div>
+                  <a href="/orders/confirmation/<%= activeOrder.id %>" class="btn btn-outline-info me-2">
+                    <i class="fas fa-eye me-1"></i> View Details
+                  </a>
+                  <% if (activeOrder.status === 'ordered') { %>
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                      <i class="fas fa-times me-1"></i> Cancel Order
+                    </button>
+                  <% } %>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card h-100">
+                  <div class="card-body">
+                    <h6 class="card-title">Status</h6>
+                    <div class="progress mb-3">
+                      <% 
+                        let progressValue = 0;
+                        if (activeOrder.status === 'ordered') progressValue = 25;
+                        else if (activeOrder.status === 'delivering') progressValue = 75;
+                        else if (activeOrder.status === 'completed') progressValue = 100;
+                      %>
+                      <div class="progress-bar bg-info" role="progressbar" style="width: <%= progressValue %>%" 
+                            aria-valuenow="<%= progressValue %>" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    
+                    <ul class="list-unstyled mb-0">
+                      <li class="mb-2 d-flex align-items-center">
+                        <span class="badge rounded-pill <%= activeOrder.status === 'ordered' || activeOrder.status === 'delivering' || activeOrder.status === 'completed' ? 'bg-success' : 'bg-secondary' %> me-2">
+                          <i class="fas fa-check"></i>
+                        </span>
+                        <span>Order Received</span>
+                      </li>
+                      <li class="mb-2 d-flex align-items-center">
+                        <span class="badge rounded-pill <%= activeOrder.status === 'ordered' ? 'bg-info' : (activeOrder.status === 'delivering' || activeOrder.status === 'completed' ? 'bg-success' : 'bg-secondary') %> me-2">
+                          <%= activeOrder.status === 'ordered' ? '<i class="fas fa-spinner fa-spin"></i>' : '<i class="fas fa-check"></i>' %>
+                        </span>
+                        <span>Preparing</span>
+                      </li>
+                      <li class="mb-2 d-flex align-items-center">
+                        <span class="badge rounded-pill <%= activeOrder.status === 'delivering' ? 'bg-info' : (activeOrder.status === 'completed' ? 'bg-success' : 'bg-secondary') %> me-2">
+                          <%= activeOrder.status === 'delivering' ? '<i class="fas fa-spinner fa-spin"></i>' : '<i class="fas fa-check"></i>' %>
+                        </span>
+                        <span>On the Way</span>
+                      </li>
+                      <li class="d-flex align-items-center">
+                        <span class="badge rounded-pill <%= activeOrder.status === 'completed' ? 'bg-success' : 'bg-secondary' %> me-2">
+                          <i class="fas fa-check"></i>
+                        </span>
+                        <span>Delivered</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Cancel Order Modal -->
+    <div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to cancel your order?</p>
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              This action cannot be undone.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <form action="/orders/cancel/<%= activeOrder.id %>" method="POST">
+              <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% } %>
+  
+  <div class="row">
+    <!-- Recent Bookings -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Recent Bookings</h5>
+          <a href="/bookings/my-bookings" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <% if(recentBookings && recentBookings.length > 0) { %>
+            <div class="list-group list-group-flush">
+              <% recentBookings.forEach(booking => { %>
+                <a href="/bookings/confirmation/<%= booking.id %>" class="list-group-item list-group-item-action">
+                  <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1"><%= booking.room.roomName %></h6>
+                      <p class="mb-1 text-muted small">
+                        <%= new Date(booking.checkInDate).toLocaleDateString() %> - 
+                        <%= new Date(booking.checkOutDate).toLocaleDateString() %>
+                      </p>
+                    </div>
+                    <span class="badge bg-<%= 
+                      booking.status === 'booked' ? 'info' : 
+                      booking.status === 'checked-in' ? 'success' : 
+                      booking.status === 'checked-out' ? 'secondary' : 'danger'
+                    %>">
+                      <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                    </span>
+                  </div>
+                </a>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="text-center py-4">
+              <p class="mb-0">No recent bookings found</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent Orders -->
+    <div class="col-md-6 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Recent Orders</h5>
+          <a href="/orders/my-orders" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body p-0">
+          <% if(recentOrders && recentOrders.length > 0) { %>
+            <div class="list-group list-group-flush">
+              <% recentOrders.forEach(order => { %>
+                <a href="/orders/confirmation/<%= order.id %>" class="list-group-item list-group-item-action">
+                  <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1">Order #<%= order.orderId.substring(0, 8) %></h6>
+                      <p class="mb-1 text-muted small">
+                        <%= new Date(order.createdAt).toLocaleString() %> • 
+                        $<%= order.totalPrice %>
+                      </p>
+                    </div>
+                    <span class="badge bg-<%= 
+                      order.status === 'ordered' ? 'info' : 
+                      order.status === 'delivering' ? 'warning' : 
+                      order.status === 'completed' ? 'success' : 'danger'
+                    %>">
+                      <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                    </span>
+                  </div>
+                </a>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="text-center py-4">
+              <p class="mb-0">No recent orders found</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Quick Links -->
+  <div class="row row-cols-1 row-cols-md-4 g-4">
+    <div class="col">
+      <div class="card shadow-sm text-center h-100">
+        <div class="card-body">
+          <i class="fas fa-concierge-bell fa-3x text-primary mb-3"></i>
+          <h5>Room Service</h5>
+          <p class="text-muted small mb-3">Order food and beverages directly to your room</p>
+          <a href="/orders/menu" class="btn btn-outline-primary">View Menu</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col">
+      <div class="card shadow-sm text-center h-100">
+        <div class="card-body">
+          <i class="fas fa-bed fa-3x text-primary mb-3"></i>
+          <h5>Book a Room</h5>
+          <p class="text-muted small mb-3">Browse and book our available rooms</p>
+          <a href="/rooms" class="btn btn-outline-primary">View Rooms</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col">
+      <div class="card shadow-sm text-center h-100">
+        <div class="card-body">
+          <i class="fas fa-user-edit fa-3x text-primary mb-3"></i>
+          <h5>My Profile</h5>
+          <p class="text-muted small mb-3">Update your personal information</p>
+          <a href="/users/profile" class="btn btn-outline-primary">Edit Profile</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col">
+      <div class="card shadow-sm text-center h-100">
+        <div class="card-body">
+          <i class="fas fa-info-circle fa-3x text-primary mb-3"></i>
+          <h5>Hotel Info</h5>
+          <p class="text-muted small mb-3">View hotel facilities and services</p>
+          <a href="/" class="btn btn-outline-primary">Learn More</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,300 @@
+/* General Styles */
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+/* Navbar */
+.navbar {
+  padding: 10px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+/* Admin Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+  padding: 48px 0 0;
+  box-shadow: inset -1px 0 0 rgba(0, 0, 0, 0.1);
+  height: 100vh;
+}
+
+.sidebar .nav-link {
+  font-weight: 500;
+  padding: 10px 15px;
+  margin: 5px 0;
+  border-radius: 5px;
+  transition: all 0.2s;
+}
+
+.sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+  background-color: #0d6efd;
+}
+
+/* Cards */
+.card {
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Room Details */
+.room-gallery img {
+  cursor: pointer;
+  border-radius: 5px;
+  transition: all 0.2s;
+}
+
+.room-gallery img:hover {
+  opacity: 0.8;
+}
+
+.amenities-list i {
+  width: 25px;
+  color: #0d6efd;
+}
+
+/* Booking Form */
+.booking-form {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 30px;
+}
+
+.booking-summary {
+  background-color: #e9ecef;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+/* QR Code */
+.qr-code-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  display: inline-block;
+  margin: 0 auto;
+}
+
+/* Comments */
+.comment-card {
+  border-left: 4px solid #0d6efd;
+}
+
+.rating i {
+  color: #ffc107;
+}
+
+/* Menu */
+.menu-category {
+  border-bottom: 2px solid #0d6efd;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.menu-item-card:hover {
+  border-color: #0d6efd;
+}
+
+/* Cart */
+.cart-item {
+  border-bottom: 1px solid #dee2e6;
+  padding: 15px 0;
+}
+
+.cart-summary {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+/* User Dashboard */
+.user-dashboard-card {
+  height: 100%;
+}
+
+.user-dashboard-card .card-header {
+  background-color: #0d6efd;
+  color: white;
+}
+
+/* Admin Dashboard */
+.stats-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stats-card .card-body {
+  padding: 20px;
+}
+
+.stats-card i {
+  opacity: 0.7;
+}
+
+/* Form Styles */
+.form-control, .form-select {
+  border-radius: 5px;
+  padding: 10px 15px;
+  border: 1px solid #ced4da;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Buttons */
+.btn {
+  border-radius: 5px;
+  padding: 8px 16px;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  background-color: #000;
+}
+
+.hero-section .carousel-item {
+  height: 80vh;
+  min-height: 350px;
+  background: no-repeat center center scroll;
+  background-size: cover;
+}
+
+.hero-section .carousel-caption {
+  bottom: 180px;
+  z-index: 2;
+}
+
+.hero-section .carousel-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Features Section */
+.feature-icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Testimonials */
+.testimonial-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 20px;
+}
+
+/* Footer */
+footer {
+  background-color: #343a40;
+  color: white;
+  padding: 40px 0;
+}
+
+footer h5 {
+  color: white;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+footer ul li {
+  margin-bottom: 10px;
+}
+
+footer a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+footer a:hover {
+  color: white;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .hero-section .carousel-item {
+    height: 60vh;
+  }
+  
+  .hero-section .carousel-caption {
+    bottom: 100px;
+  }
+  
+  .sidebar {
+    position: static;
+    height: auto;
+    padding-top: 20px;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

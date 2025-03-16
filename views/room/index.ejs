@@ -1,0 +1,190 @@
+<%- include('../partials/header') %>
+
+<div class="container py-5">
+  <!-- Page Header -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="fw-bold">Our Rooms</h1>
+      <p class="lead text-muted">Discover our selection of comfortable and luxurious rooms</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <span class="text-muted me-2">Sort by:</span>
+      <select class="form-select form-select-sm w-auto" id="sortOptions">
+        <option value="priceAsc">Price: Low to High</option>
+        <option value="priceDesc">Price: High to Low</option>
+        <option value="nameAsc">Name: A to Z</option>
+        <option value="nameDesc">Name: Z to A</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  <% if(success_msg != ''){ %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <%= success_msg %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+  
+  <% if(error_msg != ''){ %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <%= error_msg %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <div class="row">
+    <!-- Filters -->
+    <div class="col-md-3">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Filters</h5>
+        </div>
+        <div class="card-body">
+          <form action="/rooms" method="GET">
+            <div class="mb-3">
+              <label for="roomType" class="form-label">Room Type</label>
+              <select class="form-select" id="roomType" name="roomType">
+                <option value="">All Types</option>
+                <% roomTypes.forEach(type => { %>
+                  <option value="<%= type.id %>" <%= filters.roomType === type.id ? 'selected' : '' %>><%= type.roomTypeName %></option>
+                <% }); %>
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label for="priceRange" class="form-label">Max Price: $<span id="priceValue">1000</span></label>
+              <input type="range" class="form-range" id="priceRange" name="maxPrice" min="0" max="1000" step="50" value="<%= filters.maxPrice || 1000 %>">
+            </div>
+            
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary">Apply Filters</button>
+              <a href="/rooms" class="btn btn-outline-secondary mt-2">Clear Filters</a>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="card shadow-sm">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0">Need Help?</h5>
+        </div>
+        <div class="card-body">
+          <p>Not sure which room is right for you?</p>
+          <p>Our staff is ready to assist you in finding the perfect accommodation for your stay.</p>
+          <div class="d-grid">
+            <a href="#" class="btn btn-info text-white">Contact Us</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Room Listings -->
+    <div class="col-md-9">
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="roomsContainer">
+        <% if(rooms && rooms.length > 0) { %>
+          <% rooms.forEach(room => { %>
+            <div class="col">
+              <div class="card h-100 shadow-sm room-card">
+                <img src="<%= room.imageUrl %>" class="card-img-top" alt="<%= room.roomName %>">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title mb-0"><%= room.roomName %></h5>
+                    <span class="badge bg-primary">$<%= room.price %>/night</span>
+                  </div>
+                  <p class="text-muted small mb-1">
+                    <% if(room.roomType) { %>
+                      <i class="fas fa-tag me-1"></i> <%= room.roomType.roomTypeName %>
+                    <% } %>
+                  </p>
+                  <p class="card-text mt-2"><%= room.description.substring(0, 100) %>...</p>
+                  <div class="d-flex justify-content-between mt-3">
+                    <div>
+                      <i class="fas fa-bed me-1 text-primary"></i>
+                      <i class="fas fa-wifi me-1 text-primary"></i>
+                      <i class="fas fa-shower me-1 text-primary"></i>
+                      <i class="fas fa-tv me-1 text-primary"></i>
+                    </div>
+                    <div>
+                      <span class="text-success"><i class="fas fa-check-circle me-1"></i>Available</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer bg-white border-top-0 pt-0">
+                  <div class="d-grid gap-2">
+                    <a href="/rooms/<%= room.id %>" class="btn btn-outline-primary">View Details</a>
+                    <a href="/bookings/create/<%= room.id %>" class="btn btn-primary">Book Now</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="col-12">
+            <div class="alert alert-info">
+              <h4 class="alert-heading">No rooms found!</h4>
+              <p>We couldn't find any rooms matching your criteria. Please try adjusting your filters or check back later.</p>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Price range display
+  const priceRange = document.getElementById('priceRange');
+  const priceValue = document.getElementById('priceValue');
+  
+  if (priceRange && priceValue) {
+    priceRange.addEventListener('input', function() {
+      priceValue.textContent = this.value;
+    });
+    
+    // Initialize with current value
+    priceValue.textContent = priceRange.value;
+  }
+  
+  // Sort functionality
+  const sortOptions = document.getElementById('sortOptions');
+  const roomsContainer = document.getElementById('roomsContainer');
+  
+  if (sortOptions && roomsContainer) {
+    sortOptions.addEventListener('change', function() {
+      const rooms = Array.from(roomsContainer.querySelectorAll('.col'));
+      
+      rooms.sort((a, b) => {
+        const aPrice = parseInt(a.querySelector('.badge').textContent.replace('$', ''));
+        const bPrice = parseInt(b.querySelector('.badge').textContent.replace('$', ''));
+        const aName = a.querySelector('.card-title').textContent;
+        const bName = b.querySelector('.card-title').textContent;
+        
+        switch(this.value) {
+          case 'priceAsc':
+            return aPrice - bPrice;
+          case 'priceDesc':
+            return bPrice - aPrice;
+          case 'nameAsc':
+            return aName.localeCompare(bName);
+          case 'nameDesc':
+            return bName.localeCompare(aName);
+          default:
+            return 0;
+        }
+      });
+      
+      // Remove all rooms
+      while (roomsContainer.firstChild) {
+        roomsContainer.removeChild(roomsContainer.firstChild);
+      }
+      
+      // Add sorted rooms
+      rooms.forEach(room => {
+        roomsContainer.appendChild(room);
+      });
+    });
+  }
+</script>
+
+<%- include('../partials/footer') %>

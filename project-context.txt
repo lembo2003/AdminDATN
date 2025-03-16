@@ -1,0 +1,204 @@
+# Hotel Management System - Project Context
+
+This document provides comprehensive information about the project's current state, implementation approach, and future development plans. Use this as a reference when continuing development in future sessions.
+
+## Project Overview
+
+The Hotel Management System is a web application built with Node.js, Express, EJS, and Firebase. It allows:
+
+- Users to browse rooms, make bookings, and order room service
+- Administrators to manage rooms, bookings, staff, and other hotel operations
+- QR code-based check-in/check-out system
+- Role-based access control
+
+## Current Implementation Status
+
+### Completed Components
+
+1. **Core Infrastructure**
+   - Basic Express application setup
+   - Firebase integration (both client and admin SDKs)
+   - User authentication system
+   - File upload handling with local storage
+   - Error handling basics
+
+2. **Authentication System**
+   - User registration and login
+   - User model with role-based access
+   - Session management
+   - Password reset functionality
+
+3. **Models**
+   - User model
+   - Room model
+   - Room Type model
+   - Booking model
+   - Order model
+   - Order Item model
+   - Staff model
+   - Comment model
+   - Amenities model(addition to development)
+4. **Views (Partially)**
+   - Authentication views (login, signup, forgot password)
+   - Error view
+   - Some admin and user dashboard views
+
+### In Progress
+
+1. **Room Management**
+   - Room type management needs controller and views
+   - Room add view needs to be completed
+
+2. **Booking System**
+   - Admin booking management views need completion
+   - QR code scanning implementation needs testing
+
+3. **User Interface**
+   - Many views are designed but not fully implemented
+   - Admin dashboard navigation needs completion
+
+### Not Started
+
+1. **Reports and Analytics**
+2. **Complete Order System Implementation**
+3. **Staff Management Interface**
+4. **Production Optimization**
+
+## Implementation Approach
+
+### Backend Architecture
+
+The system follows an MVC (Model-View-Controller) architecture:
+
+1. **Models** handle data operations with Firebase Firestore
+2. **Controllers** contain the business logic
+3. **Views** render EJS templates for the user interface
+4. **Middleware** handles authentication, file uploads, and role verification
+
+### Firebase Integration
+
+The system uses two Firebase SDKs:
+
+1. **Firebase Web SDK** (v9) - For client-side authentication
+2. **Firebase Admin SDK** - For server-side operations including Firestore access
+
+A service account file (`service_account.json`) is used to authenticate the Admin SDK.
+
+### File Storage
+
+The system uses local file storage instead of Firebase Storage for simplicity:
+
+1. Files are stored in the `/public/uploads/` directory
+2. Subdirectories are used for different types of uploads (rooms, menu, staff)
+3. Files are referenced by URL in the database
+
+### Authentication Flow
+
+1. Users register/login via Firebase Authentication
+2. User data is stored in Firestore
+3. Session management is handled with Express sessions
+4. Role-based access control determines admin vs. user privileges
+
+## How to Continue Development
+
+### Setting Up the Project
+
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Place your `service_account.json` file in the project root
+4. Create a `.env` file with Firebase configuration
+5. Run in development mode: `npm run dev`
+
+### Implementing New Features
+
+To implement a new feature:
+
+1. **Create/update the model** - Define data structure and database operations
+2. **Create/update the controller** - Implement business logic and route handlers
+3. **Create/update the views** - Design and implement EJS templates
+4. **Add routes** - Connect endpoints to controllers in app.js or route files
+5. **Test functionality** - Verify the feature works as expected
+
+### Fixing Bugs
+
+When encountering bugs:
+
+1. Check the server logs for error messages
+2. Verify Firebase configuration and credentials
+3. Ensure routes and middleware are properly connected
+4. Check for missing files or views
+5. Verify database operations with Firebase console
+
+## Next Implementation Steps
+
+### 1. Complete Room Type Management
+
+1. Implement `controllers/roomTypeController.js`
+2. Create Room Type views in `views/admin/roomTypes/`
+3. Add routes to connect the controller and views
+4. Test CRUD operations for room types
+
+### 2. Complete Room Management
+
+1. Create Room add view in `views/admin/rooms/add.ejs`
+2. Ensure file upload works properly for room images
+3. Test complete CRUD operations
+
+### 3. Implement Booking Management
+
+1. Create admin booking list view
+2. Create booking details view
+3. Implement booking status update functionality
+4. Test QR code scanning and verification
+
+### 4. Enable Basic Admin Functionality
+
+1. Ensure admin dashboard navigation works
+2. Test role-based access restrictions
+3. Implement basic reports and statistics
+
+## Key Files to Review
+
+When continuing development, focus on these key files first:
+
+1. `app.js` - Main application entry point
+2. `config/firebase.js` - Firebase configuration
+3. `models/user.js` - User model and authentication
+4. `controllers/authController.js` - Authentication logic
+5. `middleware/auth.js` and `middleware/isAdmin.js` - Access control
+
+## Common Issues and Solutions
+
+### Firebase Authentication Issues
+
+- **Error:** "Could not load the default credentials"
+  - **Solution:** Ensure `service_account.json` is correctly placed and formatted
+
+- **Error:** "Firebase auth methods not a function"
+  - **Solution:** Verify Firebase SDK version compatibility and imports
+
+### File Upload Issues
+
+- **Error:** Directory not found
+  - **Solution:** Ensure upload directories exist and have proper permissions
+
+- **Error:** File size too large
+  - **Solution:** Check multer configuration for file size limits
+
+### View Rendering Issues
+
+- **Error:** "Failed to lookup view"
+  - **Solution:** Verify the view file exists and the path is correct
+
+- **Error:** "Cannot read property of undefined"
+  - **Solution:** Check that all required variables are passed to the template
+
+## Documentation Resources
+
+For further reference:
+
+1. [Node.js Documentation](https://nodejs.org/en/docs/)
+2. [Express Documentation](https://expressjs.com/)
+3. [EJS Documentation](https://ejs.co/)
+4. [Firebase Web SDK Documentation](https://firebase.google.com/docs/web/setup)
+5. [Firebase Admin SDK Documentation](https://firebase.google.com/docs/admin/setup)

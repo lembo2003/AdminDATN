@@ -1,0 +1,66 @@
+hotel-management-system/
+├── config/
+│   └── firebase.js         # Firebase configuration
+├── controllers/
+│   ├── adminController.js  # Admin dashboard logic
+│   ├── authController.js   # Auth logic (login, signup, forgot password)
+│   ├── bookingController.js # Booking management logic
+│   ├── orderController.js  # Order management logic 
+│   ├── roomController.js   # Room CRUD operations
+│   └── userController.js   # User management
+├── middleware/
+│   ├── auth.js             # Authentication middleware
+│   └── isAdmin.js          # Role verification middleware
+├── models/
+│   ├── booking.js          # Booking model
+│   ├── comment.js          # Comment model
+│   ├── order.js            # Order model
+│   ├── orderItem.js        # Order items model
+│   ├── room.js             # Room model
+│   ├── roomType.js         # Room type model
+│   ├── staff.js            # Staff model
+│   └── user.js             # User model
+├── public/
+│   ├── css/                # Stylesheets
+│   ├── js/                 # Client-side JavaScript
+│   └── img/                # Images
+├── routes/
+│   ├── admin.js            # Admin routes
+│   ├── auth.js             # Auth routes
+│   ├── booking.js          # Booking routes
+│   ├── order.js            # Order routes
+│   ├── room.js             # Room routes
+│   └── user.js             # User routes
+├── utils/
+│   ├── firebase.js         # Firebase utility functions
+│   └── helpers.js          # Helper functions
+├── views/
+│   ├── admin/              # Admin views
+│   │   ├── dashboard.ejs
+│   │   ├── rooms/
+│   │   ├── roomTypes/
+│   │   ├── bookings/
+│   │   ├── orders/
+│   │   ├── users/
+│   │   └── staff/
+│   ├── auth/               # Auth views
+│   │   ├── login.ejs
+│   │   ├── signup.ejs
+│   │   └── forgot-password.ejs
+│   ├── partials/           # EJS partials
+│   │   ├── header.ejs
+│   │   ├── footer.ejs
+│   │   ├── admin-sidebar.ejs
+│   │   └── navbar.ejs
+│   ├── user/               # User views
+│   │   ├── profile.ejs
+│   │   └── dashboard.ejs
+│   ├── booking/            # Booking views
+│   ├── room/               # Room views
+│   ├── error.ejs           # Error page
+│   ├── index.ejs           # Landing page
+│   └── layout.ejs          # Main layout
+├── .env                    # Environment variables
+├── .gitignore              # Git ignore file
+├── app.js                  # Express app
+└── package.json            # Project dependencies

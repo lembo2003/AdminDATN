@@ -1,0 +1,188 @@
+# Hotel Management System - Updated Roadmap
+
+This roadmap outlines the progress so far and next steps for implementing the complete Hotel Management System.
+
+## Phase 1: Core Setup and Authentication ✅
+
+### Setup and Configuration
+- [x] Project directory structure
+- [x] Initial dependencies in package.json
+- [x] Express server setup (app.js)
+- [x] Environment configuration (.env)
+- [x] Firebase configuration (config/firebase.js)
+- [x] Fixed Firebase Admin SDK integration with service_account.json
+
+### Authentication System
+- [x] User model (models/user.js)
+- [x] Authentication middleware (middleware/auth.js)
+- [x] Admin middleware (middleware/isAdmin.js)
+- [x] Authentication controller (controllers/authController.js)
+- [x] Authentication routes (routes/auth.js)
+- [x] Login view (views/auth/login.ejs)
+- [x] Signup view (views/auth/signup.ejs)
+- [x] Forgot password view (views/auth/forgot-password.ejs)
+- [x] Error view (views/error.ejs)
+
+### Utilities
+- [x] Helper functions (utils/helpers.js)
+- [x] Firebase utilities (utils/firebase.js)
+- [x] File upload middleware (middleware/fileUpload.js)
+
+## Phase 2: Room and Room Type Management 🔄
+
+### Room Types
+- [x] Room Type model (models/roomType.js)
+- [x] Room Type controller (controllers/roomTypeController.js)
+- [x] Room Type routes (routes/roomType.js)
+- [x] Room Type admin views:
+  - [x] views/admin/roomTypes/index.ejs
+  - [x] views/admin/roomTypes/add.ejs
+  - [x] views/admin/roomTypes/edit.ejs
+
+### Amenities
+- [ ] Amenities (model/amenities.js)
+- [ ] Amenities controller (controllers/amenitiesController.js)
+- [ ] Amenities route (route/amenities.js)
+- [ ] Amenities admin views:
+  - [ ] views/admin/amenities/index.ejs
+  - [ ] views/admin/amenities/add.ejs
+  - [ ] views/admin/amenities/edit.ejs
+- [ ] Edit rooms model,  controller, routes, views,... to include amenities with it
+
+### Rooms
+- [x] Room model (models/room.js)
+- [x] Room controller (controllers/roomController.js)
+- [x] Room routes (routes/room.js)
+- [x] Room admin index view (views/admin/rooms/index.ejs)
+- [X] Room admin edit view (views/admin/rooms/edit.ejs)
+- [X] Room admin add view (views/admin/rooms/add.ejs)
+- [x] Room listing view (views/room/index.ejs)
+- [x] Room details view (views/room/details.ejs)
+	need search(admin,user), filter,...
+### Comments/Reviews
+- [x] Comment model (models/comment.js)
+- [ ] Make the room desc with summernote package.
+
+## Phase 3: Booking System 🔄
+
+### Booking Management
+- [x] Booking model (models/booking.js)
+- [x] Booking controller (controllers/bookingController.js)
+- [x] Booking routes (routes/booking.js)
+- [x] Booking creation view (views/booking/create.ejs)
+- [x] Booking confirmation view (views/booking/confirmation.ejs)
+- [x] My bookings view (views/booking/my-bookings.ejs)
+- [ ] Admin booking views:
+  - [ ] views/admin/bookings/index.ejs
+  - [ ] views/admin/bookings/details.ejs
+  - [x] views/admin/bookings/scan.ejs (QR code scanner)
+
+### QR Code System
+- [x] QR code generation in Booking model
+- [x] QR code scanning view and functionality
+- [x] QR code verification endpoint
+
+## Phase 4: User Dashboard and Profile 🔄
+
+### User Management
+- [x] User dashboard controller (controllers/userController.js)
+- [x] User routes (routes/user.js)
+- [x] User dashboard view (views/user/dashboard.ejs)
+- [x] User profile view (views/user/profile.ejs)
+- [ ] Change password view (views/user/change-password.ejs)
+- [ ] Admin user management views:
+  - [ ] views/admin/users/index.ejs
+  - [ ] views/admin/users/edit.ejs
+
+## Phase 5: Room Service and Orders 🔄
+
+### Order Items (Menu)
+- [x] Order Item model (models/orderItem.js)
+- [ ] Order Item controller (controllers/orderItemController.js)
+- [ ] Admin menu item views:
+  - [ ] views/admin/orderItems/index.ejs
+  - [ ] views/admin/orderItems/add.ejs
+  - [ ] views/admin/orderItems/edit.ejs
+
+### Orders
+- [x] Order model (models/order.js)
+- [x] Order controller (controllers/orderController.js)
+- [x] Order routes (routes/order.js)
+- [x] Menu view (views/order/menu.ejs)
+- [ ] Cart view (views/order/cart.ejs)
+- [ ] Order confirmation view (views/order/confirmation.ejs)
+- [ ] My orders view (views/order/my-orders.ejs)
+- [ ] Admin order views:
+  - [ ] views/admin/orders/index.ejs
+  - [ ] views/admin/orders/details.ejs
+
+## Phase 6: Staff Management ⏳
+
+### Staff System
+- [x] Staff model (models/staff.js)
+- [ ] Staff controller (controllers/staffController.js)
+- [ ] Staff routes (routes/staff.js)
+- [ ] Admin staff views:
+  - [ ] views/admin/staff/index.ejs
+  - [ ] views/admin/staff/add.ejs
+  - [ ] views/admin/staff/edit.ejs
+
+## Phase 7: Admin Dashboard and Reports ⏳
+
+### Admin Dashboard
+- [x] Admin controller (controllers/adminController.js)
+- [x] Admin routes (routes/admin.js)
+- [x] Admin dashboard view (views/admin/dashboard.ejs)
+
+### Reports and Analytics
+- [ ] Reports controller (controllers/reportController.js)
+- [ ] Report generation functionality
+- [ ] Report views
+
+## Phase 8: Finishing Touches ⏳
+
+### Error Handling
+- [x] Error view (views/error.ejs)
+- [ ] 404 page styling
+- [ ] Global error handling improvements
+
+### UI Improvements
+- [ ] Finalize CSS styling
+- [ ] Add animations and transitions
+- [ ] Improve mobile responsiveness
+
+### Performance Optimization
+- [ ] Implement caching where appropriate
+- [ ] Optimize database queries
+- [ ] Optimize image loading and processing
+
+## Priority Tasks for Next Steps
+
+Based on our progress, here are the next priority tasks:
+
+1. **Complete Room Type Management**:
+   - Implement Room Type controller
+   - Create Room Type views
+   - Ensure proper integration with Room management
+
+2. **Complete Room Management**:
+   - Implement the Room add view
+   - Test full CRUD functionality
+
+3. **Complete Admin Booking Management**:
+   - Implement booking list and details views
+   - Test booking status changes
+   - Test QR code functionality
+
+4. **Implement User Change Password Functionality**:
+   - Create change password view
+   - Implement password change logic
+
+5. **Enable Basic Admin Navigation**:
+   - Ensure all implemented admin views are properly linked
+   - Test admin role-based access
+
+## Implementation Status Legend
+- ✅ Complete
+- 🔄 In Progress
+- ⏳ Not Started

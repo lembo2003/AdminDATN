@@ -1,0 +1,171 @@
+# Getting Started with the Hotel Management System
+
+This guide will help you get started with using the Hotel Management System, covering the basic features and workflows for both users and administrators.
+
+## For Administrators
+
+### 1. Admin Dashboard Overview
+
+After logging in with an admin account, navigate to `/admin/dashboard` to access the admin panel. The dashboard provides:
+
+- Summary statistics (rooms, bookings, revenue, etc.)
+- Quick access to manage rooms, bookings, orders, and users
+- Recent booking information
+- System status overview
+
+### 2. Room Management
+
+As an administrator, you can manage the hotel's rooms:
+
+- **View All Rooms**: Access a list of all rooms with their details
+- **Add New Rooms**: Create new rooms with details (name, type, price, image, etc.)
+- **Edit Rooms**: Update room information and availability
+- **Delete Rooms**: Remove rooms from the system
+
+### 3. Room Type Management
+
+Room types help categorize rooms:
+
+- **View All Room Types**: See a list of all room types
+- **Add New Room Types**: Create categories like "Standard," "Deluxe," "Suite," etc.
+- **Edit Room Types**: Update room type information
+- **Delete Room Types**: Remove room types (caution: affects associated rooms)
+
+### 4. Booking Management
+
+Manage guest reservations:
+
+- **View All Bookings**: See a list of all bookings with filtering options
+- **Booking Details**: View comprehensive booking information
+- **Update Booking Status**: Change status (booked, checked-in, checked-out, cancelled)
+- **Delete Bookings**: Cancel/remove bookings and free up rooms
+
+### 5. User Management
+
+Manage system users:
+
+- **View All Users**: See a list of all registered users
+- **Edit Users**: Update user information and roles
+- **Delete Users**: Remove users from the system
+
+### 6. Order Management
+
+Handle room service and other orders:
+
+- **View All Orders**: See a list of all orders with filtering options
+- **Order Details**: View comprehensive order information
+- **Update Order Status**: Change status (ordered, delivering, completed, cancelled)
+- **Assign Staff**: Assign staff members to deliver orders
+
+### 7. Staff Management
+
+Manage hotel staff:
+
+- **View All Staff**: See a list of all staff members
+- **Add New Staff**: Create staff profiles with details and roles
+- **Edit Staff**: Update staff information and availability
+- **Delete Staff**: Remove staff from the system
+
+## For Users
+
+### 1. Registration and Login
+
+- **Sign Up**: Create a new account with personal details
+- **Login**: Access your account with email and password
+- **Forgot Password**: Reset your password via email
+
+### 2. Browsing Rooms
+
+- **View All Rooms**: Browse available rooms with filters and sorting
+- **Room Details**: View detailed information about a specific room
+- **Search Rooms**: Find rooms by name, type, or features
+
+### 3. Making Bookings
+
+- **Book a Room**: Select dates, number of guests, and payment method
+- **View Booking Confirmation**: Get booking details and a QR code for check-in
+- **My Bookings**: View a list of all your bookings
+- **Cancel Booking**: Cancel your reservation if needed
+
+### 4. Room Service
+
+- **Browse Menu**: View available food and beverage items
+- **Add to Cart**: Select items and quantities
+- **View Cart**: Review selected items before checkout
+- **Checkout**: Complete your order with delivery information
+- **My Orders**: Track your orders and their status
+
+### 5. User Dashboard
+
+- **Dashboard Overview**: Quick access to bookings, orders, and profile
+- **Active Booking**: Details of your current stay
+- **Active Order**: Status of any ongoing order
+- **Recent Activity**: Recent bookings and orders
+
+### 6. User Profile
+
+- **View Profile**: See your personal information
+- **Update Profile**: Edit your personal details
+- **Change Password**: Update your account password
+
+## Common Workflows
+
+### Admin: Adding a New Room
+
+1. Log in with an admin account
+2. Navigate to Admin Dashboard
+3. Go to "Room Management" → "Add New Room"
+4. Fill in room details (name, type, price, image, etc.)
+5. Submit the form
+
+### Admin: Checking in a Guest
+
+1. Log in with an admin account
+2. Navigate to Admin Dashboard
+3. Go to "Booking Management" → find the booking
+4. Open booking details
+5. Change status to "Checked In"
+6. Save changes
+
+### User: Booking a Room
+
+1. Log in to your account
+2. Browse available rooms
+3. Select a desired room and click "Book Now"
+4. Choose dates, number of guests, and payment method
+5. Review booking details
+6. Confirm booking
+
+### User: Ordering Room Service
+
+1. Log in to your account
+2. Navigate to "Room Service"
+3. Browse the menu and add items to cart
+4. View cart and proceed to checkout
+5. Complete the order with delivery information
+
+## Mobile Access
+
+The system is fully responsive and can be accessed from mobile devices:
+
+- Responsive design adapts to different screen sizes
+- All features are accessible on mobile devices
+- QR code functionality works with mobile cameras
+
+## Tips and Best Practices
+
+### For Administrators
+
+- Regularly update room availability and prices
+- Check the dashboard daily for new bookings and orders
+- Respond promptly to user feedback and reviews
+- Archive old bookings and orders rather than deleting them
+- Back up database regularly
+
+### For Users
+
+- Book rooms in advance for better availability
+- Check room details and amenities before booking
+- Save booking QR codes for easy check-in
+- Update your profile with accurate information
+- Check order status in your dashboard

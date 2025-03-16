@@ -1,0 +1,82 @@
+<%- include('../../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Admin Sidebar -->
+    <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+      <%- include('../../partials/admin-sidebar', {path: '/admin/room-types'}) %>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 admin-content">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Edit Room Type</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/room-types" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Room Types
+          </a>
+        </div>
+      </div>
+      
+      <!-- Flash Messages -->
+      <% if(error_msg != ''){ %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= error_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <% if (!roomType) { %>
+        <div class="alert alert-danger">
+          Room type not found
+        </div>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a href="/admin/room-types" class="btn btn-primary">Back to Room Types</a>
+        </div>
+      <% } else { %>
+        <!-- Edit Room Type Form -->
+        <div class="card">
+          <div class="card-body">
+            <form action="/admin/room-types/edit/<%= roomType.id %>" method="POST">
+              <div class="mb-3">
+                <label for="roomTypeName" class="form-label">Room Type Name *</label>
+                <input type="text" class="form-control" id="roomTypeName" name="roomTypeName" value="<%= roomType.roomTypeName %>" required>
+                <div class="form-text">E.g., Standard, Deluxe, Suite, etc.</div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3"><%= roomType.description %></textarea>
+                <div class="form-text">Provide a brief description of this room type.</div>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Room Type ID</label>
+                <input type="text" class="form-control" value="<%= roomType.roomTypeId %>" disabled readonly>
+                <div class="form-text">This is the unique identifier for this room type and cannot be changed.</div>
+              </div>
+              
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Created</label>
+                  <input type="text" class="form-control" value="<%= new Date(roomType.createdAt.seconds * 1000).toLocaleString() %>" disabled readonly>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Last Updated</label>
+                  <input type="text" class="form-control" value="<%= new Date(roomType.updatedAt.seconds * 1000).toLocaleString() %>" disabled readonly>
+                </div>
+              </div>
+              
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="/admin/room-types" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                <button type="submit" class="btn btn-primary">Update Room Type</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>

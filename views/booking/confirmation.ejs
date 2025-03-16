@@ -1,0 +1,171 @@
+<%- include('../partials/header') %>
+
+<div class="container py-5">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card shadow border-0">
+        <div class="card-header bg-success text-white py-3">
+          <h3 class="card-title mb-0">Booking Confirmed</h3>
+        </div>
+        <div class="card-body p-4">
+          <!-- Success Message -->
+          <div class="text-center mb-4">
+            <i class="fas fa-check-circle text-success fa-4x mb-3"></i>
+            <h4>Thank you for your booking!</h4>
+            <p class="lead">Your reservation has been successfully confirmed.</p>
+          </div>
+          
+          <!-- Booking Details -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h5 class="border-bottom pb-2">Booking Information</h5>
+              <div class="row mb-2">
+                <div class="col-5 text-muted">Booking ID:</div>
+                <div class="col-7 fw-bold"><%= booking.bookingId.substring(0, 8) %>...</div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-5 text-muted">Status:</div>
+                <div class="col-7">
+                  <span class="badge bg-info">
+                    <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                  </span>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-5 text-muted">Booking Date:</div>
+                <div class="col-7"><%= new Date(booking.createdAt).toLocaleDateString() %></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-5 text-muted">Payment:</div>
+                <div class="col-7">
+                  <span class="badge bg-<%= booking.paymentStatus === 'paid' ? 'success' : 'warning' %>">
+                    <%= booking.paymentStatus.charAt(0).toUpperCase() + booking.paymentStatus.slice(1) %>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <h5 class="border-bottom pb-2">Guest Information</h5>
+              <div class="row mb-2">
+                <div class="col-5 text-muted">Name:</div>
+                <div class="col-7"><%= booking.user ? (booking.user.name || booking.user.email) : 'Guest' %></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-5 text-muted">Email:</div>
+                <div class="col-7"><%= booking.user ? booking.user.email : 'N/A' %></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-5 text-muted">Phone:</div>
+                <div class="col-7"><%= booking.user && booking.user.phone ? booking.user.phone : 'N/A' %></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-5 text-muted">Guests:</div>
+                <div class="col-7"><%= booking.numberOfGuests %></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Room Details -->
+          <h5 class="border-bottom pb-2 mb-3">Room Details</h5>
+          <div class="row mb-4">
+            <div class="col-md-4">
+              <img src="<%= booking.room.imageUrl %>" alt="<%= booking.room.roomName %>" class="img-fluid rounded">
+            </div>
+            <div class="col-md-8">
+              <h4 class="mb-2"><%= booking.room.roomName %></h4>
+              <p class="text-muted">
+                <i class="fas fa-tag me-1"></i> 
+                <%= booking.room.roomType ? booking.room.roomType.roomTypeName : 'Standard Room' %>
+              </p>
+              <div class="row mb-2">
+                <div class="col-5 col-md-4 text-muted">Check-in:</div>
+                <div class="col-7 col-md-8">
+                  <strong><%= new Date(booking.checkInDate).toLocaleDateString() %></strong>
+                  <span class="ms-2 text-muted">from 3:00 PM</span>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-5 col-md-4 text-muted">Check-out:</div>
+                <div class="col-7 col-md-8">
+                  <strong><%= new Date(booking.checkOutDate).toLocaleDateString() %></strong>
+                  <span class="ms-2 text-muted">until 11:00 AM</span>
+                </div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-5 col-md-4 text-muted">Duration:</div>
+                <div class="col-7 col-md-8">
+                  <% 
+                    const timeDiff = new Date(booking.checkOutDate).getTime() - new Date(booking.checkInDate).getTime();
+                    const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                  %>
+                  <%= nights %> night<%= nights > 1 ? 's' : '' %>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Special Requests -->
+          <% if (booking.specialRequests) { %>
+            <div class="mb-4">
+              <h5 class="border-bottom pb-2 mb-3">Special Requests</h5>
+              <p><%= booking.specialRequests %></p>
+            </div>
+          <% } %>
+          
+          <!-- Payment Summary -->
+          <h5 class="border-bottom pb-2 mb-3">Payment Summary</h5>
+          <div class="card bg-light mb-4">
+            <div class="card-body">
+              <div class="row mb-2">
+                <div class="col-7">Room Rate:</div>
+                <div class="col-5 text-end">$<%= booking.room.price %> / night</div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-7">Stay Duration:</div>
+                <div class="col-5 text-end"><%= nights %> nights</div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-7">Room Total:</div>
+                <div class="col-5 text-end">$<%= booking.room.price * nights %></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-7">Taxes & Fees:</div>
+                <div class="col-5 text-end">$<%= Math.round((booking.totalPrice - (booking.room.price * nights))) %></div>
+              </div>
+              
+              <div class="row fw-bold mt-2 pt-2 border-top">
+                <div class="col-7">Total Amount:</div>
+                <div class="col-5 text-end">$<%= booking.totalPrice %></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- QR Code Section -->
+          <div class="text-center mb-4">
+            <h5>Check-in QR Code</h5>
+            <p class="text-muted">Present this code at the reception for quick check-in</p>
+            <div class="qr-code-container">
+              <img src="<%= booking.qrCodeUrl %>" alt="Check-in QR Code" class="img-fluid">
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="row mt-4">
+            <div class="col-md-6 mb-2 mb-md-0">
+              <a href="/bookings/my-bookings" class="btn btn-outline-primary w-100">
+                <i class="fas fa-list me-2"></i> My Bookings
+              </a>
+            </div>
+            <div class="col-md-6">
+              <a href="/" class="btn btn-primary w-100">
+                <i class="fas fa-home me-2"></i> Return to Home
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

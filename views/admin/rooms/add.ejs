@@ -40,7 +40,7 @@
               <h5 class="mb-0">Room Information</h5>
             </div>
             <div class="card-body">
-              <form action="/admin/rooms/add" method="POST" enctype="multipart/form-data">
+              <form action="/admin/rooms/add" method="POST" enctype="multipart/form-data" id="roomForm">
                 <div class="row mb-3">
                   <div class="col-md-6">
                     <label for="roomName" class="form-label">Room Name</label>
@@ -77,7 +77,8 @@
                 
                 <div class="mb-3">
                   <label for="description" class="form-label">Description</label>
-                  <textarea class="form-control" id="description" name="description" rows="5"></textarea>
+                  <div id="editor" style="height: 200px; border: 1px solid #ced4da; border-radius: 0.25rem;"></div>
+                  <input type="hidden" id="description" name="description">
                 </div>
                 
                 <!-- Amenities Selection -->
@@ -139,8 +140,9 @@
   </div>
 </div>
 
-<!-- JavaScript for image preview -->
+<!-- JavaScript for image preview and Quill editor -->
 <script>
+  // Image preview functionality
   document.getElementById('image').addEventListener('change', function(event) {
     const file = event.target.files[0];
     if (file) {
@@ -152,20 +154,26 @@
     }
   });
   
-  // Initialize Summernote
-  $(document).ready(function() {
-    $('#description').summernote({
-      placeholder: 'Enter detailed room description here...',
-      height: 200,
-      toolbar: [
-        ['style', ['style']],
-        ['font', ['bold', 'underline', 'clear']],
-        ['color', ['color']],
-        ['para', ['ul', 'ol', 'paragraph']],
-        ['table', ['table']],
-        ['insert', ['link']],
-        ['view', ['fullscreen', 'codeview', 'help']]
-      ]
+  // Initialize Quill editor when the page is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    var quill = new Quill('#editor', {
+      theme: 'snow',
+      modules: {
+        toolbar: [
+          [{ 'header': [1, 2, 3, false] }],
+          ['bold', 'italic', 'underline', 'strike'],
+          ['link', 'image'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          [{ 'align': [] }],
+          ['clean']
+        ]
+      },
+      placeholder: 'Enter detailed room description here...'
+    });
+    
+    // Update hidden input on form submission
+    document.getElementById('roomForm').addEventListener('submit', function() {
+      document.getElementById('description').value = quill.root.innerHTML;
     });
   });
 </script>

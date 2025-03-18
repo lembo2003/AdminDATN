@@ -12,7 +12,7 @@ chat 3(room): https://claude.ai/chat/e7450fa6-8396-487a-bdd7-75103dbcf9b1
 i want to apply the package summernote to the room description. And also, want to add a model amenities with route and controllers, views(just like roomtype), for room model. Ask for any file if needed
 
 
-
+Push test
 
 
 

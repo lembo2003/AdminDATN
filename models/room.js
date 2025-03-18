@@ -31,13 +31,11 @@ class Room {
     } else {
       throw new Error('Room image is required');
     }
-
     // Verify room type exists
     const roomType = await RoomType.getById(roomData.roomTypeId);
     if (!roomType) {
       throw new Error('Invalid room type');
     }
-
     const newRoom = {
       roomId,
       roomName: roomData.roomName,
@@ -174,7 +172,6 @@ class Room {
           fs.unlinkSync(oldImagePath);
         }
       }
-
       // Save new image
       imageUrl = imageFile.path
         ? `/uploads/rooms/${path.basename(imageFile.path)}`
@@ -182,7 +179,6 @@ class Room {
     } else if (roomData.imageUrl) {
       imageUrl = roomData.imageUrl;
     }
-
     const updateData = {
       ...roomData,
       imageUrl,
@@ -201,7 +197,6 @@ class Room {
   static async delete(roomId) {
     // Get the room first to get image URL
     const room = await this.getById(roomId);
-
     if (room && room.imageUrl && room.imageUrl.startsWith('/uploads/')) {
       // Delete image file
       const imagePath = path.join(__dirname, '../public', room.imageUrl);
@@ -209,13 +204,11 @@ class Room {
         fs.unlinkSync(imagePath);
       }
     }
-
     // Delete all comments for this room
     const comments = await Comment.getByRoomId(roomId);
     for (const comment of comments) {
       await Comment.delete(comment.id);
     }
-
     // Delete the room
     await roomsCollection.doc(roomId).delete();
   }
@@ -228,13 +221,11 @@ class Room {
    */
   static async updateBookingState(roomId, bookingState) {
     const isBooked = bookingState !== 'available';
-
     await roomsCollection.doc(roomId).update({
       bookingState,
       isBooked,
       updatedAt: new Date()
     });
-
     return this.getById(roomId);
   }
 }

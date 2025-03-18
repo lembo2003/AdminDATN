@@ -41,7 +41,6 @@ exports.getDashboard = async (req, res) => {
       checkedInGuests: bookings.filter(b => b.status === 'checked-in').length,
       pendingOrders: orders.filter(o => o.status === 'ordered').length
     };
-
     // Revenue stats
     const totalBookingRevenue = bookings
       .filter(b => b.paymentStatus === 'paid')
@@ -84,7 +83,6 @@ exports.getRooms = async (req, res) => {
   try {
     const rooms = await Room.getAll();
     const roomTypes = await RoomType.getAll();
-
     res.render('admin/rooms/index', {
       title: 'Room Management',
       user: req.session.user,
@@ -158,7 +156,6 @@ exports.postAddRoom = async (req, res) => {
       path: filepath,
       filename: filename
     };
-
     // Create the room
     await Room.create({
       roomName,
@@ -190,7 +187,6 @@ exports.getEditRoom = async (req, res) => {
       req.flash('error_msg', 'Room not found');
       return res.redirect('/admin/rooms');
     }
-
     res.render('admin/rooms/edit', {
       title: 'Edit Room',
       user: req.session.user,
@@ -226,7 +222,6 @@ exports.postEditRoom = async (req, res) => {
     if (req.file) {
       // Create a temporary file path for the image
       const uploadDir = path.join(__dirname, '../public/uploads/rooms');
-
       // Ensure directory exists
       if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
@@ -245,7 +240,6 @@ exports.postEditRoom = async (req, res) => {
         filename: filename
       };
     }
-
     // Update the room
     await Room.update(roomId, {
       roomName,
@@ -270,7 +264,6 @@ exports.deleteRoom = async (req, res) => {
   try {
     const { roomId } = req.params;
     await Room.delete(roomId);
-
     req.flash('success_msg', 'Room deleted successfully');
     res.redirect('/admin/rooms');
   } catch (error) {
@@ -288,7 +281,6 @@ exports.deleteRoom = async (req, res) => {
 exports.getRoomTypes = async (req, res) => {
   try {
     const roomTypes = await RoomType.getAll();
-
     res.render('admin/roomTypes/index', {
       title: 'Room Types',
       user: req.session.user,
@@ -315,12 +307,10 @@ exports.getAddRoomType = (req, res) => {
 exports.postAddRoomType = async (req, res) => {
   try {
     const { roomTypeName, description } = req.body;
-
     await RoomType.create({
       roomTypeName,
       description
     });
-
     req.flash('success_msg', 'Room type added successfully');
     res.redirect('/admin/room-types');
   } catch (error) {
@@ -335,12 +325,10 @@ exports.getEditRoomType = async (req, res) => {
   try {
     const { roomTypeId } = req.params;
     const roomType = await RoomType.getById(roomTypeId);
-
     if (!roomType) {
       req.flash('error_msg', 'Room type not found');
       return res.redirect('/admin/room-types');
     }
-
     res.render('admin/roomTypes/edit', {
       title: 'Edit Room Type',
       user: req.session.user,
@@ -359,12 +347,10 @@ exports.postEditRoomType = async (req, res) => {
   try {
     const { roomTypeId } = req.params;
     const { roomTypeName, description } = req.body;
-
     await RoomType.update(roomTypeId, {
       roomTypeName,
       description
     });
-
     req.flash('success_msg', 'Room type updated successfully');
     res.redirect('/admin/room-types');
   } catch (error) {
@@ -379,7 +365,6 @@ exports.deleteRoomType = async (req, res) => {
   try {
     const { roomTypeId } = req.params;
     await RoomType.delete(roomTypeId);
-
     req.flash('success_msg', 'Room type deleted successfully');
     res.redirect('/admin/room-types');
   } catch (error) {
@@ -535,7 +520,6 @@ exports.deleteAmenity = async (req, res) => {
 exports.getBookings = async (req, res) => {
   try {
     const bookings = await Booking.getAll();
-
     res.render('admin/bookings/index', {
       title: 'Booking Management',
       user: req.session.user,
@@ -554,12 +538,10 @@ exports.getBookingDetails = async (req, res) => {
   try {
     const { bookingId } = req.params;
     const booking = await Booking.getById(bookingId);
-
     if (!booking) {
       req.flash('error_msg', 'Booking not found');
       return res.redirect('/admin/bookings');
     }
-
     res.render('admin/bookings/details', {
       title: 'Booking Details',
       user: req.session.user,
@@ -595,7 +577,6 @@ exports.deleteBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;
     await Booking.delete(bookingId);
-
     req.flash('success_msg', 'Booking deleted successfully');
     res.redirect('/admin/bookings');
   } catch (error) {
@@ -613,7 +594,6 @@ exports.deleteBooking = async (req, res) => {
 exports.getOrders = async (req, res) => {
   try {
     const orders = await Order.getAll();
-
     res.render('admin/orders/index', {
       title: 'Order Management',
       user: req.session.user,
@@ -633,12 +613,10 @@ exports.getOrderDetails = async (req, res) => {
     const { orderId } = req.params;
     const order = await Order.getById(orderId);
     const staff = await Staff.getAvailableForDelivery();
-
     if (!order) {
       req.flash('error_msg', 'Order not found');
       return res.redirect('/admin/orders');
     }
-
     res.render('admin/orders/details', {
       title: 'Order Details',
       user: req.session.user,
@@ -675,7 +653,6 @@ exports.deleteOrder = async (req, res) => {
   try {
     const { orderId } = req.params;
     await Order.delete(orderId);
-
     req.flash('success_msg', 'Order deleted successfully');
     res.redirect('/admin/orders');
   } catch (error) {
@@ -693,7 +670,6 @@ exports.deleteOrder = async (req, res) => {
 exports.getOrderItems = async (req, res) => {
   try {
     const orderItems = await OrderItem.getAll();
-
     res.render('admin/orderItems/index', {
       title: 'Menu Items',
       user: req.session.user,
@@ -733,7 +709,6 @@ exports.postAddOrderItem = async (req, res) => {
       price: parseFloat(price),
       isAvailable: true
     }, imageBuffer);
-
     req.flash('success_msg', 'Menu item added successfully');
     res.redirect('/admin/order-items');
   } catch (error) {
@@ -748,12 +723,10 @@ exports.getEditOrderItem = async (req, res) => {
   try {
     const { itemId } = req.params;
     const orderItem = await OrderItem.getById(itemId);
-
     if (!orderItem) {
       req.flash('error_msg', 'Menu item not found');
       return res.redirect('/admin/order-items');
     }
-
     res.render('admin/orderItems/edit', {
       title: 'Edit Menu Item',
       user: req.session.user,
@@ -785,7 +758,6 @@ exports.postEditOrderItem = async (req, res) => {
       price: parseFloat(price),
       isAvailable: isAvailable === 'true'
     }, imageBuffer);
-
     req.flash('success_msg', 'Menu item updated successfully');
     res.redirect('/admin/order-items');
   } catch (error) {
@@ -800,7 +772,6 @@ exports.deleteOrderItem = async (req, res) => {
   try {
     const { itemId } = req.params;
     await OrderItem.delete(itemId);
-
     req.flash('success_msg', 'Menu item deleted successfully');
     res.redirect('/admin/order-items');
   } catch (error) {
@@ -818,7 +789,6 @@ exports.deleteOrderItem = async (req, res) => {
 exports.getUsers = async (req, res) => {
   try {
     const users = await User.getAll();
-
     res.render('admin/users/index', {
       title: 'User Management',
       user: req.session.user,
@@ -837,12 +807,10 @@ exports.getEditUser = async (req, res) => {
   try {
     const { userId } = req.params;
     const userData = await User.getByUid(userId);
-
     if (!userData) {
       req.flash('error_msg', 'User not found');
       return res.redirect('/admin/users');
     }
-
     res.render('admin/users/edit', {
       title: 'Edit User',
       user: req.session.user,
@@ -861,7 +829,6 @@ exports.postEditUser = async (req, res) => {
   try {
     const { userId } = req.params;
     const { name, email, gender, province, country, phone, role } = req.body;
-
     await User.update(userId, {
       name,
       email,
@@ -871,7 +838,6 @@ exports.postEditUser = async (req, res) => {
       phone,
       role
     });
-
     req.flash('success_msg', 'User updated successfully');
     res.redirect('/admin/users');
   } catch (error) {
@@ -886,7 +852,6 @@ exports.deleteUser = async (req, res) => {
   try {
     const { userId } = req.params;
     await User.delete(userId);
-
     req.flash('success_msg', 'User deleted successfully');
     res.redirect('/admin/users');
   } catch (error) {
@@ -904,7 +869,6 @@ exports.deleteUser = async (req, res) => {
 exports.getStaff = async (req, res) => {
   try {
     const staff = await Staff.getAll();
-
     res.render('admin/staff/index', {
       title: 'Staff Management',
       user: req.session.user,
@@ -945,7 +909,6 @@ exports.postAddStaff = async (req, res) => {
       department,
       isActive: true
     }, imageBuffer);
-
     req.flash('success_msg', 'Staff member added successfully');
     res.redirect('/admin/staff');
   } catch (error) {
@@ -960,12 +923,10 @@ exports.getEditStaff = async (req, res) => {
   try {
     const { staffId } = req.params;
     const staffMember = await Staff.getById(staffId);
-
     if (!staffMember) {
       req.flash('error_msg', 'Staff member not found');
       return res.redirect('/admin/staff');
     }
-
     res.render('admin/staff/edit', {
       title: 'Edit Staff Member',
       user: req.session.user,
@@ -998,7 +959,6 @@ exports.postEditStaff = async (req, res) => {
       department,
       isActive: isActive === 'true'
     }, imageBuffer);
-
     req.flash('success_msg', 'Staff member updated successfully');
     res.redirect('/admin/staff');
   } catch (error) {
@@ -1013,7 +973,6 @@ exports.deleteStaff = async (req, res) => {
   try {
     const { staffId } = req.params;
     await Staff.delete(staffId);
-
     req.flash('success_msg', 'Staff member deleted successfully');
     res.redirect('/admin/staff');
   } catch (error) {

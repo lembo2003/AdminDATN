@@ -53,26 +53,50 @@
           
           <!-- Room Features -->
           <h5 class="mt-4">Amenities</h5>
-          <div class="row">
-            <div class="col-md-6">
-              <ul class="list-unstyled amenities-list">
-                <li><i class="fas fa-bed"></i> Comfortable King-size Bed</li>
-                <li><i class="fas fa-wifi"></i> Free High-speed WiFi</li>
-                <li><i class="fas fa-tv"></i> 55" Smart TV</li>
-                <li><i class="fas fa-coffee"></i> Coffee Machine</li>
-                <li><i class="fas fa-snowflake"></i> Air Conditioning</li>
-              </ul>
-            </div>
-            <div class="col-md-6">
-              <ul class="list-unstyled amenities-list">
-                <li><i class="fas fa-shower"></i> En-suite Bathroom</li>
-                <li><i class="fas fa-bath"></i> Luxury Toiletries</li>
-                <li><i class="fas fa-concierge-bell"></i> Room Service</li>
-                <li><i class="fas fa-dumbbell"></i> Fitness Center Access</li>
-                <li><i class="fas fa-swimming-pool"></i> Swimming Pool Access</li>
-              </ul>
-            </div>
-          </div>
+<div class="row">
+  <% if (room.amenities && room.amenities.length > 0) { %>
+    <% 
+      // Split amenities into two columns
+      const halfLength = Math.ceil(room.amenities.length / 2);
+      const firstHalf = room.amenities.slice(0, halfLength);
+      const secondHalf = room.amenities.slice(halfLength);
+    %>
+    <div class="col-md-6">
+      <ul class="list-unstyled amenities-list">
+        <% firstHalf.forEach(amenity => { %>
+          <li><i class="<%= amenity.icon %>"></i> <%= amenity.name %></li>
+        <% }); %>
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <ul class="list-unstyled amenities-list">
+        <% secondHalf.forEach(amenity => { %>
+          <li><i class="<%= amenity.icon %>"></i> <%= amenity.name %></li>
+        <% }); %>
+      </ul>
+    </div>
+  <% } else { %>
+    <div class="col-md-6">
+      <ul class="list-unstyled amenities-list">
+        <li><i class="fas fa-bed"></i> Comfortable King-size Bed</li>
+        <li><i class="fas fa-wifi"></i> Free High-speed WiFi</li>
+        <li><i class="fas fa-tv"></i> 55" Smart TV</li>
+        <li><i class="fas fa-coffee"></i> Coffee Machine</li>
+        <li><i class="fas fa-snowflake"></i> Air Conditioning</li>
+      </ul>
+    </div>
+    <div class="col-md-6">
+      <ul class="list-unstyled amenities-list">
+        <li><i class="fas fa-shower"></i> En-suite Bathroom</li>
+        <li><i class="fas fa-bath"></i> Luxury Toiletries</li>
+        <li><i class="fas fa-concierge-bell"></i> Room Service</li>
+        <li><i class="fas fa-dumbbell"></i> Fitness Center Access</li>
+        <li><i class="fas fa-swimming-pool"></i> Swimming Pool Access</li>
+      </ul>
+    </div>
+  <% } %>
+</div>
+
         </div>
       </div>
 

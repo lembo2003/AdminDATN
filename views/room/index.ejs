@@ -100,10 +100,19 @@
                   <p class="card-text mt-2"><%- room.description.replace(/<[^>]*>/g, '').substring(0, 100) %>...</p>
                   <div class="d-flex justify-content-between mt-3">
                     <div>
-                      <i class="fas fa-bed me-1 text-primary"></i>
-                      <i class="fas fa-wifi me-1 text-primary"></i>
-                      <i class="fas fa-shower me-1 text-primary"></i>
-                      <i class="fas fa-tv me-1 text-primary"></i>
+                      <% if (room.amenities && room.amenities.length > 0) { %>
+                        <% room.amenities.slice(0, 4).forEach(amenity => { %>
+                          <i class="<%= amenity.icon %> me-1 text-primary" data-bs-toggle="tooltip" title="<%= amenity.name %>"></i>
+                        <% }); %>
+                        <% if (room.amenities.length > 4) { %>
+                          <span class="text-muted small">+<%= room.amenities.length - 4 %> more</span>
+                        <% } %>
+                      <% } else { %>
+                        <i class="fas fa-bed me-1 text-primary" data-bs-toggle="tooltip" title="Bed"></i>
+                        <i class="fas fa-wifi me-1 text-primary" data-bs-toggle="tooltip" title="WiFi"></i>
+                        <i class="fas fa-shower me-1 text-primary" data-bs-toggle="tooltip" title="Shower"></i>
+                        <i class="fas fa-tv me-1 text-primary" data-bs-toggle="tooltip" title="TV"></i>
+                      <% } %>
                     </div>
                     <div>
                       <span class="text-success"><i class="fas fa-check-circle me-1"></i>Available</span>

@@ -33,39 +33,74 @@
         </div>
       <% } %>
       
-      <!-- Room Filters -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <form action="/admin/rooms" method="GET" class="row g-3">
-            <div class="col-md-3">
-              <label for="roomTypeFilter" class="form-label">Room Type</label>
-              <select class="form-select" id="roomTypeFilter" name="roomType">
-                <option value="">All Types</option>
-                <% roomTypes.forEach(type => { %>
-                  <option value="<%= type.id %>"><%= type.roomTypeName %></option>
-                <% }); %>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label for="statusFilter" class="form-label">Status</label>
-              <select class="form-select" id="statusFilter" name="status">
-                <option value="">All Statuses</option>
-                <option value="available">Available</option>
-                <option value="booked">Booked</option>
-                <option value="maintenance">Maintenance</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <label for="searchInput" class="form-label">Search</label>
-              <input type="text" class="form-control" id="searchInput" name="search" placeholder="Room name...">
-            </div>
-            <div class="col-md-3 d-flex align-items-end">
-              <button type="submit" class="btn btn-primary me-2">Filter</button>
-              <a href="/admin/rooms" class="btn btn-secondary">Clear</a>
-            </div>
-          </form>
-        </div>
+<!-- Room Filters -->
+<div class="card mb-4">
+  <div class="card-body">
+    <form action="/admin/rooms" method="GET" class="row g-3">
+      <div class="col-md-3">
+        <label for="roomTypeFilter" class="form-label">Room Type</label>
+        <select class="form-select" id="roomTypeFilter" name="roomType">
+          <option value="">All Types</option>
+          <% roomTypes.forEach(type => { %>
+            <option value="<%= type.id %>" <%= filters && filters.roomType === type.id ? 'selected' : '' %>><%= type.roomTypeName %></option>
+          <% }); %>
+        </select>
       </div>
+      <div class="col-md-3">
+        <label for="statusFilter" class="form-label">Status</label>
+        <select class="form-select" id="statusFilter" name="status">
+          <option value="">All Statuses</option>
+          <option value="available" <%= filters && filters.status === 'available' ? 'selected' : '' %>>Available</option>
+          <option value="booked" <%= filters && filters.status === 'booked' ? 'selected' : '' %>>Booked</option>
+          <option value="maintenance" <%= filters && filters.status === 'maintenance' ? 'selected' : '' %>>Maintenance</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="searchInput" class="form-label">Search</label>
+        <input type="text" class="form-control" id="searchInput" name="search" placeholder="Room name..." value="<%= filters && filters.search ? filters.search : '' %>">
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary me-2">Filter</button>
+        <a href="/admin/rooms" class="btn btn-secondary">Clear</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Search Results Summary -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <% if(filters && (filters.roomType || filters.status || filters.search)) { %>
+      <div class="text-muted">
+        <small>
+          <strong><%= rooms.length %></strong> room(s) found
+          <% if(filters.search) { %>
+            matching "<strong><%= filters.search %></strong>"
+          <% } %>
+          
+          <% if(filters.roomType || filters.status) { %>
+            with filters:
+            <% if(filters.roomType) { %>
+              <span class="badge bg-info">
+                Type: <%= roomTypes.find(type => type.id === filters.roomType)?.roomTypeName || filters.roomType %>
+              </span>
+            <% } %>
+            
+            <% if(filters.status) { %>
+              <span class="badge bg-info">
+                Status: <%= filters.status.charAt(0).toUpperCase() + filters.status.slice(1) %>
+              </span>
+            <% } %>
+          <% } %>
+        </small>
+      </div>
+    <% } else { %>
+      <div class="text-muted">
+        <small>Showing all <strong><%= rooms.length %></strong> rooms</small>
+      </div>
+    <% } %>
+  </div>
+</div>
       
       <!-- Rooms Table -->
       <div class="card">

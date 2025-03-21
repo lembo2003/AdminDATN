@@ -81,13 +81,44 @@ exports.getDashboard = async (req, res) => {
 // Render rooms list
 exports.getRooms = async (req, res) => {
   try {
-    const rooms = await Room.getAll();
+    // Get filter parameters
+    const { roomType, status, search } = req.query;
+
+    // Prepare filters
+    const filters = {};
+
+    if (roomType) {
+      filters.roomTypeId = roomType;
+    }
+
+    if (status) {
+      filters.bookingState = status;
+    }
+
+    // Get rooms based on filters
+    const rooms = await Room.getAll(filters);
+
+    // Apply name search filter in memory if search term provided
+    // (Firestore doesn't support LIKE queries directly)
+    let filteredRooms = rooms;
+    if (search && search.trim()) {
+      const searchLower = search.toLowerCase();
+      filteredRooms = rooms.filter(room =>
+        room.roomName.toLowerCase().includes(searchLower) ||
+        (room.description && room.description.toLowerCase().includes(searchLower)) ||
+        (room.roomType && room.roomType.roomTypeName.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Get all room types for the filter dropdown
     const roomTypes = await RoomType.getAll();
+
     res.render('admin/rooms/index', {
       title: 'Room Management',
       user: req.session.user,
-      rooms,
+      rooms: filteredRooms,
       roomTypes,
+      filters: req.query, // Pass the filter parameters back to the view
       path: '/admin/rooms'
     });
   } catch (error) {

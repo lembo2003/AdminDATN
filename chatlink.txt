@@ -1,22 +1,22 @@
-https://claude.ai/chat/e95e083b-46c9-49db-93a9-2b85a76c299e
+https://claude.ai/chat/e95e083b-46c9-49db-93a9-2b85a76c299e(purged)
 
 Please recreate roadmap, and make a context file(saying comprehensive about what we've done, how we done it, what we going to do, how to do it,...), project structure of existing file,saying so I can start a new session chat and continue this development(ask for files that needed to be show if needed for implement/bug fixing)
 
 
-chat 2(room type): https://claude.ai/chat/89ae1644-9462-43d4-8768-595912cbd720
-
+chat 2(room type): https://claude.ai/chat/89ae1644-9462-43d4-8768-595912cbd720(purged)
+-20/03: Please make sure when deleting roomtype, check the room with them first to prevent delete(Check amenities for example)
  
 
-chat 3(room): https://claude.ai/chat/e7450fa6-8396-487a-bdd7-75103dbcf9b1
+chat 3(room): https://claude.ai/chat/e7450fa6-8396-487a-bdd7-75103dbcf9b1(purged)
 
 i want to apply the package summernote to the room description. And also, want to add a model amenities with route and controllers, views(just like roomtype), for room model. Ask for any file if needed
 
 
 Push test
+The prompt is in the chat, in case of losing: Please implement for me in these views. The details to show amenities too. The index room, the description is showing. actually, it not even showing image, only a tag like this:  
 
 
-
-
+new chat: https://claude.ai/chat/1d096e00-a09a-4df3-af6b-18ad745d18be
 
 
 

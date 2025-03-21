@@ -364,7 +364,26 @@ exports.postEditRoomType = async (req, res) => {
 exports.deleteRoomType = async (req, res) => {
   try {
     const { roomTypeId } = req.params;
+
+    // Check if room type exists
+    const roomType = await RoomType.getById(roomTypeId);
+
+    if (!roomType) {
+      req.flash('error_msg', 'Room type not found');
+      return res.redirect('/admin/room-types');
+    }
+
+    // Check if any rooms are using this room type
+    const rooms = await Room.getAll({ roomTypeId });
+
+    if (rooms.length > 0) {
+      req.flash('error_msg', `Cannot delete room type. It is used by ${rooms.length} room(s)`);
+      return res.redirect('/admin/room-types');
+    }
+
+    // Delete room type
     await RoomType.delete(roomTypeId);
+
     req.flash('success_msg', 'Room type deleted successfully');
     res.redirect('/admin/room-types');
   } catch (error) {

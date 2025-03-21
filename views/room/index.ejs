@@ -97,7 +97,7 @@
                       <i class="fas fa-tag me-1"></i> <%= room.roomType.roomTypeName %>
                     <% } %>
                   </p>
-                  <p class="card-text mt-2"><%= room.description.substring(0, 100) %>...</p>
+                  <p class="card-text mt-2"><%- room.description.replace(/<[^>]*>/g, '').substring(0, 100) %>...</p>
                   <div class="d-flex justify-content-between mt-3">
                     <div>
                       <i class="fas fa-bed me-1 text-primary"></i>

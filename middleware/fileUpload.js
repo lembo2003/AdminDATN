@@ -16,7 +16,7 @@ const createUploadDirectories = () => {
     path.join(__dirname, '../public/uploads/staff'),
     path.join(__dirname, '../public/uploads/users')
   ];
-  
+
   uploadDirs.forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -31,7 +31,7 @@ createUploadDirectories();
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     let uploadPath = path.join(__dirname, '../public/uploads');
-    
+
     // Determine upload directory based on route
     if (req.originalUrl.includes('/rooms')) {
       uploadPath = path.join(__dirname, '../public/uploads/rooms');
@@ -42,7 +42,7 @@ const storage = multer.diskStorage({
     } else if (req.originalUrl.includes('/users')) {
       uploadPath = path.join(__dirname, '../public/uploads/users');
     }
-    
+
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
@@ -68,7 +68,8 @@ const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+    fieldSize: 10 * 1024 * 1024 // 10MB limit for form fields (for rich text content)
   }
 });
 
@@ -79,7 +80,7 @@ const upload = multer({
  */
 const filePathToUrl = (filepath) => {
   if (!filepath) return null;
-  
+
   // Convert path to URL format
   const publicDir = path.join(__dirname, '../public');
   return filepath.replace(publicDir, '').replace(/\\/g, '/');

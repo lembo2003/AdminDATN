@@ -16,8 +16,8 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Middleware
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(methodOverride('_method'));
 
 // Session configuration
@@ -62,35 +62,35 @@ const authRoutes = require('./routes/auth');
 // Import routes that are implemented
 try {
   // Enable routes as they become available
-  
+
   // User routes
   if (fs.existsSync(path.join(__dirname, 'routes/user.js'))) {
     const userRoutes = require('./routes/user');
     app.use('/users', userRoutes);
     console.log('User routes enabled');
   }
-  
+
   // Room routes
   if (fs.existsSync(path.join(__dirname, 'routes/room.js'))) {
     const roomRoutes = require('./routes/room');
     app.use('/rooms', roomRoutes);
     console.log('Room routes enabled');
   }
-  
+
   // Booking routes
   if (fs.existsSync(path.join(__dirname, 'routes/booking.js'))) {
     const bookingRoutes = require('./routes/booking');
     app.use('/bookings', bookingRoutes);
     console.log('Booking routes enabled');
   }
-  
+
   // Order routes
   if (fs.existsSync(path.join(__dirname, 'routes/order.js'))) {
     const orderRoutes = require('./routes/order');
     app.use('/orders', orderRoutes);
     console.log('Order routes enabled');
   }
-  
+
   // Admin routes
   if (fs.existsSync(path.join(__dirname, 'routes/admin.js'))) {
     const adminRoutes = require('./routes/admin');
@@ -109,7 +109,7 @@ app.get('/', (req, res) => {
   // For development, check if views/index.ejs exists
   const indexPath = path.join(__dirname, 'views', 'index.ejs');
   if (fs.existsSync(indexPath)) {
-    res.render('index', { 
+    res.render('index', {
       title: 'Hotel Management System',
       user: req.session.user
     });
@@ -134,7 +134,7 @@ app.use((req, res, next) => {
   // For development, check if views/error.ejs exists
   const errorPath = path.join(__dirname, 'views', 'error.ejs');
   if (fs.existsSync(errorPath)) {
-    res.status(404).render('error', { 
+    res.status(404).render('error', {
       title: '404 Not Found',
       message: 'The page you requested does not exist.',
       user: req.session.user
@@ -152,11 +152,11 @@ app.use((req, res, next) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error('App Error:', err);
-  
+
   // For development, check if views/error.ejs exists
   const errorPath = path.join(__dirname, 'views', 'error.ejs');
   if (fs.existsSync(errorPath)) {
-    res.status(500).render('error', { 
+    res.status(500).render('error', {
       title: 'Server Error',
       message: 'Something went wrong on the server.',
       user: req.session.user

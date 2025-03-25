@@ -1,0 +1,197 @@
+<%- include('../../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Admin Sidebar -->
+    <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+      <%- include('../../partials/admin-sidebar', {path: '/admin/staff'}) %>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 admin-content">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Edit Staff Member</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/staff" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Staff List
+          </a>
+        </div>
+      </div>
+      
+      <!-- Flash Messages -->
+      <% if(error_msg != ''){ %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= error_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <% if (!staffMember) { %>
+        <div class="alert alert-danger">
+          Staff member not found
+        </div>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+          <a href="/admin/staff" class="btn btn-primary">Back to Staff List</a>
+        </div>
+      <% } else { %>
+        <!-- Edit Staff Form -->
+        <div class="card">
+          <div class="card-body">
+            <form action="/admin/staff/edit/<%= staffMember.id %>" method="POST" enctype="multipart/form-data">
+              <div class="row">
+                <div class="col-md-8">
+                  <!-- Personal Information -->
+                  <h5 class="mb-3">Personal Information</h5>
+                  
+                  <div class="mb-3">
+                    <label for="name" class="form-label">Full Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" value="<%= staffMember.name %>" required>
+                  </div>
+                  
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="email" class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" id="email" name="email" value="<%= staffMember.email %>" required>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" value="<%= staffMember.phone %>">
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Employment Information -->
+                  <h5 class="mb-3 mt-4">Employment Information</h5>
+                  
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="position" class="form-label">Position *</label>
+                        <input type="text" class="form-control" id="position" name="position" value="<%= staffMember.position %>" required>
+                        <div class="form-text">e.g., Receptionist, Concierge, Room Attendant</div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="mb-3">
+                        <label for="department" class="form-label">Department *</label>
+                        <select class="form-select" id="department" name="department" required>
+                          <option value="">-- Select Department --</option>
+                          <option value="Front Office" <%= staffMember.department === 'Front Office' ? 'selected' : '' %>>Front Office</option>
+                          <option value="Housekeeping" <%= staffMember.department === 'Housekeeping' ? 'selected' : '' %>>Housekeeping</option>
+                          <option value="Food & Beverage" <%= staffMember.department === 'Food & Beverage' ? 'selected' : '' %>>Food & Beverage</option>
+                          <option value="Kitchen" <%= staffMember.department === 'Kitchen' ? 'selected' : '' %>>Kitchen</option>
+                          <option value="Room Service" <%= staffMember.department === 'Room Service' ? 'selected' : '' %>>Room Service</option>
+                          <option value="Maintenance" <%= staffMember.department === 'Maintenance' ? 'selected' : '' %>>Maintenance</option>
+                          <option value="Security" <%= staffMember.department === 'Security' ? 'selected' : '' %>>Security</option>
+                          <option value="Management" <%= staffMember.department === 'Management' ? 'selected' : '' %>>Management</option>
+                          <option value="Other" <%= staffMember.department === 'Other' ? 'selected' : '' %>>Other</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="isActive" name="isActive" value="true" <%= staffMember.isActive ? 'checked' : '' %>>
+                      <label class="form-check-label" for="isActive">
+                        Active Status
+                      </label>
+                      <div class="form-text">Inactive staff members will not be displayed in public areas and cannot be assigned to tasks.</div>
+                    </div>
+                  </div>
+                  
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <label class="form-label">Created</label>
+                      <input type="text" class="form-control" value="<%= new Date(staffMember.createdAt.seconds * 1000).toLocaleString() %>" disabled readonly>
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label">Last Updated</label>
+                      <input type="text" class="form-control" value="<%= new Date(staffMember.updatedAt.seconds * 1000).toLocaleString() %>" disabled readonly>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="col-md-4">
+                  <!-- Photo Upload -->
+                  <h5 class="mb-3">Profile Photo</h5>
+                  
+                  <div class="mb-3">
+                    <label for="image" class="form-label">Staff Photo</label>
+                    <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                    <div class="form-text">Upload a new photo or leave blank to keep the current one. Maximum file size: 5MB.</div>
+                  </div>
+                  
+                  <div class="mt-3 text-center">
+                    <div class="card">
+                      <div class="card-body p-3">
+                        <div class="mb-2">
+                          <% if (staffMember.imageUrl) { %>
+                            <div id="currentImageContainer">
+                              <img src="<%= staffMember.imageUrl %>" alt="Current Profile Photo" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                            <div id="imagePreviewContainer" class="d-none">
+                              <img id="imagePreview" src="" alt="New Profile Preview" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                          <% } else { %>
+                            <div id="defaultImageContainer" class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 200px;">
+                              <i class="fas fa-user fa-4x text-secondary"></i>
+                            </div>
+                            <div id="imagePreviewContainer" class="d-none">
+                              <img id="imagePreview" src="" alt="Profile Preview" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                          <% } %>
+                        </div>
+                        <small class="text-muted">
+                          <% if (staffMember.imageUrl) { %>Current profile photo<% } else { %>No profile photo uploaded<% } %>
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <a href="/admin/staff" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                <button type="submit" class="btn btn-primary">Update Staff Member</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>
+
+<script>
+  // Image preview functionality
+  document.getElementById('image').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const imagePreview = document.getElementById('imagePreview');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const currentImageContainer = document.getElementById('currentImageContainer');
+        const defaultImageContainer = document.getElementById('defaultImageContainer');
+        
+        imagePreview.src = e.target.result;
+        imagePreviewContainer.classList.remove('d-none');
+        
+        if (currentImageContainer) {
+          currentImageContainer.classList.add('d-none');
+        }
+        
+        if (defaultImageContainer) {
+          defaultImageContainer.classList.add('d-none');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>

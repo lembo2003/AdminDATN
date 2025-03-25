@@ -719,11 +719,68 @@ exports.deleteOrder = async (req, res) => {
 // Render order items list
 exports.getOrderItems = async (req, res) => {
   try {
-    const orderItems = await OrderItem.getAll();
+    // Process filter parameters from the query string
+    const filters = {};
+
+    // Category filter
+    if (req.query.category && req.query.category !== '') {
+      filters.category = req.query.category;
+    }
+
+    // Availability filter
+    if (req.query.availability && req.query.availability !== '') {
+      filters.isAvailable = req.query.availability === 'available';
+    }
+
+    // Price range filter
+    if (req.query.minPrice && !isNaN(parseFloat(req.query.minPrice))) {
+      filters.minPrice = parseFloat(req.query.minPrice);
+    }
+
+    if (req.query.maxPrice && !isNaN(parseFloat(req.query.maxPrice))) {
+      filters.maxPrice = parseFloat(req.query.maxPrice);
+    }
+
+    // Get all order items based on filters
+    const allOrderItems = await OrderItem.getAll();
+    let orderItems = [...allOrderItems]; // Make a copy for filtering
+
+    // Apply filters manually if the OrderItem.getAll() doesn't support all filters
+    if (filters.category) {
+      orderItems = orderItems.filter(item => item.category === filters.category);
+    }
+
+    if (filters.isAvailable !== undefined) {
+      orderItems = orderItems.filter(item => item.isAvailable === filters.isAvailable);
+    }
+
+    if (filters.minPrice !== undefined) {
+      orderItems = orderItems.filter(item => item.price >= filters.minPrice);
+    }
+
+    if (filters.maxPrice !== undefined) {
+      orderItems = orderItems.filter(item => item.price <= filters.maxPrice);
+    }
+
+    // Search filter
+    if (req.query.search && req.query.search.trim() !== '') {
+      const searchTerm = req.query.search.toLowerCase();
+      orderItems = orderItems.filter(item =>
+        item.name.toLowerCase().includes(searchTerm) ||
+        (item.description && item.description.toLowerCase().includes(searchTerm)) ||
+        (item.category && item.category.toLowerCase().includes(searchTerm))
+      );
+    }
+
+    // Get unique categories for dropdown
+    const categories = [...new Set(allOrderItems.map(item => item.category))].filter(Boolean).sort();
+
     res.render('admin/orderItems/index', {
-      title: 'Menu Items',
+      title: 'Menu Items Management',
       user: req.session.user,
-      orderItems,
+      orderItems: orderItems,
+      categories: categories,
+      filters: req.query, // Pass the query parameters to the view
       path: '/admin/order-items'
     });
   } catch (error) {
@@ -746,19 +803,31 @@ exports.getAddOrderItem = (req, res) => {
 exports.postAddOrderItem = async (req, res) => {
   try {
     const { name, category, description, price } = req.body;
+
+    // Validate input
+    if (!name || !category || !price) {
+      req.flash('error_msg', 'Name, category and price are required');
+      return res.redirect('/admin/order-items/add');
+    }
+
     let imageBuffer = null;
 
     if (req.file) {
       imageBuffer = req.file.buffer;
     }
 
+    // Default availability
+    const isAvailable = req.body.isAvailable === 'true';
+
+    // Create the order item
     await OrderItem.create({
       name,
       category,
       description,
       price: parseFloat(price),
-      isAvailable: true
+      isAvailable
     }, imageBuffer);
+
     req.flash('success_msg', 'Menu item added successfully');
     res.redirect('/admin/order-items');
   } catch (error) {
@@ -773,10 +842,12 @@ exports.getEditOrderItem = async (req, res) => {
   try {
     const { itemId } = req.params;
     const orderItem = await OrderItem.getById(itemId);
+
     if (!orderItem) {
       req.flash('error_msg', 'Menu item not found');
       return res.redirect('/admin/order-items');
     }
+
     res.render('admin/orderItems/edit', {
       title: 'Edit Menu Item',
       user: req.session.user,
@@ -794,20 +865,32 @@ exports.getEditOrderItem = async (req, res) => {
 exports.postEditOrderItem = async (req, res) => {
   try {
     const { itemId } = req.params;
-    const { name, category, description, price, isAvailable } = req.body;
+    const { name, category, description, price } = req.body;
+
+    // Validate input
+    if (!name || !category || !price) {
+      req.flash('error_msg', 'Name, category and price are required');
+      return res.redirect(`/admin/order-items/edit/${itemId}`);
+    }
+
+    // Default availability
+    const isAvailable = req.body.isAvailable === 'true';
+
     let imageBuffer = null;
 
     if (req.file) {
       imageBuffer = req.file.buffer;
     }
 
+    // Update the order item
     await OrderItem.update(itemId, {
       name,
       category,
       description,
       price: parseFloat(price),
-      isAvailable: isAvailable === 'true'
+      isAvailable
     }, imageBuffer);
+
     req.flash('success_msg', 'Menu item updated successfully');
     res.redirect('/admin/order-items');
   } catch (error) {
@@ -821,7 +904,10 @@ exports.postEditOrderItem = async (req, res) => {
 exports.deleteOrderItem = async (req, res) => {
   try {
     const { itemId } = req.params;
+
+    // Delete the order item
     await OrderItem.delete(itemId);
+
     req.flash('success_msg', 'Menu item deleted successfully');
     res.redirect('/admin/order-items');
   } catch (error) {

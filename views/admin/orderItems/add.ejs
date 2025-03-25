@@ -1,0 +1,210 @@
+<%- include('../../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Admin Sidebar -->
+    <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+      <%- include('../../partials/admin-sidebar', {path: '/admin/order-items'}) %>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 admin-content">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Add Menu Item</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/order-items" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Menu Items
+          </a>
+        </div>
+      </div>
+      
+      <!-- Flash Messages -->
+      <% if(error_msg != ''){ %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= error_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <!-- Add Menu Item Form -->
+      <div class="card">
+        <div class="card-body">
+          <form action="/admin/order-items/add" method="POST" enctype="multipart/form-data">
+            <div class="row">
+              <div class="col-md-8">
+                <!-- Item Details -->
+                <h5 class="mb-3">Item Details</h5>
+                
+                <div class="mb-3">
+                  <label for="name" class="form-label">Item Name *</label>
+                  <input type="text" class="form-control" id="name" name="name" required>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="description" class="form-label">Description</label>
+                  <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                  <div class="form-text">Provide a brief description of this menu item, including ingredients or special features.</div>
+                </div>
+                
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="category" class="form-label">Category *</label>
+                    <select class="form-select" id="category" name="category" required>
+                      <option value="">-- Select Category --</option>
+                      <option value="Breakfast">Breakfast</option>
+                      <option value="Lunch">Lunch</option>
+                      <option value="Dinner">Dinner</option>
+                      <option value="Dessert">Dessert</option>
+                      <option value="Beverage">Beverage</option>
+                      <option value="Snack">Snack</option>
+                      <option value="Appetizer">Appetizer</option>
+                      <option value="Soup">Soup</option>
+                      <option value="Salad">Salad</option>
+                      <option value="Main Course">Main Course</option>
+                      <option value="Side Dish">Side Dish</option>
+                      <option value="Special">Special</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="price" class="form-label">Price ($) *</label>
+                    <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="isAvailable" name="isAvailable" value="true" checked>
+                    <label class="form-check-label" for="isAvailable">
+                      Available for Order
+                    </label>
+                    <div class="form-text">Uncheck this option to temporarily hide this item from the ordering menu.</div>
+                  </div>
+                </div>
+                
+                <!-- Nutritional Information (Optional) -->
+                <h5 class="mb-3 mt-4">Nutritional Information (Optional)</h5>
+                
+                <div class="row mb-3">
+                  <div class="col-md-3">
+                    <label for="calories" class="form-label">Calories</label>
+                    <input type="number" class="form-control" id="calories" name="calories" min="0">
+                  </div>
+                  <div class="col-md-3">
+                    <label for="protein" class="form-label">Protein (g)</label>
+                    <input type="number" class="form-control" id="protein" name="protein" step="0.1" min="0">
+                  </div>
+                  <div class="col-md-3">
+                    <label for="carbs" class="form-label">Carbs (g)</label>
+                    <input type="number" class="form-control" id="carbs" name="carbs" step="0.1" min="0">
+                  </div>
+                  <div class="col-md-3">
+                    <label for="fat" class="form-label">Fat (g)</label>
+                    <input type="number" class="form-control" id="fat" name="fat" step="0.1" min="0">
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="allergens" class="form-label">Allergens</label>
+                  <input type="text" class="form-control" id="allergens" name="allergens">
+                  <div class="form-text">E.g., Dairy, Peanuts, Shellfish, Gluten, etc. (Comma-separated)</div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <!-- Image Upload -->
+                <h5 class="mb-3">Item Image</h5>
+                
+                <div class="mb-3">
+                  <label for="image" class="form-label">Item Photo</label>
+                  <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                  <div class="form-text">Upload an appetizing photo of the menu item. Maximum file size: 5MB.</div>
+                </div>
+                
+                <div class="mt-3 text-center">
+                  <div class="card">
+                    <div class="card-body p-3">
+                      <div class="mb-2">
+                        <div id="imagePreviewContainer" class="d-none">
+                          <img id="imagePreview" src="" alt="Item Preview" class="img-fluid rounded" style="max-height: 200px;">
+                        </div>
+                        <div id="defaultImageContainer" class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 200px;">
+                          <i class="fas fa-utensils fa-4x text-secondary"></i>
+                        </div>
+                      </div>
+                      <small class="text-muted">Item photo preview</small>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Dietary Information -->
+                <h5 class="mb-3 mt-4">Dietary Information</h5>
+                
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="isVegetarian" name="isVegetarian" value="true">
+                  <label class="form-check-label" for="isVegetarian">
+                    Vegetarian
+                  </label>
+                </div>
+                
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="isVegan" name="isVegan" value="true">
+                  <label class="form-check-label" for="isVegan">
+                    Vegan
+                  </label>
+                </div>
+                
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="isGlutenFree" name="isGlutenFree" value="true">
+                  <label class="form-check-label" for="isGlutenFree">
+                    Gluten-Free
+                  </label>
+                </div>
+                
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="isDairyFree" name="isDairyFree" value="true">
+                  <label class="form-check-label" for="isDairyFree">
+                    Dairy-Free
+                  </label>
+                </div>
+                
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" id="isSpicy" name="isSpicy" value="true">
+                  <label class="form-check-label" for="isSpicy">
+                    Spicy
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+              <a href="/admin/order-items" class="btn btn-outline-secondary me-md-2">Cancel</a>
+              <button type="submit" class="btn btn-primary">Add Menu Item</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>
+
+<script>
+  // Image preview functionality
+  document.getElementById('image').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const imagePreview = document.getElementById('imagePreview');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const defaultImageContainer = document.getElementById('defaultImageContainer');
+        
+        imagePreview.src = e.target.result;
+        imagePreviewContainer.classList.remove('d-none');
+        defaultImageContainer.classList.add('d-none');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+</script>

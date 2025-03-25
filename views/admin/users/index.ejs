@@ -1,0 +1,479 @@
+<%- include('../../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Admin Sidebar -->
+    <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar">
+      <%- include('../../partials/admin-sidebar', {path: '/admin/users'}) %>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 admin-content">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">User Management</h1>
+      </div>
+      
+      <!-- Flash Messages -->
+      <% if(success_msg != ''){ %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= success_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <% if(error_msg != ''){ %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= error_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <!-- Search and Filter -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <form action="/admin/users" method="GET" class="row align-items-end">
+            <div class="col-md-4 mb-2">
+              <label for="searchInput" class="form-label">Search Users</label>
+              <input type="text" class="form-control" id="searchInput" name="search" placeholder="Search by name, email...">
+            </div>
+            <div class="col-md-3 mb-2">
+              <label for="statusFilter" class="form-label">Status</label>
+              <select class="form-select" id="statusFilter" name="status">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+                <option value="banned">Banned</option>
+              </select>
+            </div>
+            <div class="col-md-3 mb-2">
+              <label for="roleFilter" class="form-label">Role</label>
+              <select class="form-select" id="roleFilter" name="role">
+                <option value="">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
+              </select>
+            </div>
+            <div class="col-md-2 mb-2">
+              <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Users Table -->
+      <div class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Activity</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if(users && users.length > 0) { %>
+                  <% users.forEach(userData => { %>
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <span class="avatar-placeholder rounded-circle bg-secondary text-white me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                            <%= userData.name ? userData.name.charAt(0).toUpperCase() : userData.email.charAt(0).toUpperCase() %>
+                          </span>
+                          <div>
+                            <div class="fw-bold"><%= userData.name || 'No Name' %></div>
+                            <small><%= userData.phone || 'No Phone' %></small>
+                          </div>
+                        </div>
+                      </td>
+                      <td><%= userData.email %></td>
+                      <td>
+                        <span class="badge bg-<%= userData.role === 'admin' ? 'danger' : 'success' %>">
+                          <%= userData.role %>
+                        </span>
+                      </td>
+                      <td>
+                        <% 
+                          let statusBadgeClass = 'success';
+                          let userStatus = userData.status || 'active';
+                          
+                          if (userStatus === 'suspended') {
+                            statusBadgeClass = 'warning';
+                          } else if (userStatus === 'banned') {
+                            statusBadgeClass = 'danger';
+                          }
+                        %>
+                        <span class="badge bg-<%= statusBadgeClass %>">
+                          <%= userStatus.charAt(0).toUpperCase() + userStatus.slice(1) %>
+                        </span>
+                      </td>
+                      <td>
+                        <div class="small text-muted">
+                          <div>Registered: <%= userData.createdAt ? new Date(userData.createdAt.seconds * 1000).toLocaleDateString() : 'Unknown' %></div>
+                          <div>Bookings: <%= userData.bookingsCount || 0 %></div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="dropdown">
+                          <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="actionDropdown<%= userData.id %>" data-bs-toggle="dropdown" aria-expanded="false">
+                            Actions
+                          </button>
+                          <ul class="dropdown-menu" aria-labelledby="actionDropdown<%= userData.id %>">
+                            <li><a class="dropdown-item text-info" href="#" onclick="openViewModal('<%= userData.id %>')"><i class="fas fa-eye me-2"></i>View Details</a></li>
+                            <li><a class="dropdown-item text-primary" href="#" onclick="openPasswordResetModal('<%= userData.id %>', '<%= userData.email %>')"><i class="fas fa-key me-2"></i>Reset Password</a></li>
+                            <li><a class="dropdown-item text-warning" href="#" onclick="openStatusModal('<%= userData.id %>', '<%= userData.name || userData.email %>', 'suspended')"><i class="fas fa-ban me-2"></i>Suspend User</a></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="openStatusModal('<%= userData.id %>', '<%= userData.name || userData.email %>', 'banned')"><i class="fas fa-times-circle me-2"></i>Ban User</a></li>
+                            <% if (userData.status === 'suspended' || userData.status === 'banned') { %>
+                              <li><hr class="dropdown-divider"></li>
+                              <li><a class="dropdown-item text-success" href="#" onclick="openStatusModal('<%= userData.id %>', '<%= userData.name || userData.email %>', 'active')"><i class="fas fa-check-circle me-2"></i>Reactivate User</a></li>
+                            <% } %>
+                            <% if (userData.role !== 'admin') { %>
+                              <li><hr class="dropdown-divider"></li>
+                              <li><a class="dropdown-item" href="#" onclick="openRoleModal('<%= userData.id %>', '<%= userData.name || userData.email %>', 'admin')"><i class="fas fa-user-shield me-2"></i>Make Admin</a></li>
+                            <% } else { %>
+                              <li><hr class="dropdown-divider"></li>
+                              <li><a class="dropdown-item" href="#" onclick="openRoleModal('<%= userData.id %>', '<%= userData.name || userData.email %>', 'user')"><i class="fas fa-user me-2"></i>Remove Admin</a></li>
+                            <% } %>
+                          </ul>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="6" class="text-center py-4">No users found</td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Status Change Modal -->
+<div class="modal fade" id="statusChangeModal" tabindex="-1" aria-labelledby="statusChangeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="statusChangeModalLabel">Change User Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="statusChangeMessage">Are you sure you want to change this user's status?</p>
+        
+        <div id="suspendOptions" class="mb-3" style="display: none;">
+          <label for="suspensionDuration" class="form-label">Suspension Duration</label>
+          <select class="form-select" id="suspensionDuration" name="suspensionDuration">
+            <option value="1">1 Day</option>
+            <option value="3" selected>3 Days</option>
+            <option value="7">1 Week</option>
+            <option value="14">2 Weeks</option>
+            <option value="30">1 Month</option>
+          </select>
+        </div>
+        
+        <div id="statusWarning" class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <span id="statusWarningText">This action will change the user's status.</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="statusChangeForm" action="/admin/users/status/" method="POST" style="display: inline; margin: 0;">
+          <input type="hidden" name="newStatus" id="newStatusInput">
+          <input type="hidden" name="suspensionDuration" id="suspensionDurationInput" value="3">
+          <button type="submit" class="btn btn-primary" id="statusChangeBtn">Confirm</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Role Change Modal -->
+<div class="modal fade" id="roleChangeModal" tabindex="-1" aria-labelledby="roleChangeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="roleChangeModalLabel">Change User Role</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="roleChangeMessage">Are you sure you want to change this user's role?</p>
+        
+        <div id="adminWarning" class="alert alert-danger" style="display: none;">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          This will give the user full administrative access to the system. Only do this for trusted individuals.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="roleChangeForm" action="/admin/users/role/" method="POST" style="display: inline; margin: 0;">
+          <input type="hidden" name="newRole" id="newRoleInput">
+          <button type="submit" class="btn btn-primary">Confirm</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Password Reset Modal -->
+<div class="modal fade" id="passwordResetModal" tabindex="-1" aria-labelledby="passwordResetModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="passwordResetModalLabel">Reset User Password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p id="passwordResetMessage">Are you sure you want to reset the password for this user?</p>
+        
+        <div class="mb-3">
+          <label for="newPassword" class="form-label">New Password</label>
+          <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+          <div class="form-text">Password must be at least 6 characters long.</div>
+        </div>
+        
+        <div class="mb-3">
+          <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
+          <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" required>
+        </div>
+        
+        <div class="alert alert-info">
+          <i class="fas fa-info-circle me-2"></i>
+          A password reset email will be sent to the user with the new temporary password.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="passwordResetForm" action="/admin/users/reset-password/" method="POST" style="display: inline; margin: 0;">
+          <input type="hidden" name="newPassword" id="hiddenNewPassword">
+          <button type="submit" class="btn btn-primary" id="resetPasswordBtn">Reset Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View User Modal -->
+<div class="modal fade" id="viewUserModal" tabindex="-1" aria-labelledby="viewUserModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewUserModalLabel">User Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- This will be populated via AJAX -->
+        <div class="text-center p-4" id="userDetailsLoading">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Loading user details...</p>
+        </div>
+        <div id="userDetailsContent" style="display: none;">
+          <!-- User content will be loaded here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>
+
+<script>
+  // Status Change Modal
+  function openStatusModal(userId, userName, status) {
+    const statusChangeForm = document.getElementById('statusChangeForm');
+    const statusChangeMessage = document.getElementById('statusChangeMessage');
+    const statusWarningText = document.getElementById('statusWarningText');
+    const statusChangeBtn = document.getElementById('statusChangeBtn');
+    const newStatusInput = document.getElementById('newStatusInput');
+    const suspensionOptions = document.getElementById('suspendOptions');
+    const suspensionDuration = document.getElementById('suspensionDuration');
+    const suspensionDurationInput = document.getElementById('suspensionDurationInput');
+    
+    statusChangeForm.action = `/admin/users/status/${userId}`;
+    newStatusInput.value = status;
+    
+    let btnClass = 'btn-primary';
+    let btnText = 'Confirm';
+    
+    // Reset display
+    suspensionOptions.style.display = 'none';
+    
+    // Update modal content based on status
+    if (status === 'suspended') {
+      statusChangeMessage.textContent = `Are you sure you want to suspend user "${userName}"?`;
+      statusWarningText.textContent = 'This will temporarily prevent the user from logging in.';
+      btnClass = 'btn-warning';
+      btnText = 'Suspend User';
+      suspensionOptions.style.display = 'block';
+      
+      // Update suspension duration
+      suspensionDuration.addEventListener('change', function() {
+        suspensionDurationInput.value = this.value;
+      });
+    } 
+    else if (status === 'banned') {
+      statusChangeMessage.textContent = `Are you sure you want to ban user "${userName}"?`;
+      statusWarningText.textContent = 'This will permanently prevent the user from accessing the system. This action is difficult to reverse.';
+      btnClass = 'btn-danger';
+      btnText = 'Ban User';
+    }
+    else if (status === 'active') {
+      statusChangeMessage.textContent = `Are you sure you want to reactivate user "${userName}"?`;
+      statusWarningText.textContent = 'This will restore normal access for this user.';
+      btnClass = 'btn-success';
+      btnText = 'Reactivate User';
+    }
+    
+    // Update button
+    statusChangeBtn.className = `btn ${btnClass}`;
+    statusChangeBtn.textContent = btnText;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+    modal.show();
+  }
+  
+  // Role Change Modal
+  function openRoleModal(userId, userName, newRole) {
+    const roleChangeForm = document.getElementById('roleChangeForm');
+    const roleChangeMessage = document.getElementById('roleChangeMessage');
+    const adminWarning = document.getElementById('adminWarning');
+    const newRoleInput = document.getElementById('newRoleInput');
+    
+    roleChangeForm.action = `/admin/users/role/${userId}`;
+    newRoleInput.value = newRole;
+    
+    // Update modal content based on role
+    if (newRole === 'admin') {
+      roleChangeMessage.textContent = `Are you sure you want to make "${userName}" an administrator?`;
+      adminWarning.style.display = 'block';
+    } else {
+      roleChangeMessage.textContent = `Are you sure you want to remove administrator privileges from "${userName}"?`;
+      adminWarning.style.display = 'none';
+    }
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('roleChangeModal'));
+    modal.show();
+  }
+  
+  // Password Reset Modal
+  function openPasswordResetModal(userId, userEmail) {
+    const passwordResetForm = document.getElementById('passwordResetForm');
+    const passwordResetMessage = document.getElementById('passwordResetMessage');
+    const newPassword = document.getElementById('newPassword');
+    const confirmNewPassword = document.getElementById('confirmNewPassword');
+    const hiddenNewPassword = document.getElementById('hiddenNewPassword');
+    const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+    
+    passwordResetForm.action = `/admin/users/reset-password/${userId}`;
+    passwordResetMessage.textContent = `Reset password for ${userEmail}`;
+    
+    // Clear password fields
+    newPassword.value = '';
+    confirmNewPassword.value = '';
+    
+    // Password validation
+    resetPasswordBtn.addEventListener('click', function(event) {
+      if (newPassword.value !== confirmNewPassword.value) {
+        event.preventDefault();
+        alert('Passwords do not match!');
+        return false;
+      }
+      
+      if (newPassword.value.length < 6) {
+        event.preventDefault();
+        alert('Password must be at least 6 characters long!');
+        return false;
+      }
+      
+      hiddenNewPassword.value = newPassword.value;
+      return true;
+    });
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('passwordResetModal'));
+    modal.show();
+  }
+  
+  // View User Modal - this would normally use AJAX to fetch user details
+  function openViewModal(userId) {
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('viewUserModal'));
+    modal.show();
+    
+    // In a real implementation, you would use AJAX to fetch user details
+    // For this example, we'll simulate loading and then show some placeholder content
+    setTimeout(() => {
+      document.getElementById('userDetailsLoading').style.display = 'none';
+      document.getElementById('userDetailsContent').style.display = 'block';
+      document.getElementById('userDetailsContent').innerHTML = `
+        <div class="row">
+          <div class="col-md-4 text-center mb-3">
+            <div class="avatar-placeholder rounded-circle bg-secondary text-white mx-auto d-flex align-items-center justify-content-center" style="width: 100px; height: 100px; font-size: 2.5rem;">
+              U
+            </div>
+            <h5 class="mt-3">User Profile</h5>
+            <p class="text-muted">ID: ${userId}</p>
+          </div>
+          <div class="col-md-8">
+            <h5>Activity Summary</h5>
+            <div class="row g-3 mb-4">
+              <div class="col-6 col-md-4">
+                <div class="border rounded p-3 text-center">
+                  <h3 class="text-primary mb-0">2</h3>
+                  <span class="small text-muted d-block">Bookings</span>
+                </div>
+              </div>
+              <div class="col-6 col-md-4">
+                <div class="border rounded p-3 text-center">
+                  <h3 class="text-success mb-0">5</h3>
+                  <span class="small text-muted d-block">Orders</span>
+                </div>
+              </div>
+              <div class="col-6 col-md-4">
+                <div class="border rounded p-3 text-center">
+                  <h3 class="text-info mb-0">3</h3>
+                  <span class="small text-muted d-block">Reviews</span>
+                </div>
+              </div>
+            </div>
+            
+            <h6>Recent Activity</h6>
+            <ul class="list-group mb-3">
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <i class="fas fa-bed text-primary me-2"></i>
+                  Booked Room: Deluxe Suite
+                  <small class="d-block text-muted">Room #301</small>
+                </div>
+                <small>2 days ago</small>
+              </li>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <i class="fas fa-utensils text-success me-2"></i>
+                  Ordered Room Service
+                  <small class="d-block text-muted">3 items - $45.50</small>
+                </div>
+                <small>3 days ago</small>
+              </li>
+            </ul>
+          </div>
+        </div>
+      `;
+    }, 1000);
+  }
+</script>

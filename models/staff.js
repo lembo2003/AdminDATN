@@ -14,18 +14,30 @@ class Staff {
    */
   static async create(staffData, imageFile = null) {
     const staffId = `staff_${uuidv4()}`;
-    
+
     let imageUrl = '';
-    
+
     // Handle image upload to local storage
     if (imageFile) {
-      imageUrl = imageFile.path
-        ? `/uploads/staff/${path.basename(imageFile.path)}`
-        : imageFile.fileUrl || '';
+      const uploadDir = path.join(__dirname, '../public/uploads/staff');
+
+      // Ensure directory exists
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      // Generate a unique filename
+      const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.jpg`;
+      const filepath = path.join(uploadDir, filename);
+
+      // Write the file to disk
+      fs.writeFileSync(filepath, imageFile);
+
+      imageUrl = `/uploads/staff/${filename}`;
     } else if (staffData.imageUrl) {
       imageUrl = staffData.imageUrl;
     }
-    
+
     const newStaff = {
       staffId,
       name: staffData.name,
@@ -35,10 +47,17 @@ class Staff {
       department: staffData.department || '',
       imageUrl,
       isActive: staffData.isActive !== false,
+
+      // Employee specific details
+      employeeId: staffData.employeeId || '',
+      joinDate: staffData.joinDate ? new Date(staffData.joinDate) : new Date(),
+      emergencyContact: staffData.emergencyContact || '',
+      notes: staffData.notes || '',
+
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     await staffCollection.doc(staffId).set(newStaff);
     return { id: staffId, ...newStaff };
   }
@@ -50,11 +69,11 @@ class Staff {
    */
   static async getById(staffId) {
     const staffDoc = await staffCollection.doc(staffId).get();
-    
+
     if (!staffDoc.exists) {
       return null;
     }
-    
+
     return { id: staffDoc.id, ...staffDoc.data() };
   }
 
@@ -65,20 +84,20 @@ class Staff {
    */
   static async getAll(filters = {}) {
     let query = staffCollection;
-    
+
     // Apply filters
     if (filters.department) {
       query = query.where('department', '==', filters.department);
     }
-    
+
     if (filters.position) {
       query = query.where('position', '==', filters.position);
     }
-    
+
     if (filters.isActive !== undefined) {
       query = query.where('isActive', '==', filters.isActive);
     }
-    
+
     const snapshot = await query.get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
@@ -92,13 +111,13 @@ class Staff {
    */
   static async update(staffId, staffData, imageFile = null) {
     const staffDoc = await staffCollection.doc(staffId).get();
-    
+
     if (!staffDoc.exists) {
       throw new Error('Staff member not found');
     }
-    
+
     let imageUrl = staffDoc.data().imageUrl;
-    
+
     // Upload new image if provided
     if (imageFile) {
       // Delete old image if it exists
@@ -108,21 +127,53 @@ class Staff {
           fs.unlinkSync(oldImagePath);
         }
       }
-      
+
       // Save new image
-      imageUrl = imageFile.path
-        ? `/uploads/staff/${path.basename(imageFile.path)}`
-        : imageFile.fileUrl || '';
+      const uploadDir = path.join(__dirname, '../public/uploads/staff');
+
+      // Ensure directory exists
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      // Generate a unique filename
+      const filename = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.jpg`;
+      const filepath = path.join(uploadDir, filename);
+
+      // Write the file to disk
+      fs.writeFileSync(filepath, imageFile);
+
+      imageUrl = `/uploads/staff/${filename}`;
     } else if (staffData.imageUrl) {
       imageUrl = staffData.imageUrl;
     }
-    
+
+    // Prepare update data object with only the fields we want to update
     const updateData = {
-      ...staffData,
+      name: staffData.name,
+      email: staffData.email,
+      phone: staffData.phone || '',
+      position: staffData.position || '',
+      department: staffData.department || '',
       imageUrl,
+      isActive: staffData.isActive !== false,
+
+      // Employee specific details (handle null/undefined cases)
+      employeeId: staffData.employeeId || staffDoc.data().employeeId || '',
+      emergencyContact: staffData.emergencyContact || staffDoc.data().emergencyContact || '',
+      notes: staffData.notes || staffDoc.data().notes || '',
+
       updatedAt: new Date()
     };
-    
+
+    // Only add joinDate if it exists in staffData or in the existing document
+    if (staffData.joinDate) {
+      updateData.joinDate = new Date(staffData.joinDate);
+    } else if (staffDoc.data().joinDate) {
+      // Use existing joinDate from document
+      updateData.joinDate = staffDoc.data().joinDate;
+    }
+
     await staffCollection.doc(staffId).update(updateData);
     return this.getById(staffId);
   }
@@ -135,7 +186,7 @@ class Staff {
   static async delete(staffId) {
     // Get the staff first to get image URL
     const staff = await this.getById(staffId);
-    
+
     if (staff && staff.imageUrl && staff.imageUrl.startsWith('/uploads/')) {
       // Delete image file
       const imagePath = path.join(__dirname, '../public', staff.imageUrl);
@@ -143,7 +194,7 @@ class Staff {
         fs.unlinkSync(imagePath);
       }
     }
-    
+
     // Delete the staff
     await staffCollection.doc(staffId).delete();
   }
@@ -157,7 +208,7 @@ class Staff {
       .where('isActive', '==', true)
       .where('department', '==', 'Room Service')
       .get();
-    
+
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 }

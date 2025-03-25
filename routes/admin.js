@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
 const amenityController = require('../controllers/amenityController');
+// const userController = require('../controllers/userController');
+const adminUserController = require('../controllers/adminUserController');
 const isAdmin = require('../middleware/isAdmin');
 const multer = require('multer');
 
@@ -66,10 +68,11 @@ router.post('/order-items/edit/:itemId', upload.single('image'), adminController
 router.delete('/order-items/delete/:itemId', adminController.deleteOrderItem);
 
 // User Management
-router.get('/users', adminController.getUsers);
-router.get('/users/edit/:userId', adminController.getEditUser);
-router.post('/users/edit/:userId', adminController.postEditUser);
-router.delete('/users/delete/:userId', adminController.deleteUser);
+router.get('/users', adminUserController.getUsers);
+router.post('/users/status/:userId', adminUserController.updateUserStatus);
+router.post('/users/role/:userId', adminUserController.updateUserRole);
+router.post('/users/reset-password/:userId', adminUserController.resetUserPassword);
+router.get('/users/details/:userId', adminUserController.getUserDetails);
 
 // Staff Management
 router.get('/staff', adminController.getStaff);

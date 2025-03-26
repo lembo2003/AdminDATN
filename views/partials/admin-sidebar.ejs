@@ -1,154 +1,396 @@
-<nav class="bg-dark text-white sidebar">
-  <div class="d-flex align-items-center justify-content-between p-3">
-    <span class="fs-4">Admin Panel</span>
-    <i class="fas fa-bars" data-bs-toggle="collapse" data-bs-target="#admin-sidebar-menu" aria-expanded="false" aria-controls="admin-sidebar-menu" style="cursor: pointer;"></i>
+<nav class="admin-sidebar">
+  <div class="sidebar-header">
+    <div class="brand-wrapper">
+      <i class="fas fa-hotel brand-icon"></i>
+      <span class="brand-text">Lembo's Admin</span>
+    </div>
+    <button class="toggler-btn" type="button" data-bs-toggle="collapse" data-bs-target="#admin-sidebar-menu" aria-expanded="true" aria-controls="admin-sidebar-menu">
+      <i class="fas fa-bars"></i>
+    </button>
   </div>
-  <hr class="mx-3 my-2">
-  
+
+  <div class="user-profile">
+    <div class="avatar">
+      <i class="fas fa-user-circle"></i>
+    </div>
+    <div class="user-info">
+      <div class="user-name"><%= user.name || user.email %></div>
+      <div class="user-role">Administrator</div>
+    </div>
+  </div>
+
+  <div class="sidebar-divider"></div>
+
   <div class="collapse show" id="admin-sidebar-menu">
-    <!-- Core Management Section -->
+    <div class="menu-section">
+      <div class="menu-heading">MAIN</div>
+      <ul class="menu-items">
+        <li class="menu-item <%= path === '/admin/dashboard' ? 'active' : '' %>">
+          <a href="/admin/dashboard">
+            <i class="menu-icon fas fa-tachometer-alt"></i>
+            <span class="menu-title">Dashboard</span>
+          </a>
+        </li>
+      </ul>
+    </div>
 
-    <ul class="nav flex-column px-2 mb-3">
-      <li class="nav-item mb-1">
-        <a href="/admin/dashboard" class="nav-link text-white rounded <%= path === '/admin/dashboard' ? 'active' : '' %>">
-          <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-        </a>
-      </li>
-    </ul>
+    <div class="menu-section">
+      <div class="menu-heading">PROPERTY</div>
+      <ul class="menu-items">
+        <li class="menu-item <%= path.startsWith('/admin/rooms') ? 'active' : '' %>">
+          <a href="/admin/rooms">
+            <i class="menu-icon fas fa-bed"></i>
+            <span class="menu-title">Rooms</span>
+          </a>
+        </li>
+        <li class="menu-item <%= path.startsWith('/admin/room-types') ? 'active' : '' %>">
+          <a href="/admin/room-types">
+            <i class="menu-icon fas fa-tags"></i>
+            <span class="menu-title">Room Types</span>
+          </a>
+        </li>
+        <li class="menu-item <%= path.startsWith('/admin/amenities') ? 'active' : '' %>">
+          <a href="/admin/amenities">
+            <i class="menu-icon fas fa-concierge-bell"></i>
+            <span class="menu-title">Amenities</span>
+          </a>
+        </li>
+      </ul>
+    </div>
 
-    <!-- Property Management Section -->
+    <div class="menu-section">
+      <div class="menu-heading">BOOKINGS & SERVICES</div>
+      <ul class="menu-items">
+        <li class="menu-item <%= path.startsWith('/admin/bookings') ? 'active' : '' %>">
+          <a href="/admin/bookings">
+            <i class="menu-icon fas fa-calendar-check"></i>
+            <span class="menu-title">Bookings</span>
+          </a>
+        </li>
+        <li class="menu-item <%= path.startsWith('/admin/orders') ? 'active' : '' %>">
+          <a href="/admin/orders">
+            <i class="menu-icon fas fa-shopping-cart"></i>
+            <span class="menu-title">Orders</span>
+          </a>
+        </li>
+        <li class="menu-item <%= path.startsWith('/admin/order-items') ? 'active' : '' %>">
+          <a href="/admin/order-items">
+            <i class="menu-icon fas fa-utensils"></i>
+            <span class="menu-title">Menu Items</span>
+          </a>
+        </li>
+      </ul>
+    </div>
 
-    <ul class="nav flex-column px-2 mb-3">
-      <li class="nav-item mb-1">
-        <a class="nav-link text-white rounded" data-bs-toggle="collapse" href="#property-submenu" role="button" aria-expanded="false" aria-controls="property-submenu">
-          <i class="fas fa-building me-2"></i>Property
-          <i class="fas fa-chevron-down float-end"></i>
-        </a>
-        <div class="collapse" id="property-submenu">
-          <ul class="nav flex-column pl-3">
-            <li class="nav-item">
-              <a href="/admin/rooms" class="nav-link text-white rounded <%= path.startsWith('/admin/rooms') ? 'active' : '' %>">
-                <i class="fas fa-bed me-2"></i>Rooms
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="/admin/room-types" class="nav-link text-white rounded <%= path.startsWith('/admin/room-types') ? 'active' : '' %>">
-                <i class="fas fa-tags me-2"></i>Room Types
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="/admin/amenities" class="nav-link text-white rounded <%= path.startsWith('/admin/amenities') ? 'active' : '' %>">
-                <i class="fas fa-concierge-bell me-2"></i>Amenities
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
-    </ul>
-
-    <!-- Booking & Order Management Section -->
-    
-    <ul class="nav flex-column px-2 mb-3">
-      <li class="nav-item mb-1">
-        <a class="nav-link text-white rounded" data-bs-toggle="collapse" href="#booking-submenu" role="button" aria-expanded="false" aria-controls="booking-submenu">
-          <i class="fas fa-clipboard-list me-2"></i>Bookings & Orders
-          <i class="fas fa-chevron-down float-end"></i>
-        </a>
-        <div class="collapse" id="booking-submenu">
-          <ul class="nav flex-column pl-3">
-            <li class="nav-item">
-              <a href="/admin/bookings" class="nav-link text-white rounded <%= path.startsWith('/admin/bookings') ? 'active' : '' %>">
-                <i class="fas fa-calendar-check me-2"></i>Bookings
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="/admin/orders" class="nav-link text-white rounded <%= path.startsWith('/admin/orders') ? 'active' : '' %>">
-                <i class="fas fa-shopping-cart me-2"></i>Orders
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="/admin/order-items" class="nav-link text-white rounded <%= path.startsWith('/admin/order-items') ? 'active' : '' %>">
-                <i class="fas fa-utensils me-2"></i>Menu Items
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
-    </ul>
-
-    <!-- User & Staff Management Section -->
-    
-    <ul class="nav flex-column px-2 mb-3">
-      <li class="nav-item mb-1">
-        <a class="nav-link text-white rounded" data-bs-toggle="collapse" href="#user-submenu" role="button" aria-expanded="false" aria-controls="user-submenu">
-          <i class="fas fa-users me-2"></i>Users & Staff
-          <i class="fas fa-chevron-down float-end"></i>
-        </a>
-        <div class="collapse" id="user-submenu">
-          <ul class="nav flex-column pl-3">
-            <li class="nav-item">
-              <a href="/admin/users" class="nav-link text-white rounded <%= path === '/admin/users' ? 'active' : '' %>">
-                <i class="fas fa-user me-2"></i>Users
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="/admin/users/appeals" class="nav-link text-white rounded <%= path === '/admin/users/appeals' ? 'active' : '' %>">
-                <i class="fas fa-gavel me-2"></i>User Appeals
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="/admin/staff" class="nav-link text-white rounded <%= path.startsWith('/admin/staff') ? 'active' : '' %>">
-                <i class="fas fa-user-tie me-2"></i>Staff
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
-    </ul>
+    <div class="menu-section">
+      <div class="menu-heading">USERS & STAFF</div>
+      <ul class="menu-items">
+        <li class="menu-item <%= path === '/admin/users' ? 'active' : '' %>">
+          <a href="/admin/users">
+            <i class="menu-icon fas fa-users"></i>
+            <span class="menu-title">Users</span>
+          </a>
+        </li>
+        <li class="menu-item <%= path.startsWith('/admin/staff') ? 'active' : '' %>">
+          <a href="/admin/staff">
+            <i class="menu-icon fas fa-user-tie"></i>
+            <span class="menu-title">Staff</span>
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
 
-  <!-- Site Navigation -->
-  <div class="nav-item mt-3 mx-3">
-    <a href="/" class="btn btn-outline-light btn-sm w-100">
-      <i class="fas fa-home me-2"></i>Back to Site
+  <div class="sidebar-footer">
+    <a href="/" class="back-to-site">
+      <i class="fas fa-home"></i>
+      <span>Back to Site</span>
     </a>
   </div>
 </nav>
 
 <style>
-.sidebar .nav-link[aria-expanded="true"] .fa-chevron-down {
-  transform: rotate(180deg);
+/* Admin Sidebar Styles */
+.admin-sidebar {
+  width: 260px;
+  height: 100vh;
+  background: linear-gradient(180deg, #2c3e50, #1a252f);
+  color: #e9ecef;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1030;
+  transition: all 0.3s ease;
 }
 
-.sidebar .nav-link .fa-chevron-down {
-  transition: transform 0.3s ease;
+/* Sidebar Header */
+.sidebar-header {
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.sidebar .collapse.show {
-  display: block;
+.brand-wrapper {
+  display: flex;
+  align-items: center;
 }
 
-.sidebar .nav-link {
-  position: relative;
+.brand-icon {
+  font-size: 1.5rem;
+  color: #3498db;
+  margin-right: 0.75rem;
+}
+
+.brand-text {
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.toggler-btn {
+  background: transparent;
+  border: none;
+  color: #8c9eff;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.toggler-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* User Profile Section */
+.user-profile {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: #3498db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.75rem;
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.user-role {
+  font-size: 0.8rem;
+  color: #a9b7d0;
+}
+
+/* Divider */
+.sidebar-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 0.5rem 0;
+}
+
+/* Menu Sections */
+.menu-section {
+  padding: 0.5rem 0;
+}
+
+.menu-heading {
+  color: #8c9eff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 0.5rem 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.menu-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu-item {
+  margin: 0.25rem 0.75rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.menu-item a {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  color: #d1d7e0;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.menu-item:hover a {
+  color: #fff;
+  transform: translateX(3px);
+}
+
+.menu-item.active {
+  background-color: #3498db;
+}
+
+.menu-item.active a {
+  color: #fff;
+  font-weight: 500;
+}
+
+.menu-icon {
+  width: 20px;
+  text-align: center;
+  margin-right: 10px;
+  font-size: 1rem;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.back-to-site {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d1d7e0;
+  text-decoration: none;
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.back-to-site:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.back-to-site i {
+  margin-right: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .admin-sidebar {
+    width: 60px;
+    overflow: visible;
+  }
+  
+  .brand-text,
+  .menu-title,
+  .user-info,
+  .menu-heading,
+  .back-to-site span {
+    display: none;
+  }
+  
+  .menu-icon {
+    margin-right: 0;
+    font-size: 1.2rem;
+  }
+  
+  .menu-item a {
+    justify-content: center;
+    padding: 0.75rem;
+  }
+  
+  .avatar {
+    margin-right: 0;
+  }
+  
+  .user-profile {
+    justify-content: center;
+  }
+  
+  .admin-sidebar:hover {
+    width: 260px;
+  }
+  
+  .admin-sidebar:hover .brand-text,
+  .admin-sidebar:hover .menu-title,
+  .admin-sidebar:hover .user-info,
+  .admin-sidebar:hover .menu-heading,
+  .admin-sidebar:hover .back-to-site span {
+    display: block;
+  }
+  
+  .admin-sidebar:hover .menu-icon {
+    margin-right: 10px;
+  }
+  
+  .admin-sidebar:hover .menu-item a {
+    justify-content: flex-start;
+    padding: 0.75rem 1rem;
+  }
+  
+  .admin-sidebar:hover .avatar {
+    margin-right: 0.75rem;
+  }
+  
+  .admin-sidebar:hover .user-profile {
+    justify-content: flex-start;
+  }
 }
 </style>
 
 <script>
+// Make sure all active items get highlighted properly
 document.addEventListener('DOMContentLoaded', function() {
-  // Close other submenus when one is opened
-  const submenus = document.querySelectorAll('[data-bs-toggle="collapse"]');
-  submenus.forEach(submenu => {
-    submenu.addEventListener('click', function() {
-      const targetId = this.getAttribute('href');
-      const targetSubmenu = document.querySelector(targetId);
-      
-      // Close other open submenus
-      document.querySelectorAll('.collapse').forEach(collapse => {
-        if (collapse !== targetSubmenu) {
-          bootstrap.Collapse.getInstance(collapse)?.hide();
-        }
-      });
-    });
+  // Check if any menu item is active based on current path
+  const currentPath = window.location.pathname;
+  const menuItems = document.querySelectorAll('.menu-item');
+  
+  menuItems.forEach(item => {
+    const link = item.querySelector('a').getAttribute('href');
+    if (currentPath.startsWith(link) && link !== '/') {
+      item.classList.add('active');
+    }
   });
+  
+  // Expand sidebar on hover for small screens
+  const sidebar = document.querySelector('.admin-sidebar');
+  if (window.innerWidth <= 992) {
+    sidebar.addEventListener('mouseenter', function() {
+      sidebar.style.width = '260px';
+    });
+    
+    sidebar.addEventListener('mouseleave', function() {
+      sidebar.style.width = '60px';
+    });
+  }
 });
 </script>

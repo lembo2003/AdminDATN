@@ -91,6 +91,12 @@
             <span class="menu-title">Users</span>
           </a>
         </li>
+        <li class="menu-item <%= path === '/admin/users/appeals' ? 'active' : '' %>">
+          <a href="/admin/users/appeals">
+            <i class="menu-icon fas fa-gavel"></i>
+            <span class="menu-title">User Appeals</span>
+          </a>
+        </li>
         <li class="menu-item <%= path.startsWith('/admin/staff') ? 'active' : '' %>">
           <a href="/admin/staff">
             <i class="menu-icon fas fa-user-tie"></i>

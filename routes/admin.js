@@ -74,6 +74,11 @@ router.post('/users/role/:userId', adminUserController.updateUserRole);
 router.post('/users/reset-password/:userId', adminUserController.resetUserPassword);
 router.get('/users/details/:userId', adminUserController.getUserDetails);
 
+
+// User Appeals Management
+router.get('/users/appeals', adminUserController.getAppeals);
+router.post('/users/appeals/:appealId', adminUserController.processAppeal);
+
 // Staff Management
 router.get('/staff', adminController.getStaff);
 router.get('/staff/add', adminController.getAddStaff);

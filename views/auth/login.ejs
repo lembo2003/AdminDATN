@@ -1,47 +1,49 @@
 <%- include('../partials/header') %>
 
-<div class="container mt-5">
-  <div class="row justify-content-center">
+<div class="container">
+  <div class="row justify-content-center mt-5">
     <div class="col-md-6">
-      <div class="card shadow-lg">
+      <div class="card shadow">
         <div class="card-header bg-primary text-white">
-          <h3 class="text-center mb-0">Login</h3>
+          <h3 class="mb-0">Login</h3>
         </div>
         <div class="card-body">
-          <% if(success_msg != ''){ %>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-              <%= success_msg %>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          <% } %>
+          <!-- Flash Messages -->
+          <%- include('../partials/flash-messages') %>
           
-          <% if(error_msg != ''){ %>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-              <%= error_msg %>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          <% } %>
-          
+          <!-- Login Form -->
           <form action="/auth/login" method="POST">
             <div class="mb-3">
-              <label for="email" class="form-label">Email address</label>
-              <input type="email" class="form-control" id="email" name="email" required>
+              <label for="email" class="form-label">Email Address</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email" 
+                name="email" 
+                placeholder="Enter your email" 
+                required
+                <% if(locals.form_data && form_data.email) { %>value="<%= form_data.email %>"<% } %>
+              >
             </div>
             <div class="mb-3">
               <label for="password" class="form-label">Password</label>
-              <input type="password" class="form-control" id="password" name="password" required>
+              <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="remember" name="remember">
+              <label class="form-check-label" for="remember">Remember me</label>
             </div>
             <div class="d-grid gap-2">
               <button type="submit" class="btn btn-primary">Login</button>
             </div>
           </form>
           
+          <!-- Links -->
           <div class="mt-3 text-center">
-            <a href="/auth/forgot-password" class="text-decoration-none">Forgot Password?</a>
-          </div>
-          <hr>
-          <div class="text-center">
-            <p>Don't have an account? <a href="/auth/signup" class="text-decoration-none">Sign Up</a></p>
+            <a href="/auth/forgot-password" class="text-decoration-none">Forgot password?</a>
+            <div class="mt-2">
+              Don't have an account? <a href="/auth/signup" class="text-decoration-none">Sign up</a>
+            </div>
           </div>
         </div>
       </div>

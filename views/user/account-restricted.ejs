@@ -1,0 +1,190 @@
+<%- include('../partials/header') %>
+
+<!-- Include custom CSS for this page -->
+<link rel="stylesheet" href="/css/account-restricted.css">
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card border-danger restriction-card">
+        <div class="card-header bg-danger text-white">
+          <h3 class="mb-0">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Account Restricted
+          </h3>
+        </div>
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <% if (status === 'suspended') { %>
+              <i class="fas fa-user-clock restriction-icon"></i>
+            <% } else { %>
+              <i class="fas fa-user-slash restriction-icon"></i>
+            <% } %>
+          </div>
+          
+          <% if (status === 'suspended') { %>
+            <div class="alert alert-warning">
+              <h4 class="alert-heading">Your account has been temporarily suspended</h4>
+              <p>Your account access has been suspended by the hotel administration.</p>
+              
+              <% if (suspensionEndTime) { %>
+                <hr>
+                <div class="restriction-countdown p-3">
+                  <h5 class="mb-3 text-center">Account Reactivation Countdown</h5>
+                  
+                  <p class="text-center mb-2">Your account will be automatically reactivated on:</p>
+                  <p class="text-center fw-bold" id="suspension-end-time" data-end-time="<%= suspensionEndTime %>">
+                    <%= new Date(suspensionEndTime).toLocaleDateString() %> at <%= new Date(suspensionEndTime).toLocaleTimeString() %>
+                  </p>
+                  
+                  <div id="suspension-countdown" class="countdown-container d-none">
+                    <div class="countdown-item">
+                      <span id="countdown-days" class="countdown-value">0</span>
+                      <span class="countdown-label">Days</span>
+                    </div>
+                    <div class="countdown-item">
+                      <span id="countdown-hours" class="countdown-value">00</span>
+                      <span class="countdown-label">Hours</span>
+                    </div>
+                    <div class="countdown-item">
+                      <span id="countdown-minutes" class="countdown-value">00</span>
+                      <span class="countdown-label">Minutes</span>
+                    </div>
+                    <div class="countdown-item">
+                      <span id="countdown-seconds" class="countdown-value">00</span>
+                      <span class="countdown-label">Seconds</span>
+                    </div>
+                  </div>
+                </div>
+              <% } else { %>
+                <p class="text-center mt-3">Your suspension period has not been specified. Please contact customer support for more information.</p>
+              <% } %>
+            </div>
+          <% } else if (status === 'banned') { %>
+            <div class="alert alert-danger">
+              <h4 class="alert-heading">Your account has been banned</h4>
+              <p>We regret to inform you that your account has been permanently banned from our platform due to violations of our terms of service or community guidelines.</p>
+            </div>
+          <% } %>
+
+          <div class="accordion mt-4" id="faqAccordion">
+            <!-- FAQ 1: What does this mean? -->
+            <div class="accordion-item faq-item">
+              <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button faq-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  <i class="fas fa-question-circle me-2"></i> What does this restriction mean?
+                </button>
+              </h2>
+              <div id="collapseOne" class="accordion-collapse collapse show faq-answer" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  <p>While your account is restricted:</p>
+                  <ul>
+                    <li>You cannot make new bookings or reservations</li>
+                    <li>You cannot place room service orders</li>
+                    <li>You cannot access your account dashboard or profile</li>
+                    <li>Any existing reservations may be reviewed by our staff</li>
+                    <li>You may be unable to access certain hotel services</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Rest of FAQs here... -->
+
+          </div>
+
+          <div class="mt-5">
+            <h5 class="border-bottom pb-2"><i class="fas fa-headset me-2"></i> Need assistance?</h5>
+            <p>If you have questions or would like to appeal this decision, please contact our support team:</p>
+            
+            <div class="contact-options">
+              <a href="mailto:support@lemboshotel.com" class="contact-option text-decoration-none">
+                <div class="d-flex flex-column align-items-center text-center">
+                  <i class="fas fa-envelope fa-2x mb-2 text-primary"></i>
+                  <h6 class="mb-1">Email Support</h6>
+                  <span class="small text-muted">dng.trn0909@gmail.com</span>
+                </div>
+              </a>
+              
+              <a href="tel:+123456789" class="contact-option text-decoration-none">
+                <div class="d-flex flex-column align-items-center text-center">
+                  <i class="fas fa-phone fa-2x mb-2 text-success"></i>
+                  <h6 class="mb-1">Call Support</h6>
+                  <span class="small text-muted">+84 90465 6003</span>
+                </div>
+              </a>
+              
+              <a href="#" class="contact-option text-decoration-none" data-bs-toggle="modal" data-bs-target="#appealModal">
+                <div class="d-flex flex-column align-items-center text-center">
+                  <i class="fas fa-file-alt fa-2x mb-2 text-warning"></i>
+                  <h6 class="mb-1">Submit Appeal</h6>
+                  <span class="small text-muted">Fill out appeal form</span>
+                </div>
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <form action="/auth/logout" method="GET" class="d-grid">
+            <button type="submit" class="btn btn-danger">
+              <i class="fas fa-sign-out-alt me-2"></i> Logout
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Appeal Form Modal -->
+<div class="modal fade" id="appealModal" tabindex="-1" aria-labelledby="appealModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-light">
+        <h5 class="modal-title" id="appealModalLabel"><i class="fas fa-file-alt me-2"></i> Submit Appeal</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="appealForm" action="/users/submit-appeal" method="POST">
+          <div class="mb-3">
+            <label for="appealReason" class="form-label">Reason for Appeal</label>
+            <select class="form-select" id="appealReason" name="appealReason" required>
+              <option value="" selected disabled>Select a reason</option>
+              <option value="error">This was a mistake</option>
+              <option value="misunderstanding">There was a misunderstanding</option>
+              <option value="resolved">The issue has been resolved</option>
+              <option value="other">Other reason</option>
+            </select>
+          </div>
+          
+          <div class="mb-3">
+            <label for="appealExplanation" class="form-label">Your Explanation</label>
+            <textarea class="form-control" id="appealExplanation" name="explanation" rows="5" placeholder="Please provide details about your appeal..." required></textarea>
+          </div>
+          
+          <div class="mb-3">
+            <label for="appealContact" class="form-label">Preferred Contact Method</label>
+            <select class="form-select" id="appealContact" name="contactMethod" required>
+              <option value="email">Email</option>
+              <option value="phone">Phone</option>
+            </select>
+          </div>
+          
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="termsCheck" required>
+            <label class="form-check-label" for="termsCheck">I understand that submitting false information may result in permanent account termination.</label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" form="appealForm" class="btn btn-primary">Submit Appeal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include custom JS for this page -->
+<script src="/js/account-restricted.js"></script>
+
+<%- include('../partials/footer') %>

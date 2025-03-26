@@ -48,9 +48,16 @@
       </a>
     </li>
     <li class="nav-item mb-1">
-      <a href="/admin/users" class="nav-link text-white rounded <%= path.startsWith('/admin/users') ? 'active' : '' %>">
+      <a href="/admin/users" class="nav-link text-white rounded <%= path === '/admin/users' ? 'active' : '' %>">
         <i class="fas fa-users"></i>
         Users
+      </a>
+    </li>
+    <!-- New Appeal Management Link -->
+    <li class="nav-item mb-1">
+      <a href="/admin/users/appeals" class="nav-link text-white rounded <%= path === '/admin/users/appeals' ? 'active' : '' %>">
+        <i class="fas fa-gavel"></i>
+        User Appeals
       </a>
     </li>
     <li class="nav-item mb-1">

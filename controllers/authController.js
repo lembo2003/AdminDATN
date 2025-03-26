@@ -39,13 +39,19 @@ exports.postLogin = async (req, res) => {
   const { email, password } = req.body;
   
   try {
+    // Clear any existing session data first
+    req.session.user = null;
+    req.session.restrictionInfo = null;
+    
+    console.log("Login attempt for email:", email);
+    
     // First, check if the user exists and is banned in our database
     // This happens BEFORE any Firebase authentication attempt
     const userByEmail = await User.getByEmail(email);
     
     // If user exists in our database and is banned or suspended
     if (userByEmail) {
-      console.log("Found user in database:", userByEmail.id, "Status:", userByEmail.status);
+      console.log("Found user in database:", userByEmail.id, "Status:", userByEmail.status || 'active');
       
       // If user is banned, redirect to restricted page
       if (userByEmail.status === 'banned') {
@@ -138,17 +144,34 @@ exports.postLogin = async (req, res) => {
       
       console.log("User authenticated with Firebase:", firebaseUser.uid);
       
-      // Get user data from Firestore or create if not exists
-      let userData = userByEmail;
+      // Get user data from Firestore
+      let userData = await User.getByUid(firebaseUser.uid);
       
       if (!userData) {
-        console.log("User not found in Firestore, creating basic user");
-        userData = await User.create(firebaseUser.uid, {
-          email: firebaseUser.email,
-          role: 'user',
-          status: 'active'
-        });
+        console.log("User not found in Firestore by UID, checking by email");
+        
+        // Try to find by email again (in case UID doesn't match for some reason)
+        userData = userByEmail;
+        
+        if (!userData) {
+          console.log("User still not found, creating basic user");
+          userData = await User.create(firebaseUser.uid, {
+            email: firebaseUser.email,
+            role: 'user',
+            status: 'active'
+          });
+        } else {
+          console.log("Found user by email, updating Firebase UID");
+          // Update the user document to have the correct UID
+          await adminFirestore.collection('users').doc(userData.id).delete();
+          userData = await User.create(firebaseUser.uid, {
+            ...userData,
+            email: firebaseUser.email
+          });
+        }
       }
+      
+      console.log("Setting session with user data:", userData.id, userData.email, userData.role);
       
       // Normal login flow for active users
       req.session.user = userData;
@@ -287,10 +310,13 @@ exports.postSignup = async (req, res) => {
  * Logout user
  */
 exports.logout = (req, res) => {
+  // Clear session completely
   req.session.destroy((err) => {
     if (err) {
       console.error('Logout error:', err);
     }
+    
+    // Redirect to login page
     res.redirect('/auth/login');
   });
 };

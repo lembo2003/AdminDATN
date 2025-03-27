@@ -4,15 +4,21 @@
 module.exports = (req, res, next) => {
   // Check if user is in session
   if (req.session.user) {
-    // Special handling for account-restricted page
-    if (req.path === '/account-restricted') {
-      // Always allow access to account-restricted page if the user has any session
+    // List of allowed paths for restricted users
+    const allowedRestrictedPaths = [
+      '/account-restricted',
+      '/submit-appeal'  // Allow restricted users to submit appeals
+    ];
+    
+    // Special handling for allowed paths
+    if (allowedRestrictedPaths.includes(req.path)) {
+      // Always allow access to these paths if the user has any session
       return next();
     }
     
     // Check if this is a restricted user
     if (req.session.user.restricted === true) {
-      // Restricted users can only access the account-restricted page
+      // Restricted users can only access the specifically allowed pages
       return res.redirect('/users/account-restricted');
     }
     

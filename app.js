@@ -20,6 +20,10 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(methodOverride('_method'));
 
+// Body parsers - IMPORTANT for handling JSON requests
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'hotel-management-secret',

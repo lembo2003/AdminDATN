@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const Booking = require('../models/booking');
 const Order = require('../models/order');
+const Appeal = require('../models/appeal');
 const { auth, adminAuth, adminFirestore } = require('../config/firebase');
 const nodemailer = require('nodemailer');
 
@@ -292,21 +293,8 @@ exports.getAppeals = async (req, res) => {
         // Get filter parameters
         const { status } = req.query;
         
-        // Prepare query
-        let query = adminFirestore.collection('appeals').orderBy('submitted', 'desc');
-        
-        if (status && status !== 'all') {
-            query = query.where('status', '==', status);
-        }
-        
-        // Execute query
-        const snapshot = await query.get();
-        
-        const appeals = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            submitted: doc.data().submitted ? new Date(doc.data().submitted.seconds * 1000).toLocaleString() : 'Unknown'
-        }));
+        // Get appeals using the Appeal model
+        const appeals = await Appeal.getAll({ status });
         
         res.render('admin/users/appeals', {
             title: 'User Appeals',
@@ -319,6 +307,53 @@ exports.getAppeals = async (req, res) => {
         console.error('Get appeals error:', error);
         req.flash('error_msg', 'Error loading appeals');
         res.redirect('/admin/users');
+    }
+};
+
+/**
+ * Process appeal decision
+ */
+exports.processAppeal = async (req, res) => {
+    try {
+        const { appealId } = req.params;
+        const { decision, notes } = req.body;
+        
+        // Get the appeal
+        const appeal = await Appeal.getById(appealId);
+        
+        if (!appeal) {
+            req.flash('error_msg', 'Appeal not found');
+            return res.redirect('/admin/users/appeals');
+        }
+        
+        // Update the appeal status
+        await Appeal.update(appealId, {
+            status: decision,
+            adminNotes: notes || '',
+            processedBy: req.session.user.id
+        });
+        
+        // If approved, reactivate the user's account
+        if (decision === 'approved') {
+            await User.update(appeal.userId, {
+                status: 'active'
+            });
+            
+            // Send notification email to user (if configured)
+            try {
+                // This would be implemented with nodemailer if email service is configured
+                console.log('Appeal approved notification for user:', appeal.userEmail);
+            } catch (emailError) {
+                console.error('Error sending appeal notification email:', emailError);
+            }
+        }
+        
+        req.flash('success_msg', `Appeal ${decision === 'approved' ? 'approved' : 'rejected'} successfully`);
+        res.redirect('/admin/users/appeals');
+    } catch (error) {
+        console.error('Process appeal error:', error);
+        req.flash('error_msg', 'Error processing appeal');
+        res.redirect('/admin/users/appeals');
     }
 };
 

@@ -1,7 +1,8 @@
 const User = require('../models/user');
 const Booking = require('../models/booking');
 const Order = require('../models/order');
-const { auth } = require('../config/firebase');
+const Appeal = require('../models/appeal');
+const { auth, adminFirestore } = require('../config/firebase');
 const auth_middleware = require('../middleware/auth');
 
 /**
@@ -365,17 +366,71 @@ exports.getDashboard = async (req, res) => {
  * Process account appeal form
  */
 exports.submitAppeal = async (req, res) => {
+  console.log('==========================================');
+  console.log('APPEAL SUBMISSION STARTED');
+  console.log('Request method:', req.method);
+  console.log('Request path:', req.path);
+  console.log('Request headers:', req.headers);
+  console.log('Request body:', req.body);
+  console.log('Session user:', req.session.user);
+  console.log('==========================================');
+  
   try {
+    // Check if user is authenticated
+    if (!req.session.user || !req.session.user.id) {
+      console.error('ERROR: User not authenticated for appeal submission');
+      return res.status(401).json({ 
+        success: false, 
+        message: 'You must be logged in to submit an appeal',
+        error: 'NOT_AUTHENTICATED'
+      });
+    }
+    
     const userId = req.session.user.id;
+    console.log('User ID from session:', userId);
+    
+    // Check if the request body contains form data
+    if (!req.body) {
+      console.error('ERROR: Empty request body');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No data provided',
+        error: 'EMPTY_BODY' 
+      });
+    }
+    
     const { appealReason, explanation, contactMethod } = req.body;
+    console.log('Form data extracted:', { appealReason, explanation, contactMethod });
+    
+    // Validate form data
+    if (!appealReason || !explanation || !contactMethod) {
+      console.error('ERROR: Missing required fields:', { appealReason, explanation, contactMethod });
+      return res.status(400).json({ 
+        success: false, 
+        message: 'All fields are required',
+        error: 'MISSING_FIELDS',
+        missing: {
+          appealReason: !appealReason,
+          explanation: !explanation,
+          contactMethod: !contactMethod
+        }
+      });
+    }
     
     // Get the user data
+    console.log('Attempting to get user data for userId:', userId);
     const user = await User.getByUid(userId);
     
     if (!user) {
-      req.flash('error_msg', 'User not found');
-      return res.redirect('/users/account-restricted');
+      console.error('ERROR: User not found for appeal submission, userId:', userId);
+      return res.status(404).json({ 
+        success: false, 
+        message: 'User not found',
+        error: 'USER_NOT_FOUND' 
+      });
     }
+    
+    console.log('User found:', { id: user.id, email: user.email });
     
     // Store the appeal in Firestore
     const appealData = {
@@ -390,24 +445,67 @@ exports.submitAppeal = async (req, res) => {
       status: 'pending' // pending, approved, rejected
     };
     
-    // Create a reference to the appeals collection
-    const appealsCollection = adminFirestore.collection('appeals');
-    await appealsCollection.add(appealData);
+    console.log('Appeal data prepared:', appealData);
     
-    // Send email notification to admin (if configured)
+    // Check if Appeal model exists
+    console.log('Appeal model type:', typeof Appeal);
+    console.log('adminFirestore available:', typeof adminFirestore !== 'undefined');
+    
     try {
-      // This would be implemented with nodemailer if email service is configured
-      console.log('Appeal submitted:', appealData);
-    } catch (emailError) {
-      console.error('Error sending appeal notification email:', emailError);
+      // Try using Appeal model
+      if (typeof Appeal === 'function') {
+        console.log('Using Appeal model to create appeal');
+        const createdAppeal = await Appeal.create(appealData);
+        console.log('Appeal created successfully using model:', createdAppeal);
+      } else {
+        // Fallback to direct Firestore
+        console.log('Appeal model not available as function, using direct Firestore call');
+        if (!adminFirestore) {
+          throw new Error('adminFirestore is not defined');
+        }
+        
+        const appealsCollection = adminFirestore.collection('appeals');
+        console.log('Appeals collection reference created');
+        
+        const appealRef = await appealsCollection.add(appealData);
+        console.log('Appeal created successfully using direct Firestore, ID:', appealRef.id);
+      }
+      
+      console.log('Appeal submission completed successfully');
+      
+      return res.json({ 
+        success: true, 
+        message: 'Your appeal has been submitted successfully. We will review it and contact you soon.'
+      });
+    } catch (firestoreError) {
+      console.error('FIRESTORE ERROR while saving appeal:', firestoreError);
+      console.error('Error name:', firestoreError.name);
+      console.error('Error message:', firestoreError.message);
+      console.error('Error stack:', firestoreError.stack);
+      
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error saving your appeal to our system. Please try again or contact support directly.',
+        error: 'FIRESTORE_ERROR',
+        details: firestoreError.message
+      });
     }
-    
-    req.flash('success_msg', 'Your appeal has been submitted successfully. We will review it and contact you soon.');
-    res.redirect('/users/account-restricted');
   } catch (error) {
-    console.error('Submit appeal error:', error);
-    req.flash('error_msg', 'Error submitting your appeal. Please try again or contact support directly.');
-    res.redirect('/users/account-restricted');
+    console.error('GENERAL ERROR in submit appeal:');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error submitting your appeal. Please try again or contact support directly.',
+      error: 'GENERAL_ERROR',
+      details: error.message
+    });
+  } finally {
+    console.log('==========================================');
+    console.log('APPEAL SUBMISSION PROCESS COMPLETED');
+    console.log('==========================================');
   }
 };
 

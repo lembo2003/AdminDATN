@@ -85,7 +85,7 @@
     <div class="menu-section">
       <div class="menu-heading">USERS & STAFF</div>
       <ul class="menu-items">
-        <li class="menu-item <%= path === '/admin/users' ? 'active' : '' %>">
+        <li class="menu-item <%= (path === '/admin/users' && path !== '/admin/users/appeals') ? 'active' : '' %>">
           <a href="/admin/users">
             <i class="menu-icon fas fa-users"></i>
             <span class="menu-title">Users</span>

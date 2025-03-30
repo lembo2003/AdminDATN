@@ -802,7 +802,17 @@ exports.getAddOrderItem = (req, res) => {
 // Process add order item form
 exports.postAddOrderItem = async (req, res) => {
   try {
-    const { name, category, description, price } = req.body;
+    const { 
+      name, 
+      category, 
+      description, 
+      price,
+      calories,
+      protein,
+      carbs,
+      fat,
+      allergens
+    } = req.body;
 
     // Validate input
     if (!name || !category || !price) {
@@ -816,16 +826,33 @@ exports.postAddOrderItem = async (req, res) => {
       imageBuffer = req.file.buffer;
     }
 
-    // Default availability
+    // Get dietary information from form
     const isAvailable = req.body.isAvailable === 'true';
+    const isVegetarian = req.body.isVegetarian === 'true';
+    const isVegan = req.body.isVegan === 'true';
+    const isGlutenFree = req.body.isGlutenFree === 'true';
+    const isDairyFree = req.body.isDairyFree === 'true';
+    const isSpicy = req.body.isSpicy === 'true';
 
-    // Create the order item
+    // Create the order item with all fields
     await OrderItem.create({
       name,
       category,
       description,
       price: parseFloat(price),
-      isAvailable
+      isAvailable,
+      // Dietary information
+      isVegetarian,
+      isVegan,
+      isGlutenFree,
+      isDairyFree,
+      isSpicy,
+      // Nutritional information
+      calories: calories ? parseInt(calories) : null,
+      protein: protein ? parseFloat(protein) : null,
+      carbs: carbs ? parseFloat(carbs) : null,
+      fat: fat ? parseFloat(fat) : null,
+      allergens
     }, imageBuffer);
 
     req.flash('success_msg', 'Menu item added successfully');
@@ -865,7 +892,17 @@ exports.getEditOrderItem = async (req, res) => {
 exports.postEditOrderItem = async (req, res) => {
   try {
     const { itemId } = req.params;
-    const { name, category, description, price } = req.body;
+    const { 
+      name, 
+      category, 
+      description, 
+      price,
+      calories,
+      protein,
+      carbs,
+      fat,
+      allergens
+    } = req.body;
 
     // Validate input
     if (!name || !category || !price) {
@@ -873,8 +910,13 @@ exports.postEditOrderItem = async (req, res) => {
       return res.redirect(`/admin/order-items/edit/${itemId}`);
     }
 
-    // Default availability
+    // Get dietary information from form
     const isAvailable = req.body.isAvailable === 'true';
+    const isVegetarian = req.body.isVegetarian === 'true';
+    const isVegan = req.body.isVegan === 'true';
+    const isGlutenFree = req.body.isGlutenFree === 'true';
+    const isDairyFree = req.body.isDairyFree === 'true';
+    const isSpicy = req.body.isSpicy === 'true';
 
     let imageBuffer = null;
 
@@ -882,13 +924,25 @@ exports.postEditOrderItem = async (req, res) => {
       imageBuffer = req.file.buffer;
     }
 
-    // Update the order item
+    // Update the order item with all fields
     await OrderItem.update(itemId, {
       name,
       category,
       description,
       price: parseFloat(price),
-      isAvailable
+      isAvailable,
+      // Dietary information
+      isVegetarian,
+      isVegan,
+      isGlutenFree,
+      isDairyFree,
+      isSpicy,
+      // Nutritional information
+      calories: calories ? parseInt(calories) : null,
+      protein: protein ? parseFloat(protein) : null,
+      carbs: carbs ? parseFloat(carbs) : null,
+      fat: fat ? parseFloat(fat) : null,
+      allergens
     }, imageBuffer);
 
     req.flash('success_msg', 'Menu item updated successfully');

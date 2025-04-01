@@ -31,18 +31,20 @@ class Room {
     } else {
       throw new Error('Room image is required');
     }
+    
     // Verify room type exists
     const roomType = await RoomType.getById(roomData.roomTypeId);
     if (!roomType) {
       throw new Error('Invalid room type');
     }
+    
     const newRoom = {
       roomId,
       roomName: roomData.roomName,
       roomTypeId: roomData.roomTypeId,
       imageUrl,
       description: roomData.description || '',
-      price: roomData.price || 0,
+      // Remove price field as it's now in roomType
       isBooked: roomData.isBooked || false,
       bookingState: roomData.bookingState || 'available', // available, booked, maintenance
       amenityIds: roomData.amenityIds || [],
@@ -116,10 +118,6 @@ class Room {
       query = query.where('isBooked', '==', filters.isBooked);
     }
 
-    if (filters.maxPrice) {
-      query = query.where('price', '<=', filters.maxPrice);
-    }
-
     const snapshot = await query.get();
 
     const rooms = [];
@@ -139,6 +137,12 @@ class Room {
       if (includeAmenities && roomData.amenityIds && roomData.amenityIds.length > 0) {
         const amenities = await Amenity.getByIds(roomData.amenityIds);
         room.amenities = amenities;
+      }
+
+      // Apply price filter if provided
+      if (filters.maxPrice && roomType && 
+          roomType.pricing && roomType.pricing.daily > filters.maxPrice) {
+        continue; // Skip this room as it's above the price filter
       }
 
       rooms.push(room);
@@ -179,11 +183,17 @@ class Room {
     } else if (roomData.imageUrl) {
       imageUrl = roomData.imageUrl;
     }
+    
     const updateData = {
       ...roomData,
       imageUrl,
       updatedAt: new Date()
     };
+
+    // Remove price field if it was sent (as it should be in roomType now)
+    if (updateData.price !== undefined) {
+      delete updateData.price;
+    }
 
     await roomsCollection.doc(roomId).update(updateData);
     return this.getById(roomId, false, true);
@@ -227,6 +237,45 @@ class Room {
       updatedAt: new Date()
     });
     return this.getById(roomId);
+  }
+  
+  /**
+   * Count available rooms by room type
+   * @param {string} roomTypeId - Room Type ID to count
+   * @returns {Promise<number>} - Count of available rooms
+   */
+  static async countAvailableByType(roomTypeId) {
+    const snapshot = await roomsCollection
+      .where('roomTypeId', '==', roomTypeId)
+      .where('isBooked', '==', false)
+      .where('bookingState', '==', 'available')
+      .get();
+    
+    return snapshot.size;
+  }
+  
+  /**
+   * Get available rooms by type
+   * @param {string} roomTypeId - Room Type ID to get available rooms for
+   * @param {number} limit - Maximum number of rooms to return
+   * @returns {Promise<Array>} - Array of available rooms
+   */
+  static async getAvailableByType(roomTypeId, limit = 0) {
+    let query = roomsCollection
+      .where('roomTypeId', '==', roomTypeId)
+      .where('isBooked', '==', false)
+      .where('bookingState', '==', 'available');
+    
+    if (limit > 0) {
+      query = query.limit(limit);
+    }
+    
+    const snapshot = await query.get();
+    
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
   }
 }
 

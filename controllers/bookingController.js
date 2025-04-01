@@ -1,28 +1,31 @@
 const Booking = require('../models/booking');
 const Room = require('../models/room');
+const RoomType = require('../models/roomType');
 const auth = require('../middleware/auth');
 
 /**
- * Render booking form for a room
+ * Render main booking form (new implementation)
  */
 exports.getBookingForm = async (req, res) => {
   try {
-    const { roomId } = req.params;
+    // Get all room types for the selection
+    const roomTypes = await RoomType.getAll();
     
-    // Get room details
-    const room = await Room.getById(roomId);
+    // Process and transform room types with availability counts
+    const roomTypesWithAvailability = await Promise.all(
+      roomTypes.map(async (roomType) => {
+        const availableCount = await Room.countAvailableByType(roomType.id);
+        return {
+          ...roomType,
+          availableCount
+        };
+      })
+    );
     
-    if (!room) {
-      req.flash('error_msg', 'Room not found');
-      return res.redirect('/rooms');
-    }
+    // Filter out room types with no availability
+    const availableRoomTypes = roomTypesWithAvailability.filter(rt => rt.availableCount > 0);
     
-    if (room.isBooked) {
-      req.flash('error_msg', 'This room is currently not available for booking');
-      return res.redirect('/rooms');
-    }
-    
-    // Get check-in and check-out dates from query or set defaults
+    // Get default dates - today for display and tomorrow for min value
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -35,17 +38,53 @@ exports.getBookingForm = async (req, res) => {
       return date.toISOString().split('T')[0];
     };
     
+    // Get query parameters or set defaults
     const checkIn = req.query.checkIn || formatDate(tomorrow);
     const checkOut = req.query.checkOut || formatDate(dayAfterTomorrow);
     const guests = req.query.guests || 1;
+    const bookingType = req.query.bookingType || 'daily';
     
-    res.render('booking/create', {
-      title: `Book ${room.roomName}`,
+    // Get time presets based on booking type
+    let timePresets = {};
+    
+    switch(bookingType) {
+      case 'hourly':
+        timePresets = {
+          checkInTime: '10:00',
+          checkOutTime: '14:00'
+        };
+        break;
+      case 'overnight':
+        timePresets = {
+          checkInTime: '18:00',
+          checkOutTime: '10:00'
+        };
+        break;
+      case 'dayUse':
+        timePresets = {
+          checkInTime: '09:00',
+          checkOutTime: '18:00'
+        };
+        break;
+      case 'daily':
+      default:
+        timePresets = {
+          checkInTime: '14:00',
+          checkOutTime: '11:00'
+        };
+    }
+    
+    res.render('booking/new-create', {
+      title: 'Book Your Stay',
       user: req.session.user,
-      room,
+      roomTypes: availableRoomTypes,
       checkIn,
       checkOut,
-      guests
+      guests,
+      bookingType,
+      timePresets,
+      success_msg: req.flash('success_msg'),
+      error_msg: req.flash('error_msg')
     });
   } catch (error) {
     console.error('Get booking form error:', error);
@@ -55,35 +94,69 @@ exports.getBookingForm = async (req, res) => {
 };
 
 /**
- * Process booking form submission
+ * Process booking form submission with multiple rooms
  */
 exports.createBooking = async (req, res) => {
   try {
-    const { roomId } = req.params;
-    const { checkInDate, checkOutDate, numberOfGuests, specialRequests } = req.body;
+    const { 
+      bookingType, 
+      checkInDate, 
+      checkInTime, 
+      checkOutDate, 
+      checkOutTime,
+      numberOfGuests, 
+      specialRequests 
+    } = req.body;
+    
     const userId = req.session.user.id;
     
-    // Validate dates
-    const checkIn = new Date(checkInDate);
-    const checkOut = new Date(checkOutDate);
-    const today = new Date();
+    // Create full date-time objects by combining date and time
+    const checkIn = new Date(`${checkInDate}T${checkInTime}`);
+    const checkOut = new Date(`${checkOutDate}T${checkOutTime}`);
     
-    if (checkIn < today) {
-      req.flash('error_msg', 'Check-in date cannot be in the past');
-      return res.redirect(`/bookings/create/${roomId}`);
+    // Validate dates
+    const now = new Date();
+    
+    if (checkIn < now) {
+      req.flash('error_msg', 'Check-in date/time cannot be in the past');
+      return res.redirect('/bookings/create');
     }
     
     if (checkOut <= checkIn) {
-      req.flash('error_msg', 'Check-out date must be after check-in date');
-      return res.redirect(`/bookings/create/${roomId}`);
+      req.flash('error_msg', 'Check-out date/time must be after check-in date/time');
+      return res.redirect('/bookings/create');
+    }
+    
+    // Extract room selections
+    const roomSelections = [];
+    
+    // Room selection inputs will be named like "roomQuantity_ROOM_TYPE_ID"
+    for (const key in req.body) {
+      if (key.startsWith('roomQuantity_')) {
+        const roomTypeId = key.replace('roomQuantity_', '');
+        const quantity = parseInt(req.body[key], 10) || 0;
+        
+        if (quantity > 0) {
+          roomSelections.push({
+            roomTypeId,
+            quantity
+          });
+        }
+      }
+    }
+    
+    if (roomSelections.length === 0) {
+      req.flash('error_msg', 'Please select at least one room');
+      return res.redirect('/bookings/create');
     }
     
     // Create the booking
     const booking = await Booking.create({
-      roomId,
       userId,
-      checkInDate,
-      checkOutDate,
+      roomSelections,
+      bookingType,
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
       numberOfGuests: parseInt(numberOfGuests, 10),
       specialRequests,
       status: 'booked',
@@ -95,7 +168,95 @@ exports.createBooking = async (req, res) => {
   } catch (error) {
     console.error('Create booking error:', error);
     req.flash('error_msg', error.message || 'Error creating booking');
-    res.redirect(`/bookings/create/${req.params.roomId}`);
+    res.redirect(`/bookings/create`);
+  }
+};
+
+/**
+ * Calculate price for room selection preview (AJAX endpoint)
+ */
+exports.calculatePrice = async (req, res) => {
+  try {
+    const { 
+      roomTypeId, 
+      quantity, 
+      bookingType, 
+      checkInDate, 
+      checkInTime, 
+      checkOutDate, 
+      checkOutTime 
+    } = req.body;
+    
+    // Create full date-time objects
+    const checkIn = new Date(`${checkInDate}T${checkInTime}`);
+    const checkOut = new Date(`${checkOutDate}T${checkOutTime}`);
+    
+    // Validate input
+    if (!roomTypeId || quantity <= 0 || !bookingType || checkOut <= checkIn) {
+      return res.status(400).json({ 
+        error: 'Invalid input parameters' 
+      });
+    }
+    
+    // Calculate price for the room type
+    const roomTypePrice = await RoomType.calculatePrice(
+      roomTypeId,
+      bookingType,
+      checkIn,
+      checkOut
+    );
+    
+    // Get room type details for the response
+    const roomType = await RoomType.getById(roomTypeId);
+    
+    // Calculate total price
+    const totalPrice = roomTypePrice * quantity;
+    
+    res.json({
+      success: true,
+      roomTypeName: roomType.roomTypeName,
+      quantity,
+      pricePerRoom: roomTypePrice,
+      totalPrice
+    });
+  } catch (error) {
+    console.error('Calculate price error:', error);
+    res.status(500).json({ 
+      error: error.message || 'Error calculating price' 
+    });
+  }
+};
+
+/**
+ * Get availability for a room type (AJAX endpoint)
+ */
+exports.getRoomTypeAvailability = async (req, res) => {
+  try {
+    const { roomTypeId } = req.params;
+    
+    // Count available rooms
+    const availableCount = await Room.countAvailableByType(roomTypeId);
+    
+    // Get room type details
+    const roomType = await RoomType.getById(roomTypeId);
+    
+    if (!roomType) {
+      return res.status(404).json({
+        error: 'Room type not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      roomTypeId,
+      roomTypeName: roomType.roomTypeName,
+      availableCount
+    });
+  } catch (error) {
+    console.error('Get availability error:', error);
+    res.status(500).json({ 
+      error: error.message || 'Error getting availability' 
+    });
   }
 };
 
@@ -121,7 +282,9 @@ exports.getBookingConfirmation = async (req, res) => {
     res.render('booking/confirmation', {
       title: 'Booking Confirmation',
       user: req.session.user,
-      booking
+      booking,
+      success_msg: req.flash('success_msg'),
+      error_msg: req.flash('error_msg')
     });
   } catch (error) {
     console.error('Get booking confirmation error:', error);
@@ -143,7 +306,9 @@ exports.getMyBookings = async (req, res) => {
     res.render('booking/my-bookings', {
       title: 'My Bookings',
       user: req.session.user,
-      bookings
+      bookings,
+      success_msg: req.flash('success_msg'),
+      error_msg: req.flash('error_msg')
     });
   } catch (error) {
     console.error('Get my bookings error:', error);
@@ -208,17 +373,46 @@ exports.verifyQrCode = async (req, res) => {
   }
 };
 
+/**
+ * Handle late checkout
+ */
+exports.handleLateCheckout = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { extraHours } = req.body;
+    
+    if (!bookingId || !extraHours || extraHours <= 0) {
+      req.flash('error_msg', 'Invalid late checkout request');
+      return res.redirect(`/admin/bookings/details/${bookingId}`);
+    }
+    
+    // Process late checkout
+    const updatedBooking = await Booking.handleLateCheckout(bookingId, extraHours);
+    
+    req.flash('success_msg', `Late checkout fee applied: $${updatedBooking.lateCheckoutFee}`);
+    res.redirect(`/admin/bookings/details/${bookingId}`);
+  } catch (error) {
+    console.error('Late checkout error:', error);
+    req.flash('error_msg', error.message || 'Error processing late checkout');
+    res.redirect(`/admin/bookings/details/${req.params.bookingId}`);
+  }
+};
+
 // Export routes with auth middleware
 exports.routes = (router) => {
   // Public routes
   router.get('/confirmation/:bookingId', auth, exports.getBookingConfirmation);
   
   // Protected routes
-  router.get('/create/:roomId', auth, exports.getBookingForm);
-  router.post('/create/:roomId', auth, exports.createBooking);
+  router.get('/create', auth, exports.getBookingForm); // New multi-room booking form
+  router.get('/create/:roomId', auth, exports.getBookingForm); // Keep for backwards compatibility
+  router.post('/create', auth, exports.createBooking);
+  router.post('/calculate-price', auth, exports.calculatePrice);
+  router.get('/room-type-availability/:roomTypeId', auth, exports.getRoomTypeAvailability);
   router.get('/my-bookings', auth, exports.getMyBookings);
   router.post('/cancel/:bookingId', auth, exports.cancelBooking);
   router.post('/verify-qr', auth, exports.verifyQrCode);
+  router.post('/late-checkout/:bookingId', auth, exports.handleLateCheckout);
   
   return router;
 };

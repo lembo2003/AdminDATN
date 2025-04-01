@@ -26,22 +26,157 @@
         </div>
       <% } %>
       
-      <!-- Add Room Type Form -->
+      <!-- Room Type Form -->
       <div class="card">
         <div class="card-body">
           <form action="/admin/room-types/add" method="POST">
-            <div class="mb-3">
-              <label for="roomTypeName" class="form-label">Room Type Name *</label>
-              <input type="text" class="form-control" id="roomTypeName" name="roomTypeName" required>
-              <div class="form-text">E.g., Standard, Deluxe, Suite, etc.</div>
+            <!-- Basic Information Section -->
+            <div class="mb-4">
+              <h5 class="border-bottom pb-2">Basic Information</h5>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="roomTypeName" class="form-label">Room Type Name *</label>
+                  <input type="text" class="form-control" id="roomTypeName" name="roomTypeName" required>
+                  <div class="form-text">E.g., Standard, Deluxe, Suite, etc.</div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                  <label for="capacity" class="form-label">Maximum Capacity</label>
+                  <input type="number" class="form-control" id="capacity" name="capacity" value="2" min="1" max="10">
+                  <div class="form-text">Maximum number of guests allowed</div>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                <div class="form-text">Provide a brief description of this room type.</div>
+              </div>
             </div>
             
-            <div class="mb-3">
-              <label for="description" class="form-label">Description</label>
-              <textarea class="form-control" id="description" name="description" rows="3"></textarea>
-              <div class="form-text">Provide a brief description of this room type.</div>
+            <!-- Pricing Section -->
+            <div class="mb-4">
+              <h5 class="border-bottom pb-2">Pricing Structure</h5>
+              
+              <!-- Daily Pricing -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="dailyPrice" class="form-label">Daily Price (per night) *</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="dailyPrice" name="dailyPrice" value="100" min="0" step="0.01" required>
+                  </div>
+                  <div class="form-text">Standard price per night</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="minimumStayDaily" class="form-label">Minimum Stay (Daily)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="minimumStayDaily" name="minimumStayDaily" value="1" min="1" step="1">
+                    <span class="input-group-text">night(s)</span>
+                  </div>
+                  <div class="form-text">Minimum number of nights required for booking</div>
+                </div>
+              </div>
+              
+              <!-- Hourly Pricing -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="hourlyBasePrice" class="form-label">Hourly Base Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="hourlyBasePrice" name="hourlyBasePrice" value="30" min="0" step="0.01">
+                  </div>
+                  <div class="form-text">Price for the first hour</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="hourlyAdditionalPrice" class="form-label">Additional Hour Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="hourlyAdditionalPrice" name="hourlyAdditionalPrice" value="15" min="0" step="0.01">
+                  </div>
+                  <div class="form-text">Price for each additional hour</div>
+                </div>
+              </div>
+              
+              <!-- Other Pricing Types -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="overnightPrice" class="form-label">Overnight Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="overnightPrice" name="overnightPrice" value="80" min="0" step="0.01">
+                  </div>
+                  <div class="form-text">Fixed price for overnight stay (typically 6 PM - 10 AM)</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="dayUsePrice" class="form-label">Day Use Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="dayUsePrice" name="dayUsePrice" value="70" min="0" step="0.01">
+                  </div>
+                  <div class="form-text">Fixed price for day use without overnight stay</div>
+                </div>
+              </div>
+              
+              <!-- Extended Stay Pricing -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="weeklyPrice" class="form-label">Weekly Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="weeklyPrice" name="weeklyPrice" value="630" min="0" step="0.01">
+                  </div>
+                  <div class="form-text">Price for a 7-night stay (10% discount suggested)</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="monthlyPrice" class="form-label">Monthly Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="monthlyPrice" name="monthlyPrice" value="2240" min="0" step="0.01">
+                  </div>
+                  <div class="form-text">Price for a 28+ night stay (20% discount suggested)</div>
+                </div>
+              </div>
+              
+              <!-- Minimum Stay for Extended Bookings -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="minimumStayWeekly" class="form-label">Minimum Stay (Weekly)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="minimumStayWeekly" name="minimumStayWeekly" value="7" min="1" step="1">
+                    <span class="input-group-text">night(s)</span>
+                  </div>
+                  <div class="form-text">Minimum nights for weekly rate (typically 7)</div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label for="minimumStayMonthly" class="form-label">Minimum Stay (Monthly)</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="minimumStayMonthly" name="minimumStayMonthly" value="28" min="1" step="1">
+                    <span class="input-group-text">night(s)</span>
+                  </div>
+                  <div class="form-text">Minimum nights for monthly rate (typically 28)</div>
+                </div>
+              </div>
+              
+              <!-- Late Checkout Fee -->
+              <div class="row">
+                <div class="col-md-6">
+                  <label for="lateCheckoutFee" class="form-label">Late Checkout Fee (Per Hour)</label>
+                  <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" id="lateCheckoutFee" name="lateCheckoutFee" value="15" min="0" step="0.01">
+                  </div>
+                  <div class="form-text">Fee charged per hour for late checkouts</div>
+                </div>
+              </div>
             </div>
             
+            <!-- Form Actions -->
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
               <a href="/admin/room-types" class="btn btn-outline-secondary me-md-2">Cancel</a>
               <button type="submit" class="btn btn-primary">Add Room Type</button>
@@ -52,5 +187,47 @@
     </main>
   </div>
 </div>
+
+<!-- JavaScript for Auto-Calculating Prices -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const dailyPriceInput = document.getElementById('dailyPrice');
+    const weeklyPriceInput = document.getElementById('weeklyPrice');
+    const monthlyPriceInput = document.getElementById('monthlyPrice');
+    const overnightPriceInput = document.getElementById('overnightPrice');
+    const dayUsePriceInput = document.getElementById('dayUsePrice');
+    const hourlyBasePriceInput = document.getElementById('hourlyBasePrice');
+    const hourlyAdditionalPriceInput = document.getElementById('hourlyAdditionalPrice');
+    const lateCheckoutFeeInput = document.getElementById('lateCheckoutFee');
+    
+    // Auto-calculate prices based on daily price
+    dailyPriceInput.addEventListener('input', function() {
+      if (this.value) {
+        const dailyPrice = parseFloat(this.value);
+        
+        // Weekly price (7 days with 10% discount)
+        weeklyPriceInput.value = (dailyPrice * 7 * 0.9).toFixed(2);
+        
+        // Monthly price (28 days with 20% discount)
+        monthlyPriceInput.value = (dailyPrice * 28 * 0.8).toFixed(2);
+        
+        // Overnight price (80% of daily rate)
+        overnightPriceInput.value = (dailyPrice * 0.8).toFixed(2);
+        
+        // Day use price (70% of daily rate)
+        dayUsePriceInput.value = (dailyPrice * 0.7).toFixed(2);
+        
+        // Hourly base price (30% of daily rate)
+        hourlyBasePriceInput.value = (dailyPrice * 0.3).toFixed(2);
+        
+        // Hourly additional price (15% of daily rate)
+        hourlyAdditionalPriceInput.value = (dailyPrice * 0.15).toFixed(2);
+        
+        // Late checkout fee (15% of daily rate)
+        lateCheckoutFeeInput.value = (dailyPrice * 0.15).toFixed(2);
+      }
+    });
+  });
+</script>
 
 <%- include('../../partials/footer') %>

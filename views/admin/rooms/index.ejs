@@ -113,7 +113,7 @@
                   <th>Room ID</th>
                   <th>Name</th>
                   <th>Type</th>
-                  <th>Price</th>
+                  <th>Daily Rate</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -128,7 +128,13 @@
                       <td><%= room.roomId.substring(0, 8) %>...</td>
                       <td><%= room.roomName %></td>
                       <td><%= room.roomType ? room.roomType.roomTypeName : 'N/A' %></td>
-                      <td>$<%= room.price %></td>
+                      <td>
+                        <% if(room.roomType && room.roomType.pricing) { %>
+                          $<%= room.roomType.pricing.daily %>
+                        <% } else { %>
+                          --
+                        <% } %>
+                      </td>
                       <td>
                         <% if(room.bookingState === 'available') { %>
                           <span class="badge bg-success">Available</span>

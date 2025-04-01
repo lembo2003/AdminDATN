@@ -31,6 +31,11 @@ app.use(session({
   saveUninitialized: true
 }));
 
+
+// check room type deletion
+const apiRoutes = require('./routes/api');
+app.use('/api', apiRoutes);
+
 // Flash messages
 app.use(flash());
 

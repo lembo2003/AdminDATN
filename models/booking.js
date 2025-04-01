@@ -1,29 +1,21 @@
 const { adminFirestore } = require('../config/firebase');
 const { v4: uuidv4 } = require('uuid');
 const Room = require('./room');
+const RoomType = require('./roomType');
 const User = require('./user');
 const QRCode = require('qrcode');
 
 const bookingsCollection = adminFirestore.collection('bookings');
+const bookingRoomsCollection = adminFirestore.collection('bookingRooms');
 
 class Booking {
   /**
-   * Create a new booking
+   * Create a new booking with support for multiple rooms
    * @param {Object} bookingData - Booking data
    * @returns {Promise<Object>} - Created booking with QR code
    */
   static async create(bookingData) {
     const bookingId = `booking_${uuidv4()}`;
-    
-    // Verify room exists and is available
-    const room = await Room.getById(bookingData.roomId);
-    if (!room) {
-      throw new Error('Room not found');
-    }
-    
-    if (room.isBooked) {
-      throw new Error('Room is already booked');
-    }
     
     // Verify user exists
     const user = await User.getByUid(bookingData.userId);
@@ -31,55 +23,146 @@ class Booking {
       throw new Error('User not found');
     }
     
-    // Calculate total price
+    // Process room selections - expect an array of {roomTypeId, quantity}
+    const roomSelections = bookingData.roomSelections || [];
+    if (roomSelections.length === 0) {
+      throw new Error('No rooms selected for booking');
+    }
+    
+    const bookingType = bookingData.bookingType || 'daily';
     const checkInDate = new Date(bookingData.checkInDate);
     const checkOutDate = new Date(bookingData.checkOutDate);
-    const daysBooked = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
-    const totalPrice = room.price * daysBooked;
+    
+    // Validate dates
+    if (checkOutDate <= checkInDate) {
+      throw new Error('Check-out date must be after check-in date');
+    }
+    
+    let totalPrice = 0;
+    const bookedRooms = [];
+    
+    // Process each room selection
+    for (const selection of roomSelections) {
+      const { roomTypeId, quantity } = selection;
+      
+      if (!roomTypeId || quantity <= 0) {
+        continue; // Skip invalid selections
+      }
+      
+      // Verify room type exists
+      const roomType = await RoomType.getById(roomTypeId);
+      if (!roomType) {
+        throw new Error(`Room type not found: ${roomTypeId}`);
+      }
+      
+      // Calculate price for this room type
+      const roomTypePrice = await RoomType.calculatePrice(
+        roomTypeId, 
+        bookingType, 
+        checkInDate, 
+        checkOutDate
+      );
+      
+      // Find available rooms of this type
+      const availableRooms = await Room.getAvailableByType(roomTypeId, quantity);
+      
+      if (availableRooms.length < quantity) {
+        throw new Error(`Not enough available rooms of type ${roomType.roomTypeName}. Requested: ${quantity}, Available: ${availableRooms.length}`);
+      }
+      
+      // Add selected rooms to bookedRooms array
+      for (let i = 0; i < quantity; i++) {
+        bookedRooms.push({
+          roomId: availableRooms[i].id,
+          roomName: availableRooms[i].roomName,
+          roomTypeId: roomTypeId,
+          roomTypeName: roomType.roomTypeName,
+          price: roomTypePrice
+        });
+      }
+      
+      // Add to total price
+      totalPrice += roomTypePrice * quantity;
+    }
     
     // Generate QR code data
     const qrData = JSON.stringify({
       bookingId,
-      roomId: room.roomId,
-      roomName: room.roomName,
       userId: user.id,
       userName: user.name,
       checkInDate: bookingData.checkInDate,
-      checkOutDate: bookingData.checkOutDate
+      checkOutDate: bookingData.checkOutDate,
+      roomCount: bookedRooms.length
     });
     
     // Generate QR code as data URL
     const qrCodeUrl = await QRCode.toDataURL(qrData);
     
+    // Create the booking record
     const newBooking = {
       bookingId,
-      roomId: room.roomId,
       userId: user.id,
-      checkInDate: new Date(bookingData.checkInDate),
-      checkOutDate: new Date(bookingData.checkOutDate),
+      checkInDate,
+      checkOutDate,
+      bookingType,
       numberOfGuests: bookingData.numberOfGuests || 1,
       totalPrice,
       status: bookingData.status || 'booked', // booked, checked-in, checked-out, cancelled
       paymentStatus: bookingData.paymentStatus || 'pending', // pending, paid, refunded
       qrCodeUrl,
       specialRequests: bookingData.specialRequests || '',
+      roomCount: bookedRooms.length,
       createdAt: new Date(),
       updatedAt: new Date()
     };
     
-    // Create the booking
-    await bookingsCollection.doc(bookingId).set(newBooking);
+    // Begin transaction to create booking and update room statuses
+    const batch = adminFirestore.batch();
     
-    // Update room booking state
-    await Room.updateBookingState(room.roomId, 'booked');
+    // Add booking document
+    const bookingRef = bookingsCollection.doc(bookingId);
+    batch.set(bookingRef, newBooking);
     
-    return { id: bookingId, ...newBooking };
+    // Add booking room links and update room status
+    for (const bookedRoom of bookedRooms) {
+      // Create booking-room link
+      const bookingRoomId = `${bookingId}_${bookedRoom.roomId}`;
+      const bookingRoomRef = bookingRoomsCollection.doc(bookingRoomId);
+      
+      batch.set(bookingRoomRef, {
+        bookingId,
+        roomId: bookedRoom.roomId,
+        roomName: bookedRoom.roomName,
+        roomTypeId: bookedRoom.roomTypeId,
+        roomTypeName: bookedRoom.roomTypeName,
+        price: bookedRoom.price,
+        createdAt: new Date()
+      });
+      
+      // Update room status to booked
+      const roomRef = adminFirestore.collection('rooms').doc(bookedRoom.roomId);
+      batch.update(roomRef, {
+        isBooked: true,
+        bookingState: 'booked',
+        updatedAt: new Date()
+      });
+    }
+    
+    // Commit transaction
+    await batch.commit();
+    
+    // Return booking with rooms
+    return { 
+      id: bookingId,
+      ...newBooking,
+      rooms: bookedRooms 
+    };
   }
 
   /**
-   * Get a booking by ID
+   * Get a booking by ID with all booked rooms
    * @param {string} bookingId - Booking ID
-   * @returns {Promise<Object|null>} - Booking data with room and user info
+   * @returns {Promise<Object|null>} - Booking data with rooms and user info
    */
   static async getById(bookingId) {
     const bookingDoc = await bookingsCollection.doc(bookingId).get();
@@ -90,8 +173,12 @@ class Booking {
     
     const bookingData = bookingDoc.data();
     
-    // Get room info
-    const room = await Room.getById(bookingData.roomId);
+    // Get booking rooms
+    const bookingRoomsSnapshot = await bookingRoomsCollection
+      .where('bookingId', '==', bookingId)
+      .get();
+    
+    const rooms = bookingRoomsSnapshot.docs.map(doc => doc.data());
     
     // Get user info
     const user = await User.getByUid(bookingData.userId);
@@ -99,7 +186,7 @@ class Booking {
     return { 
       id: bookingDoc.id, 
       ...bookingData,
-      room,
+      rooms,
       user
     };
   }
@@ -115,10 +202,6 @@ class Booking {
     // Apply filters
     if (filters.userId) {
       query = query.where('userId', '==', filters.userId);
-    }
-    
-    if (filters.roomId) {
-      query = query.where('roomId', '==', filters.roomId);
     }
     
     if (filters.status) {
@@ -149,37 +232,25 @@ class Booking {
     for (const doc of snapshot.docs) {
       const bookingData = doc.data();
       
-      // Get room info for each booking
-      const room = await Room.getById(bookingData.roomId);
+      // Get rooms for this booking
+      const bookingRoomsSnapshot = await bookingRoomsCollection
+        .where('bookingId', '==', doc.id)
+        .get();
       
-      // Get user info for each booking
+      const rooms = bookingRoomsSnapshot.docs.map(roomDoc => roomDoc.data());
+      
+      // Get user info
       const user = await User.getByUid(bookingData.userId);
       
       bookings.push({
         id: doc.id,
         ...bookingData,
-        room,
+        rooms,
         user
       });
     }
     
     return bookings;
-  }
-
-  /**
-   * Update a booking
-   * @param {string} bookingId - Booking ID
-   * @param {Object} bookingData - Booking data to update
-   * @returns {Promise<Object>} - Updated booking
-   */
-  static async update(bookingId, bookingData) {
-    const updateData = {
-      ...bookingData,
-      updatedAt: new Date()
-    };
-    
-    await bookingsCollection.doc(bookingId).update(updateData);
-    return this.getById(bookingId);
   }
 
   /**
@@ -195,19 +266,43 @@ class Booking {
       throw new Error('Booking not found');
     }
     
-    // Update room status based on booking status
-    if (status === 'checked-out') {
-      await Room.updateBookingState(booking.roomId, 'available');
-    } else if (status === 'cancelled') {
-      await Room.updateBookingState(booking.roomId, 'available');
-    } else if (status === 'checked-in') {
-      await Room.updateBookingState(booking.roomId, 'occupied');
-    }
+    // Begin transaction
+    const batch = adminFirestore.batch();
     
-    await bookingsCollection.doc(bookingId).update({
+    // Update booking status
+    const bookingRef = bookingsCollection.doc(bookingId);
+    batch.update(bookingRef, {
       status,
       updatedAt: new Date()
     });
+    
+    // Update room statuses based on booking status
+    const bookingRoomsSnapshot = await bookingRoomsCollection
+      .where('bookingId', '==', bookingId)
+      .get();
+    
+    for (const doc of bookingRoomsSnapshot.docs) {
+      const roomData = doc.data();
+      const roomRef = adminFirestore.collection('rooms').doc(roomData.roomId);
+      
+      if (status === 'checked-out' || status === 'cancelled') {
+        // Free up the room
+        batch.update(roomRef, {
+          isBooked: false,
+          bookingState: 'available',
+          updatedAt: new Date()
+        });
+      } else if (status === 'checked-in') {
+        // Update to occupied
+        batch.update(roomRef, {
+          bookingState: 'occupied',
+          updatedAt: new Date()
+        });
+      }
+    }
+    
+    // Commit transaction
+    await batch.commit();
     
     return this.getById(bookingId);
   }
@@ -218,16 +313,35 @@ class Booking {
    * @returns {Promise<void>}
    */
   static async delete(bookingId) {
-    // Get the booking to check room status
-    const booking = await this.getById(bookingId);
+    // Get booking rooms
+    const bookingRoomsSnapshot = await bookingRoomsCollection
+      .where('bookingId', '==', bookingId)
+      .get();
     
-    if (booking) {
-      // Update the room status to available
-      await Room.updateBookingState(booking.roomId, 'available');
+    // Begin transaction
+    const batch = adminFirestore.batch();
+    
+    // Update all rooms to available
+    for (const doc of bookingRoomsSnapshot.docs) {
+      const roomData = doc.data();
+      
+      // Update room status to available
+      const roomRef = adminFirestore.collection('rooms').doc(roomData.roomId);
+      batch.update(roomRef, {
+        isBooked: false,
+        bookingState: 'available',
+        updatedAt: new Date()
+      });
+      
+      // Delete booking room link
+      batch.delete(doc.ref);
     }
     
     // Delete the booking
-    await bookingsCollection.doc(bookingId).delete();
+    batch.delete(bookingsCollection.doc(bookingId));
+    
+    // Commit transaction
+    await batch.commit();
   }
 
   /**
@@ -247,6 +361,44 @@ class Booking {
     } catch (error) {
       throw new Error('Invalid QR code');
     }
+  }
+  
+  /**
+   * Handle late checkout
+   * @param {string} bookingId - Booking ID
+   * @param {number} extraHours - Number of extra hours
+   * @returns {Promise<Object>} - Updated booking with late checkout fee
+   */
+  static async handleLateCheckout(bookingId, extraHours) {
+    const booking = await this.getById(bookingId);
+    
+    if (!booking) {
+      throw new Error('Booking not found');
+    }
+    
+    if (booking.rooms.length === 0) {
+      throw new Error('No rooms found for this booking');
+    }
+    
+    // Get the room type of the first room (assuming all rooms are same type)
+    const roomTypeId = booking.rooms[0].roomTypeId;
+    const roomType = await RoomType.getById(roomTypeId);
+    
+    if (!roomType) {
+      throw new Error('Room type not found');
+    }
+    
+    // Calculate late checkout fee
+    const lateCheckoutFee = roomType.lateCheckoutFee * extraHours * booking.rooms.length;
+    
+    // Update booking
+    await bookingsCollection.doc(bookingId).update({
+      lateCheckoutFee: lateCheckoutFee,
+      totalPrice: booking.totalPrice + lateCheckoutFee,
+      updatedAt: new Date()
+    });
+    
+    return this.getById(bookingId);
   }
 }
 

@@ -1,0 +1,397 @@
+<%- include('../../partials/header') %>
+
+<div class="container-fluid">
+  <div class="row">
+    <!-- Admin Sidebar -->
+    <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+      <%- include('../../partials/admin-sidebar', {path: '/admin/bookings'}) %>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Booking Details</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <a href="/admin/bookings" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Bookings
+          </a>
+          <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="window.print()">
+            <i class="fas fa-print me-1"></i> Print
+          </button>
+        </div>
+      </div>
+      
+      <!-- Flash Messages -->
+      <% if(success_msg != ''){ %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= success_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <% if(error_msg != ''){ %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= error_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+      
+      <% if(booking) { %>
+        <div class="row">
+          <!-- Booking Information -->
+          <div class="col-md-8">
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">Booking Information</h5>
+              </div>
+              <div class="card-body">
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <h6 class="text-muted">Booking ID</h6>
+                    <p class="mb-0"><%= booking.bookingId %></p>
+                  </div>
+                  <div class="col-md-6">
+                    <h6 class="text-muted">Booking Type</h6>
+                    <p class="mb-0"><%= booking.bookingType.charAt(0).toUpperCase() + booking.bookingType.slice(1) %></p>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <h6 class="text-muted">Check-in Date & Time</h6>
+                    <p class="mb-0">
+                      <%= new Date(booking.checkInDate).toLocaleDateString() %>, 
+                      <%= new Date(booking.checkInDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                    </p>
+                  </div>
+                  <div class="col-md-6">
+                    <h6 class="text-muted">Check-out Date & Time</h6>
+                    <p class="mb-0">
+                      <%= new Date(booking.checkOutDate).toLocaleDateString() %>, 
+                      <%= new Date(booking.checkOutDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <h6 class="text-muted">Number of Guests</h6>
+                    <p class="mb-0"><%= booking.numberOfGuests %> Person(s)</p>
+                  </div>
+                  <div class="col-md-6">
+                    <h6 class="text-muted">Total Rooms</h6>
+                    <p class="mb-0"><%= booking.roomCount %> Room(s)</p>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <h6 class="text-muted">Created</h6>
+                    <p class="mb-0"><%= new Date(booking.createdAt).toLocaleString() %></p>
+                  </div>
+                  <div class="col-md-6">
+                    <h6 class="text-muted">Last Updated</h6>
+                    <p class="mb-0"><%= new Date(booking.updatedAt).toLocaleString() %></p>
+                  </div>
+                </div>
+                
+                <% if (booking.specialRequests) { %>
+                  <div class="row mb-4">
+                    <div class="col-12">
+                      <h6 class="text-muted">Special Requests</h6>
+                      <p class="mb-0"><%= booking.specialRequests %></p>
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+            
+            <!-- Booked Rooms -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">Booked Rooms</h5>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Room</th>
+                        <th>Room Type</th>
+                        <th class="text-end">Price</th>
+                        <th class="text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% if (booking.rooms && booking.rooms.length > 0) { %>
+                        <% booking.rooms.forEach(room => { %>
+                          <tr>
+                            <td><%= room.roomName %></td>
+                            <td><%= room.roomTypeName %></td>
+                            <td class="text-end">$<%= room.price.toFixed(2) %></td>
+                            <td class="text-center">
+                              <% if(booking.status === 'booked') { %>
+                                <span class="badge bg-info">Booked</span>
+                              <% } else if(booking.status === 'checked-in') { %>
+                                <span class="badge bg-success">Checked In</span>
+                              <% } else if(booking.status === 'checked-out') { %>
+                                <span class="badge bg-secondary">Checked Out</span>
+                              <% } else if(booking.status === 'cancelled') { %>
+                                <span class="badge bg-danger">Cancelled</span>
+                              <% } else { %>
+                                <span class="badge bg-secondary"><%= booking.status %></span>
+                              <% } %>
+                            </td>
+                          </tr>
+                        <% }); %>
+                      <% } else { %>
+                        <tr>
+                          <td colspan="4" class="text-center py-3">No room details available</td>
+                        </tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            
+            <!-- QR Code Section -->
+            <% if (booking.qrCodeUrl) { %>
+              <div class="card mb-4">
+                <div class="card-header">
+                  <h5 class="mb-0">Check-in QR Code</h5>
+                </div>
+                <div class="card-body text-center">
+                  <img src="<%= booking.qrCodeUrl %>" alt="Check-in QR Code" style="max-width: 200px;">
+                  <p class="text-muted small mt-2 mb-0">Guest can present this QR code at check-in</p>
+                </div>
+              </div>
+            <% } %>
+          </div>
+          
+          <!-- Sidebar Info and Actions -->
+          <div class="col-md-4">
+            <!-- Guest Information -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">Guest Information</h5>
+              </div>
+              <div class="card-body">
+                <% if (booking.user) { %>
+                  <div class="d-flex align-items-center mb-3">
+                    <div class="me-3">
+                      <div class="avatar bg-primary rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="fas fa-user fa-lg"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h6 class="mb-0"><%= booking.user.name || 'Guest' %></h6>
+                      <p class="text-muted small mb-0"><%= booking.user.email %></p>
+                    </div>
+                  </div>
+                  
+                  <% if (booking.user.phone) { %>
+                    <div class="mb-3">
+                      <div class="text-muted small">Phone</div>
+                      <div><%= booking.user.phone %></div>
+                    </div>
+                  <% } %>
+                  
+                  <div class="mb-3">
+                    <div class="text-muted small">User ID</div>
+                    <div class="small"><%= booking.user.id %></div>
+                  </div>
+                  
+                  <% if (booking.user.createdAt) { %>
+                    <div class="mb-0">
+                      <div class="text-muted small">User Since</div>
+                      <div><%= new Date(booking.user.createdAt.seconds * 1000).toLocaleDateString() %></div>
+                    </div>
+                  <% } %>
+                <% } else { %>
+                  <p class="text-muted">User information not available</p>
+                <% } %>
+              </div>
+            </div>
+            
+            <!-- Booking Status -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">Booking Status</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <div class="text-muted small">Current Status</div>
+                  <div>
+                    <% if(booking.status === 'booked') { %>
+                      <span class="badge bg-info">Booked</span>
+                    <% } else if(booking.status === 'checked-in') { %>
+                      <span class="badge bg-success">Checked In</span>
+                    <% } else if(booking.status === 'checked-out') { %>
+                      <span class="badge bg-secondary">Checked Out</span>
+                    <% } else if(booking.status === 'cancelled') { %>
+                      <span class="badge bg-danger">Cancelled</span>
+                    <% } else { %>
+                      <span class="badge bg-secondary"><%= booking.status %></span>
+                    <% } %>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <div class="text-muted small">Payment Status</div>
+                  <div>
+                    <% if(booking.paymentStatus === 'paid') { %>
+                      <span class="badge bg-success">Paid</span>
+                    <% } else if(booking.paymentStatus === 'pending') { %>
+                      <span class="badge bg-warning text-dark">Pending</span>
+                    <% } else if(booking.paymentStatus === 'refunded') { %>
+                      <span class="badge bg-info">Refunded</span>
+                    <% } else { %>
+                      <span class="badge bg-secondary"><%= booking.paymentStatus %></span>
+                    <% } %>
+                  </div>
+                </div>
+                
+                <!-- Update Status Form -->
+                <% if(booking.status !== 'cancelled') { %>
+                  <form action="/admin/bookings/update-status/<%= booking.id %>" method="POST" class="mt-4">
+                    <div class="mb-3">
+                      <label for="status" class="form-label">Update Status</label>
+                      <select class="form-select" id="status" name="status" required>
+                        <option value="booked" <%= booking.status === 'booked' ? 'selected' : '' %>>Booked</option>
+                        <option value="checked-in" <%= booking.status === 'checked-in' ? 'selected' : '' %>>Checked In</option>
+                        <option value="checked-out" <%= booking.status === 'checked-out' ? 'selected' : '' %>>Checked Out</option>
+                        <option value="cancelled" <%= booking.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                      </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Update Status</button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+            
+            <!-- Late Checkout Section -->
+            <% if(booking.status === 'checked-in') { %>
+              <div class="card mb-4">
+                <div class="card-header">
+                  <h5 class="mb-0">Late Checkout</h5>
+                </div>
+                <div class="card-body">
+                  <form action="/bookings/late-checkout/<%= booking.id %>" method="POST">
+                    <div class="mb-3">
+                      <label for="extraHours" class="form-label">Extra Hours</label>
+                      <input type="number" class="form-control" id="extraHours" name="extraHours" min="1" max="12" value="1" required>
+                      <div class="form-text">Number of hours past scheduled checkout time</div>
+                    </div>
+                    
+                    <% 
+                      // Assume all rooms are the same type for fee calculation
+                      let lateCheckoutFeePerHour = 0;
+                      if (booking.rooms && booking.rooms.length > 0) {
+                        // Get fee from room type (this is a placeholder - your actual implementation may vary)
+                        lateCheckoutFeePerHour = 15; // example value
+                      }
+                      const totalRooms = booking.roomCount || 1;
+                    %>
+                    
+                    <div class="alert alert-info small">
+                      <div class="mb-1">Fee: $<%= lateCheckoutFeePerHour.toFixed(2) %> per hour per room</div>
+                      <div class="mb-1">Rooms: <%= totalRooms %></div>
+                      <div class="fw-bold">Total per hour: $<%= (lateCheckoutFeePerHour * totalRooms).toFixed(2) %></div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning w-100">Apply Late Checkout Fee</button>
+                  </form>
+                </div>
+              </div>
+            <% } %>
+            
+            <!-- Price Summary -->
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">Price Summary</h5>
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Rooms Total:</span>
+                  <span>$<%= booking.totalPrice.toFixed(2) %></span>
+                </div>
+                
+                <% if (booking.lateCheckoutFee && booking.lateCheckoutFee > 0) { %>
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Late Checkout Fee:</span>
+                    <span>$<%= booking.lateCheckoutFee.toFixed(2) %></span>
+                  </div>
+                <% } %>
+                
+                <div class="d-flex justify-content-between mb-2 text-muted small">
+                  <span>Taxes (Included):</span>
+                  <span>$<%= (booking.totalPrice * 0.12).toFixed(2) %></span>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between fw-bold">
+                  <span>Total:</span>
+                  <span>$<%= ((booking.totalPrice) + (booking.lateCheckoutFee || 0)).toFixed(2) %></span>
+                </div>
+                
+                <% if(booking.paymentStatus === 'pending') { %>
+                  <form action="/admin/bookings/update-payment-status/<%= booking.id %>" method="POST" class="mt-3">
+                    <input type="hidden" name="paymentStatus" value="paid">
+                    <button type="submit" class="btn btn-success btn-sm w-100">Mark as Paid</button>
+                  </form>
+                <% } %>
+              </div>
+            </div>
+            
+            <!-- Delete Booking -->
+            <div class="card mb-4">
+              <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Danger Zone</h5>
+              </div>
+              <div class="card-body">
+                <p class="text-muted small">Deleting a booking will permanently remove it and release all associated rooms.</p>
+                <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteBookingModal">
+                  <i class="fas fa-trash me-1"></i> Delete Booking
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Delete Booking Modal -->
+        <div class="modal fade" id="deleteBookingModal" tabindex="-1" aria-labelledby="deleteBookingModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="deleteBookingModalLabel">Delete Booking</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <p>Are you sure you want to delete this booking?</p>
+                <p>Booking ID: <strong><%= booking.bookingId %></strong></p>
+                <p>This action cannot be undone and will release all associated rooms.</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="/admin/bookings/delete/<%= booking.id %>?_method=DELETE" method="POST">
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      <% } else { %>
+        <div class="alert alert-danger">
+          <h4 class="alert-heading">Booking Not Found</h4>
+          <p>The booking you are looking for could not be found.</p>
+          <a href="/admin/bookings" class="btn btn-outline-primary mt-3">Return to Bookings List</a>
+        </div>
+      <% } %>
+    </main>
+  </div>
+</div>
+
+<%- include('../../partials/footer') %>

@@ -52,29 +52,20 @@
                       <option value="">Select Room Type</option>
                       <% roomTypes.forEach(type => { %>
                         <option value="<%= type.id %>" <%= room.roomTypeId === type.id ? 'selected' : '' %>>
-                          <%= type.roomTypeName %>
+                          <%= type.roomTypeName %> - $<%= type.pricing ? type.pricing.daily : '0' %>/night
                         </option>
                       <% }); %>
                     </select>
                   </div>
                 </div>
                 
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label for="price" class="form-label">Price (per night)</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="price" name="price" value="<%= room.price %>" min="0" step="0.01" required>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <label for="bookingState" class="form-label">Booking State</label>
-                    <select class="form-select" id="bookingState" name="bookingState">
-                      <option value="available" <%= room.bookingState === 'available' ? 'selected' : '' %>>Available</option>
-                      <option value="booked" <%= room.bookingState === 'booked' ? 'selected' : '' %>>Booked</option>
-                      <option value="maintenance" <%= room.bookingState === 'maintenance' ? 'selected' : '' %>>Maintenance</option>
-                    </select>
-                  </div>
+                <div class="mb-3">
+                  <label for="bookingState" class="form-label">Booking State</label>
+                  <select class="form-select" id="bookingState" name="bookingState">
+                    <option value="available" <%= room.bookingState === 'available' ? 'selected' : '' %>>Available</option>
+                    <option value="booked" <%= room.bookingState === 'booked' ? 'selected' : '' %>>Booked</option>
+                    <option value="maintenance" <%= room.bookingState === 'maintenance' ? 'selected' : '' %>>Maintenance</option>
+                  </select>
                 </div>
                 
                 <div class="mb-3">
@@ -114,7 +105,7 @@
         </div>
         
         <div class="col-md-4">
-          <div class="card">
+          <div class="card mb-4">
             <div class="card-header bg-light">
               <h5 class="mb-0">Current Image</h5>
             </div>
@@ -124,8 +115,36 @@
             </div>
           </div>
           
+          <!-- Room Type Info -->
+          <% if (room.roomType) { %>
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">Room Type Details</h5>
+              </div>
+              <div class="card-body">
+                <h6><%= room.roomType.roomTypeName %></h6>
+                <p class="text-muted small"><%= room.roomType.description %></p>
+                
+                <div class="small mb-2">
+                  <div class="d-flex justify-content-between">
+                    <span>Daily Rate:</span>
+                    <span class="fw-bold">$<%= room.roomType.pricing ? room.roomType.pricing.daily : '0' %></span>
+                  </div>
+                  <div class="d-flex justify-content-between">
+                    <span>Max Capacity:</span>
+                    <span class="fw-bold"><%= room.roomType.capacity || 2 %> guests</span>
+                  </div>
+                </div>
+                
+                <a href="/admin/room-types/edit/<%= room.roomTypeId %>" class="btn btn-sm btn-outline-primary w-100">
+                  Edit Room Type
+                </a>
+              </div>
+            </div>
+          <% } %>
+          
           <% if (room.comments && room.comments.length > 0) { %>
-            <div class="card mt-4">
+            <div class="card">
               <div class="card-header bg-light">
                 <h5 class="mb-0">Guest Reviews</h5>
               </div>

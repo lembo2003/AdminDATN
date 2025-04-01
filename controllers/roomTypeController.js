@@ -12,7 +12,9 @@ exports.getRoomTypes = async (req, res) => {
     res.render('admin/roomTypes/index', {
       title: 'Room Type Management',
       roomTypes,
-      user: req.session.user
+      user: req.session.user,
+      success_msg: req.flash('success_msg'),
+      error_msg: req.flash('error_msg')
     });
   } catch (error) {
     console.error('Get room types error:', error);
@@ -25,9 +27,13 @@ exports.getRoomTypes = async (req, res) => {
  * Render room type add form
  */
 exports.getAddRoomType = (req, res) => {
-  res.render('admin/roomTypes/add', {
+  res.render('admin/roomTypes/form', {
     title: 'Add Room Type',
-    user: req.session.user
+    action: 'add', 
+    roomType: null, // No room type for add form
+    user: req.session.user,
+    success_msg: req.flash('success_msg'),
+    error_msg: req.flash('error_msg')
   });
 };
 
@@ -36,11 +42,34 @@ exports.getAddRoomType = (req, res) => {
  */
 exports.postAddRoomType = async (req, res) => {
   try {
-    const { roomTypeName, description } = req.body;
+    const { 
+      roomTypeName, 
+      description, 
+      capacity,
+      // Pricing
+      dailyPrice,
+      hourlyBasePrice,
+      hourlyAdditionalPrice,
+      overnightPrice,
+      dayUsePrice,
+      weeklyPrice,
+      monthlyPrice,
+      // Minimum stays
+      minimumStayDaily,
+      minimumStayWeekly,
+      minimumStayMonthly,
+      // Other fees
+      lateCheckoutFee
+    } = req.body;
     
     // Validate input
     if (!roomTypeName) {
       req.flash('error_msg', 'Room type name is required');
+      return res.redirect('/admin/room-types/add');
+    }
+    
+    if (!dailyPrice) {
+      req.flash('error_msg', 'Daily price is required');
       return res.redirect('/admin/room-types/add');
     }
     
@@ -55,17 +84,32 @@ exports.postAddRoomType = async (req, res) => {
       return res.redirect('/admin/room-types/add');
     }
     
-    // Create room type
+    // Create room type with all fields
     await RoomType.create({
       roomTypeName,
-      description
+      description,
+      capacity: parseInt(capacity, 10) || 2,
+      // Pricing fields
+      dailyPrice: parseFloat(dailyPrice) || 0,
+      hourlyBasePrice: parseFloat(hourlyBasePrice) || 0,
+      hourlyAdditionalPrice: parseFloat(hourlyAdditionalPrice) || 0,
+      overnightPrice: parseFloat(overnightPrice) || 0,
+      dayUsePrice: parseFloat(dayUsePrice) || 0,
+      weeklyPrice: parseFloat(weeklyPrice) || 0,
+      monthlyPrice: parseFloat(monthlyPrice) || 0,
+      // Minimum stay requirements
+      minimumStayDaily: parseInt(minimumStayDaily, 10) || 1,
+      minimumStayWeekly: parseInt(minimumStayWeekly, 10) || 7,
+      minimumStayMonthly: parseInt(minimumStayMonthly, 10) || 28,
+      // Fees
+      lateCheckoutFee: parseFloat(lateCheckoutFee) || 0
     });
     
     req.flash('success_msg', 'Room type added successfully');
     res.redirect('/admin/room-types');
   } catch (error) {
     console.error('Add room type error:', error);
-    req.flash('error_msg', 'Error adding room type');
+    req.flash('error_msg', 'Error adding room type: ' + error.message);
     res.redirect('/admin/room-types/add');
   }
 };
@@ -85,10 +129,13 @@ exports.getEditRoomType = async (req, res) => {
       return res.redirect('/admin/room-types');
     }
     
-    res.render('admin/roomTypes/edit', {
+    res.render('admin/roomTypes/form', {
       title: 'Edit Room Type',
+      action: 'edit',
       roomType,
-      user: req.session.user
+      user: req.session.user,
+      success_msg: req.flash('success_msg'),
+      error_msg: req.flash('error_msg')
     });
   } catch (error) {
     console.error('Get edit room type error:', error);
@@ -103,11 +150,34 @@ exports.getEditRoomType = async (req, res) => {
 exports.postUpdateRoomType = async (req, res) => {
   try {
     const { roomTypeId } = req.params;
-    const { roomTypeName, description } = req.body;
+    const { 
+      roomTypeName, 
+      description, 
+      capacity,
+      // Pricing
+      dailyPrice,
+      hourlyBasePrice,
+      hourlyAdditionalPrice,
+      overnightPrice,
+      dayUsePrice,
+      weeklyPrice,
+      monthlyPrice,
+      // Minimum stays
+      minimumStayDaily,
+      minimumStayWeekly,
+      minimumStayMonthly,
+      // Other fees
+      lateCheckoutFee
+    } = req.body;
     
     // Validate input
     if (!roomTypeName) {
       req.flash('error_msg', 'Room type name is required');
+      return res.redirect(`/admin/room-types/edit/${roomTypeId}`);
+    }
+    
+    if (!dailyPrice) {
+      req.flash('error_msg', 'Daily price is required');
       return res.redirect(`/admin/room-types/edit/${roomTypeId}`);
     }
     
@@ -130,17 +200,32 @@ exports.postUpdateRoomType = async (req, res) => {
       return res.redirect(`/admin/room-types/edit/${roomTypeId}`);
     }
     
-    // Update room type
+    // Update room type with all fields
     await RoomType.update(roomTypeId, {
       roomTypeName,
-      description
+      description,
+      capacity: parseInt(capacity, 10) || 2,
+      // Pricing fields
+      dailyPrice: parseFloat(dailyPrice) || 0,
+      hourlyBasePrice: parseFloat(hourlyBasePrice) || 0,
+      hourlyAdditionalPrice: parseFloat(hourlyAdditionalPrice) || 0,
+      overnightPrice: parseFloat(overnightPrice) || 0,
+      dayUsePrice: parseFloat(dayUsePrice) || 0,
+      weeklyPrice: parseFloat(weeklyPrice) || 0,
+      monthlyPrice: parseFloat(monthlyPrice) || 0,
+      // Minimum stay requirements
+      minimumStayDaily: parseInt(minimumStayDaily, 10) || 1,
+      minimumStayWeekly: parseInt(minimumStayWeekly, 10) || 7,
+      minimumStayMonthly: parseInt(minimumStayMonthly, 10) || 28,
+      // Fees
+      lateCheckoutFee: parseFloat(lateCheckoutFee) || 0
     });
     
     req.flash('success_msg', 'Room type updated successfully');
     res.redirect('/admin/room-types');
   } catch (error) {
     console.error('Update room type error:', error);
-    req.flash('error_msg', 'Error updating room type');
+    req.flash('error_msg', 'Error updating room type: ' + error.message);
     res.redirect(`/admin/room-types/edit/${req.params.roomTypeId}`);
   }
 };
@@ -175,7 +260,7 @@ exports.deleteRoomType = async (req, res) => {
     res.redirect('/admin/room-types');
   } catch (error) {
     console.error('Delete room type error:', error);
-    req.flash('error_msg', 'Error deleting room type');
+    req.flash('error_msg', 'Error deleting room type: ' + error.message);
     res.redirect('/admin/room-types');
   }
 };

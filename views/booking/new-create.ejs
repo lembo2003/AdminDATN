@@ -1,0 +1,664 @@
+<%- include('../partials/header') %>
+
+<div class="container py-5">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      <li class="breadcrumb-item"><a href="/rooms">Rooms</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Book Now</li>
+    </ol>
+  </nav>
+
+  <div class="row">
+    <div class="col-lg-10 mx-auto">
+      <div class="card shadow border-0">
+        <div class="card-header bg-primary text-white py-3">
+          <h3 class="card-title mb-0">Book Your Stay</h3>
+        </div>
+        <div class="card-body p-4">
+          <!-- Flash Messages -->
+          <% if(success_msg != ''){ %>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <%= success_msg %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <% } %>
+          
+          <% if(error_msg != ''){ %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <%= error_msg %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          <% } %>
+          
+          <form action="/bookings/create" method="POST" id="bookingForm">
+            <!-- Booking Type Selection -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <h5 class="mb-3">1. Select Booking Type</h5>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="card mb-3">
+                      <div class="card-body">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="bookingType" id="bookingTypeHourly" value="hourly" <%= bookingType === 'hourly' ? 'checked' : '' %>>
+                          <label class="form-check-label fw-bold" for="bookingTypeHourly">Hourly / Rest Stay</label>
+                          <p class="text-muted small mb-0">Short stay (2-4 hours) for meetings or rest</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card mb-3">
+                      <div class="card-body">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="bookingType" id="bookingTypeOvernight" value="overnight" <%= bookingType === 'overnight' ? 'checked' : '' %>>
+                          <label class="form-check-label fw-bold" for="bookingTypeOvernight">Overnight Stay</label>
+                          <p class="text-muted small mb-0">Evening to morning, typically 6 PM to 10 AM</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card mb-3">
+                      <div class="card-body">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="bookingType" id="bookingTypeDaily" value="daily" <%= bookingType === 'daily' ? 'checked' : '' %>>
+                          <label class="form-check-label fw-bold" for="bookingTypeDaily">Daily (Standard)</label>
+                          <p class="text-muted small mb-0">Standard booking by night, 24-hour periods</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card mb-3">
+                      <div class="card-body">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="bookingType" id="bookingTypeDayUse" value="dayUse" <%= bookingType === 'dayUse' ? 'checked' : '' %>>
+                          <label class="form-check-label fw-bold" for="bookingTypeDayUse">Day Use</label>
+                          <p class="text-muted small mb-0">Daytime use with no overnight stay, e.g., 9 AM - 6 PM</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card mb-3">
+                      <div class="card-body">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="bookingType" id="bookingTypeWeekly" value="weekly" <%= bookingType === 'weekly' ? 'checked' : '' %>>
+                          <label class="form-check-label fw-bold" for="bookingTypeWeekly">Weekly Rate</label>
+                          <p class="text-muted small mb-0">Discounted weekly rate for longer stays</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card mb-3">
+                      <div class="card-body">
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio" name="bookingType" id="bookingTypeMonthly" value="monthly" <%= bookingType === 'monthly' ? 'checked' : '' %>>
+                          <label class="form-check-label fw-bold" for="bookingTypeMonthly">Monthly Rate</label>
+                          <p class="text-muted small mb-0">Discounted monthly rate for extended stays</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Dates and Times Selection -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <h5 class="mb-3">2. Select Date & Time</h5>
+                <div class="row">
+                  <div class="col-md-3 mb-3">
+                    <label for="checkInDate" class="form-label">Check-in Date</label>
+                    <input type="date" class="form-control" id="checkInDate" name="checkInDate" 
+                          value="<%= checkIn %>" min="<%= new Date().toISOString().split('T')[0] %>" required>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="checkInTime" class="form-label">Check-in Time</label>
+                    <input type="time" class="form-control" id="checkInTime" name="checkInTime" 
+                          value="<%= timePresets.checkInTime %>" required>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="checkOutDate" class="form-label">Check-out Date</label>
+                    <input type="date" class="form-control" id="checkOutDate" name="checkOutDate" 
+                          value="<%= checkOut %>" required>
+                  </div>
+                  <div class="col-md-3 mb-3">
+                    <label for="checkOutTime" class="form-label">Check-out Time</label>
+                    <input type="time" class="form-control" id="checkOutTime" name="checkOutTime" 
+                          value="<%= timePresets.checkOutTime %>" required>
+                  </div>
+                </div>
+                
+                <div class="alert alert-info small">
+                  <i class="fas fa-info-circle me-2"></i>
+                  <span id="bookingTypeDescription">Standard daily booking includes a stay from check-in time (2 PM) to check-out time (11 AM) the next day or on your selected date.</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Room Selection -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <h5 class="mb-3">3. Select Room Type & Quantity</h5>
+                
+                <% if (roomTypes && roomTypes.length > 0) { %>
+                  <div class="room-selection">
+                    <% roomTypes.forEach(roomType => { %>
+                      <div class="card mb-3 room-type-card" data-room-type-id="<%= roomType.id %>">
+                        <div class="card-body">
+                          <div class="row align-items-center">
+                            <div class="col-md-5">
+                              <h6 class="mb-2"><%= roomType.roomTypeName %></h6>
+                              <p class="text-muted small mb-2"><%= roomType.description %></p>
+                              <div class="text-success small">
+                                <i class="fas fa-check-circle me-1"></i>
+                                <span id="availabilityCount_<%= roomType.id %>"><%= roomType.availableCount %></span> rooms available
+                              </div>
+                              <p class="mt-2 mb-0 fw-bold">
+                                $<span class="room-price" id="price_<%= roomType.id %>">
+                                  <%= roomType.pricing ? roomType.pricing.daily : '0' %>
+                                </span>
+                                <span class="price-period">/ night</span>
+                              </p>
+                            </div>
+                            <div class="col-md-5">
+                              <div class="room-features small">
+                                <div><i class="fas fa-user-friends me-2"></i> Max <strong><%= roomType.capacity || 2 %></strong> guests</div>
+                                <div class="mt-1"><i class="fas fa-bed me-2"></i> <strong><%= roomType.roomTypeName %></strong></div>
+                                <div class="mt-1"><i class="fas fa-wifi me-2"></i> Free Wi-Fi</div>
+                                <div class="mt-1"><i class="fas fa-shower me-2"></i> Private bathroom</div>
+                              </div>
+                            </div>
+                            <div class="col-md-2">
+                              <label for="roomQuantity_<%= roomType.id %>" class="form-label">Quantity</label>
+                              <select class="form-select room-quantity" id="roomQuantity_<%= roomType.id %>" name="roomQuantity_<%= roomType.id %>">
+                                <option value="0">0</option>
+                                <% for(let i = 1; i <= Math.min(5, roomType.availableCount); i++) { %>
+                                  <option value="<%= i %>"><%= i %></option>
+                                <% } %>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    <% }); %>
+                  </div>
+                <% } else { %>
+                  <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    No rooms are currently available for booking. Please try different dates or contact us.
+                  </div>
+                <% } %>
+              </div>
+            </div>
+            
+            <!-- Guest Information -->
+            <div class="row mb-4">
+              <div class="col-md-12">
+                <h5 class="mb-3">4. Guest Information</h5>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="numberOfGuests" class="form-label">Number of Guests</label>
+                    <select class="form-select" id="numberOfGuests" name="numberOfGuests" required>
+                      <% for(let i = 1; i <= 8; i++) { %>
+                        <option value="<%= i %>" <%= parseInt(guests) === i ? 'selected' : '' %>><%= i %> <%= i === 1 ? 'Guest' : 'Guests' %></option>
+                      <% } %>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="paymentMethod" class="form-label">Payment Method</label>
+                    <select class="form-select" id="paymentMethod" name="paymentMethod" required>
+                      <option value="credit_card">Credit Card</option>
+                      <option value="debit_card">Debit Card</option>
+                      <option value="paypal">PayPal</option>
+                      <option value="cash">Cash (Pay at Hotel)</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="specialRequests" class="form-label">Special Requests</label>
+                  <textarea class="form-control" id="specialRequests" name="specialRequests" rows="3" placeholder="Any special requests or preferences?"></textarea>
+                </div>
+              </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <!-- Booking Summary -->
+            <div class="booking-summary p-3 mb-4 rounded">
+              <h5 class="mb-3">Booking Summary</h5>
+              
+              <div id="selectedRoomsContainer">
+                <div class="alert alert-warning" id="noRoomsSelectedAlert">
+                  <i class="fas fa-exclamation-triangle me-2"></i>
+                  No rooms selected. Please select at least one room to continue.
+                </div>
+                
+                <!-- Selected rooms will be displayed here -->
+                <div id="selectedRoomsList" class="mb-3" style="display: none;">
+                  <!-- Room items will be added here by JavaScript -->
+                </div>
+              </div>
+              
+              <div class="row mb-2">
+                <div class="col-7">Booking Type:</div>
+                <div class="col-5 text-end"><span id="summaryBookingType">Daily</span></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-7">Stay Duration:</div>
+                <div class="col-5 text-end"><span id="stayDuration">1 night</span></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-7">Subtotal:</div>
+                <div class="col-5 text-end">$<span id="subtotal">0</span></div>
+              </div>
+              <div class="row mb-2">
+                <div class="col-7">Taxes & Fees (12%):</div>
+                <div class="col-5 text-end">$<span id="taxesAndFees">0</span></div>
+              </div>
+              
+              <div class="row fw-bold mt-2 pt-2 border-top">
+                <div class="col-7">Total Amount:</div>
+                <div class="col-5 text-end">$<span id="totalAmount">0</span></div>
+              </div>
+            </div>
+            
+            <div class="form-check mb-4">
+              <input class="form-check-input" type="checkbox" id="termsCheck" required>
+              <label class="form-check-label" for="termsCheck">
+                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
+              </label>
+            </div>
+            
+            <div class="d-grid">
+              <button type="submit" class="btn btn-primary btn-lg" id="confirmButton" disabled>Confirm Booking</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <h6>Booking Policy</h6>
+        <p>By confirming this booking, you agree to the following terms:</p>
+        <ul>
+          <li>Standard check-in time is from 2:00 PM and check-out time is until 11:00 AM.</li>
+          <li>For hourly bookings, the minimum duration is 2 hours.</li>
+          <li>Overnight bookings are typically from 6:00 PM to 10:00 AM the next day.</li>
+          <li>Day use bookings are from 9:00 AM to 6:00 PM with no overnight stay.</li>
+          <li>A valid government-issued photo ID is required at check-in.</li>
+          <li>Guests under 18 years of age must be accompanied by a parent or guardian.</li>
+          <li>We reserve the right to refuse service to anyone for any reason at any time.</li>
+        </ul>
+        
+        <h6>Late Checkout Policy</h6>
+        <p>Late checkout will incur additional fees calculated hourly until an accommodation-specific cutoff time, after which a full additional day will be charged.</p>
+        
+        <h6>Cancellation Policy</h6>
+        <p>Cancellations made more than 48 hours before the scheduled check-in date will receive a full refund. Cancellations made within 48 hours of the scheduled check-in date will be charged for the first night's stay.</p>
+        
+        <h6>Payment Policy</h6>
+        <p>For reservations with "Pay at Hotel", a valid credit card is required to guarantee the booking. For prepaid reservations, the full amount will be charged at the time of booking.</p>
+        
+        <h6>Damage Policy</h6>
+        <p>Guests will be held responsible for any damage to the hotel property during their stay and will be charged accordingly.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // DOM elements
+    const bookingForm = document.getElementById('bookingForm');
+    const checkInDateInput = document.getElementById('checkInDate');
+    const checkInTimeInput = document.getElementById('checkInTime');
+    const checkOutDateInput = document.getElementById('checkOutDate');
+    const checkOutTimeInput = document.getElementById('checkOutTime');
+    const bookingTypeInputs = document.querySelectorAll('input[name="bookingType"]');
+    const bookingTypeDescription = document.getElementById('bookingTypeDescription');
+    const termsCheckbox = document.getElementById('termsCheck');
+    const confirmButton = document.getElementById('confirmButton');
+    const roomQuantitySelects = document.querySelectorAll('.room-quantity');
+    const noRoomsSelectedAlert = document.getElementById('noRoomsSelectedAlert');
+    const selectedRoomsList = document.getElementById('selectedRoomsList');
+    
+    // Booking summary elements
+    const summaryBookingType = document.getElementById('summaryBookingType');
+    const stayDuration = document.getElementById('stayDuration');
+    const subtotalElement = document.getElementById('subtotal');
+    const taxesAndFeesElement = document.getElementById('taxesAndFees');
+    const totalAmountElement = document.getElementById('totalAmount');
+    
+    // Time presets for different booking types
+    const timePresets = {
+      hourly: { checkIn: '10:00', checkOut: '14:00' },
+      overnight: { checkIn: '18:00', checkOut: '10:00' },
+      daily: { checkIn: '14:00', checkOut: '11:00' },
+      dayUse: { checkIn: '09:00', checkOut: '18:00' },
+      weekly: { checkIn: '14:00', checkOut: '11:00' },
+      monthly: { checkIn: '14:00', checkOut: '11:00' }
+    };
+    
+    // Description text for each booking type
+    const bookingTypeDescriptions = {
+      hourly: 'Hourly booking allows you to book a room for 2-4 hours. Pay only for the time you need. Great for business meetings or short rest.',
+      overnight: 'Overnight booking gives you a room from evening (6 PM) until morning (10 AM). Perfect for a single night\'s stay.',
+      daily: 'Standard daily booking includes a stay from check-in time (2 PM) to check-out time (11 AM) the next day or on your selected date.',
+      dayUse: 'Day use booking allows you to use the room during the day (9 AM - 6 PM) without spending the night.',
+      weekly: 'Weekly booking offers a discounted rate for stays of 7 nights or more. Perfect for longer vacations or business trips.',
+      monthly: 'Monthly booking provides our best rate for extended stays of 28 nights or more. Ideal for relocations or long-term projects.'
+    };
+    
+    // Store selected rooms data
+    let selectedRooms = [];
+    let totalSubtotal = 0;
+    
+    // Update form based on booking type
+    function updateBookingTypeSettings() {
+      const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
+      
+      // Update time inputs based on booking type
+      checkInTimeInput.value = timePresets[selectedBookingType].checkIn;
+      checkOutTimeInput.value = timePresets[selectedBookingType].checkOut;
+      
+      // Update description
+      bookingTypeDescription.textContent = bookingTypeDescriptions[selectedBookingType];
+      
+      // Update summary
+      summaryBookingType.textContent = selectedBookingType.charAt(0).toUpperCase() + selectedBookingType.slice(1);
+      
+      // Update price text next to room prices
+      const pricePeriod = document.querySelectorAll('.price-period');
+      switch(selectedBookingType) {
+        case 'hourly':
+          pricePeriod.forEach(el => el.textContent = '/ hour');
+          break;
+        case 'overnight':
+          pricePeriod.forEach(el => el.textContent = '/ night');
+          break;
+        case 'dayUse':
+          pricePeriod.forEach(el => el.textContent = '/ day');
+          break;
+        case 'weekly':
+          pricePeriod.forEach(el => el.textContent = '/ week');
+          break;
+        case 'monthly':
+          pricePeriod.forEach(el => el.textContent = '/ month');
+          break;
+        default:
+          pricePeriod.forEach(el => el.textContent = '/ night');
+      }
+      
+      // Update prices for all room types
+      updateAllRoomPrices();
+    }
+    
+    // Handle booking type change
+    bookingTypeInputs.forEach(input => {
+      input.addEventListener('change', updateBookingTypeSettings);
+    });
+    
+    // Calculate and update stay duration display
+    function updateStayDuration() {
+      const checkInDateTime = new Date(`${checkInDateInput.value}T${checkInTimeInput.value}`);
+      const checkOutDateTime = new Date(`${checkOutDateInput.value}T${checkOutTimeInput.value}`);
+      
+      // Get time difference in milliseconds
+      const timeDiff = checkOutDateTime - checkInDateTime;
+      
+      if (timeDiff <= 0) {
+        stayDuration.textContent = 'Invalid dates';
+        return;
+      }
+      
+      const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
+      
+      // Display duration based on booking type
+      switch(selectedBookingType) {
+        case 'hourly':
+          const hours = Math.ceil(timeDiff / (1000 * 60 * 60));
+          stayDuration.textContent = `${hours} hour${hours !== 1 ? 's' : ''}`;
+          break;
+        case 'overnight':
+          stayDuration.textContent = '1 night';
+          break;
+        case 'dayUse':
+          stayDuration.textContent = '1 day';
+          break;
+        case 'weekly':
+          const weeks = Math.ceil(timeDiff / (1000 * 60 * 60 * 24 * 7));
+          stayDuration.textContent = `${weeks} week${weeks !== 1 ? 's' : ''}`;
+          break;
+        case 'monthly':
+          const months = Math.ceil(timeDiff / (1000 * 60 * 60 * 24 * 30));
+          stayDuration.textContent = `${months} month${months !== 1 ? 's' : ''}`;
+          break;
+        case 'daily':
+        default:
+          const days = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+          stayDuration.textContent = `${days} night${days !== 1 ? 's' : ''}`;
+      }
+      
+      // Update room prices when dates change
+      updateAllRoomPrices();
+    }
+    
+    // Calculate prices for a specific room type
+    async function calculateRoomPrice(roomTypeId, quantity) {
+      if (quantity <= 0) return 0;
+      
+      const bookingType = document.querySelector('input[name="bookingType"]:checked').value;
+      const checkInDate = checkInDateInput.value;
+      const checkInTime = checkInTimeInput.value;
+      const checkOutDate = checkOutDateInput.value;
+      const checkOutTime = checkOutTimeInput.value;
+      
+      try {
+        // Make API call to backend to calculate price
+        const response = await fetch('/bookings/calculate-price', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            roomTypeId,
+            quantity,
+            bookingType,
+            checkInDate,
+            checkInTime,
+            checkOutDate,
+            checkOutTime
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          console.error('Error calculating price:', data.error);
+          return 0;
+        }
+        
+        // Update room price display if quantity > 0
+        if (quantity > 0) {
+          document.getElementById(`price_${roomTypeId}`).textContent = data.pricePerRoom.toFixed(2);
+        }
+        
+        return data.totalPrice;
+      } catch (error) {
+        console.error('Error calculating price:', error);
+        return 0;
+      }
+    }
+    
+    // Update all room prices based on current booking parameters
+    async function updateAllRoomPrices() {
+      // Reset selected rooms
+      selectedRooms = [];
+      totalSubtotal = 0;
+      
+      // Process each room quantity selection
+      const promises = [];
+      
+      roomQuantitySelects.forEach(select => {
+        const roomTypeId = select.id.replace('roomQuantity_', '');
+        const quantity = parseInt(select.value, 10);
+        
+        if (quantity > 0) {
+          // Get room type name
+          const roomCard = document.querySelector(`.room-type-card[data-room-type-id="${roomTypeId}"]`);
+          const roomTypeName = roomCard.querySelector('h6').textContent;
+          
+          // Calculate price for this room type
+          const pricePromise = calculateRoomPrice(roomTypeId, quantity).then(totalPrice => {
+            // Add to selected rooms
+            selectedRooms.push({
+              roomTypeId,
+              roomTypeName,
+              quantity,
+              totalPrice
+            });
+            
+            totalSubtotal += totalPrice;
+          });
+          
+          promises.push(pricePromise);
+        }
+      });
+      
+      // Wait for all price calculations to complete
+      await Promise.all(promises);
+      
+      // Update booking summary
+      updateBookingSummary();
+    }
+    
+    // Update the booking summary display
+    function updateBookingSummary() {
+      // Toggle selected rooms list visibility
+      if (selectedRooms.length > 0) {
+        noRoomsSelectedAlert.style.display = 'none';
+        selectedRoomsList.style.display = 'block';
+        
+        // Clear existing list
+        selectedRoomsList.innerHTML = '';
+        
+        // Add each selected room to the list
+        selectedRooms.forEach(room => {
+          const roomItem = document.createElement('div');
+          roomItem.className = 'row mb-2';
+          roomItem.innerHTML = `
+            <div class="col-7">${room.roomTypeName} x ${room.quantity}</div>
+            <div class="col-5 text-end">$${room.totalPrice.toFixed(2)}</div>
+          `;
+          selectedRoomsList.appendChild(roomItem);
+        });
+        
+        // Update summary calculations
+        const taxRate = 0.12; // 12%
+        const taxes = totalSubtotal * taxRate;
+        const total = totalSubtotal + taxes;
+        
+        subtotalElement.textContent = totalSubtotal.toFixed(2);
+        taxesAndFeesElement.textContent = taxes.toFixed(2);
+        totalAmountElement.textContent = total.toFixed(2);
+        
+        // Enable booking button if terms are agreed
+        confirmButton.disabled = !termsCheckbox.checked;
+      } else {
+        noRoomsSelectedAlert.style.display = 'block';
+        selectedRoomsList.style.display = 'none';
+        
+        // Reset summary values
+        subtotalElement.textContent = '0.00';
+        taxesAndFeesElement.textContent = '0.00';
+        totalAmountElement.textContent = '0.00';
+        
+        // Disable booking button
+        confirmButton.disabled = true;
+      }
+    }
+    
+    // Set minimum check-out date when check-in date is selected
+    checkInDateInput.addEventListener('change', function() {
+      if (this.value) {
+        const nextDay = new Date(this.value);
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        const nextDayFormatted = nextDay.toISOString().split('T')[0];
+        checkOutDateInput.min = nextDayFormatted;
+        
+        // If check-out is before or same as new check-in, update it
+        if (checkOutDateInput.value && new Date(checkOutDateInput.value) <= new Date(this.value)) {
+          checkOutDateInput.value = nextDayFormatted;
+        }
+        
+        updateStayDuration();
+      }
+    });
+    
+    // Update date/time related calculations
+    checkInTimeInput.addEventListener('change', updateStayDuration);
+    checkOutDateInput.addEventListener('change', updateStayDuration);
+    checkOutTimeInput.addEventListener('change', updateStayDuration);
+    
+    // Handle room quantity changes
+    roomQuantitySelects.forEach(select => {
+      select.addEventListener('change', updateAllRoomPrices);
+    });
+    
+    // Handle terms checkbox
+    termsCheckbox.addEventListener('change', function() {
+      // Only enable button if rooms are selected
+      if (selectedRooms.length > 0) {
+        confirmButton.disabled = !this.checked;
+      }
+    });
+    
+    // Validate form before submission
+    bookingForm.addEventListener('submit', function(event) {
+      if (selectedRooms.length === 0) {
+        event.preventDefault();
+        alert('Please select at least one room to continue.');
+        return false;
+      }
+      
+      const checkInDateTime = new Date(`${checkInDateInput.value}T${checkInTimeInput.value}`);
+      const checkOutDateTime = new Date(`${checkOutDateInput.value}T${checkOutTimeInput.value}`);
+      
+      if (checkOutDateTime <= checkInDateTime) {
+        event.preventDefault();
+        alert('Check-out date/time must be after check-in date/time.');
+        return false;
+      }
+      
+      return true;
+    });
+    
+    // Initialize form based on current booking type
+    updateBookingTypeSettings();
+    updateStayDuration();
+  });
+</script>
+
+<%- include('../partials/footer') %>

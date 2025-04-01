@@ -8,7 +8,10 @@ router.get('/', roomController.getRooms);
 router.get('/search', roomController.searchRooms);
 router.get('/:roomId', roomController.getRoomDetails);
 
-// Protected routes
+// Room availability check route - Only add if implemented in controller
+ router.get('/availability/:roomTypeId', roomController.getRoomAvailability);
+
+// Protected routes (require authentication)
 router.post('/:roomId/comment', auth, roomController.postComment);
 
 module.exports = router;

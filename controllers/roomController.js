@@ -8,7 +8,7 @@ const Comment = require('../models/comment');
 exports.getRooms = async (req, res) => {
   try {
     // Get filter parameters
-    const { roomType, minPrice, maxPrice } = req.query;
+    const { roomType, maxPrice } = req.query;
 
     // Prepare filters
     const filters = {};
@@ -70,10 +70,27 @@ exports.getRoomDetails = async (req, res) => {
     // Filter out the current room from similar rooms
     const filteredSimilarRooms = similarRooms.filter(similar => similar.id !== room.id);
 
+    // Get room type pricing information
+    const roomType = room.roomType || {};
+    
+    // Format pricing for display
+    const pricing = {
+      daily: roomType.pricing?.daily || 0,
+      hourly: {
+        base: roomType.pricing?.hourly?.basePrice || 0,
+        additional: roomType.pricing?.hourly?.additionalHourPrice || 0
+      },
+      overnight: roomType.pricing?.overnight || 0,
+      dayUse: roomType.pricing?.dayUse || 0,
+      weekly: roomType.pricing?.weekly || 0,
+      monthly: roomType.pricing?.monthly || 0
+    };
+
     res.render('room/details', {
       title: room.roomName,
       user: req.session.user,
       room,
+      pricing,
       similarRooms: filteredSimilarRooms.slice(0, 3), // Show up to 3 similar rooms
       success_msg: req.flash('success_msg'),
       error_msg: req.flash('error_msg')
@@ -124,7 +141,7 @@ exports.postComment = async (req, res) => {
  */
 exports.searchRooms = async (req, res) => {
   try {
-    const { query, checkIn, checkOut, guests } = req.query;
+    const { query, checkIn, checkOut, guests, bookingType } = req.query;
 
     // Get all available rooms with amenities
     const rooms = await Room.getAll({ isBooked: false }, true); // true = includeAmenities
@@ -141,10 +158,35 @@ exports.searchRooms = async (req, res) => {
       );
     }
 
+    // If booking type and dates are provided, calculate prices
+    if (bookingType && checkIn && checkOut) {
+      // Add calculated prices based on booking type
+      for (const room of filteredRooms) {
+        if (room.roomType && room.roomType.id) {
+          try {
+            const calculatedPrice = await RoomType.calculatePrice(
+              room.roomType.id,
+              bookingType,
+              new Date(checkIn),
+              new Date(checkOut)
+            );
+            
+            room.calculatedPrice = calculatedPrice;
+          } catch (error) {
+            console.error(`Error calculating price for room ${room.id}:`, error);
+          }
+        }
+      }
+    }
+
+    // Get all room types for filtering
+    const roomTypes = await RoomType.getAll();
+
     res.render('room/search-results', {
       title: 'Search Results',
       user: req.session.user,
       rooms: filteredRooms,
+      roomTypes,
       searchParams: req.query,
       success_msg: req.flash('success_msg'),
       error_msg: req.flash('error_msg')
@@ -153,5 +195,41 @@ exports.searchRooms = async (req, res) => {
     console.error('Search rooms error:', error);
     req.flash('error_msg', 'Error searching for rooms');
     res.redirect('/rooms');
+  }
+};
+
+/**
+ * Get room availability by room type
+ */
+exports.getRoomAvailability = async (req, res) => {
+  try {
+    const { roomTypeId } = req.params;
+    
+    // Get available rooms for this room type
+    const availableCount = await Room.countAvailableByType(roomTypeId);
+    
+    // Get room type details
+    const roomType = await RoomType.getById(roomTypeId);
+    
+    if (!roomType) {
+      return res.status(404).json({
+        success: false,
+        error: 'Room type not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      roomTypeId,
+      roomTypeName: roomType.roomTypeName,
+      availableCount,
+      capacity: roomType.capacity || 2
+    });
+  } catch (error) {
+    console.error('Get room availability error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Error getting room availability'
+    });
   }
 };

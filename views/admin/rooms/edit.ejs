@@ -125,14 +125,51 @@
                 <h6><%= room.roomType.roomTypeName %></h6>
                 <p class="text-muted small"><%= room.roomType.description %></p>
                 
-                <div class="small mb-2">
-                  <div class="d-flex justify-content-between">
-                    <span>Daily Rate:</span>
-                    <span class="fw-bold">$<%= room.roomType.pricing ? room.roomType.pricing.daily : '0' %></span>
+                <div class="row mt-3">
+                  <div class="col-md-6">
+                    <h6 class="text-muted fw-bold small mb-2">Standard Options</h6>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>Daily Rate:</span>
+                      <span class="fw-bold text-primary">$<%= room.roomType.pricing ? room.roomType.pricing.daily : '0' %></span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>Weekly Rate:</span>
+                      <span class="fw-bold">$<%= room.roomType.pricing ? room.roomType.pricing.weekly : '0' %></span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>Monthly Rate:</span>
+                      <span class="fw-bold">$<%= room.roomType.pricing ? room.roomType.pricing.monthly : '0' %></span>
+                    </div>
                   </div>
-                  <div class="d-flex justify-content-between">
-                    <span>Max Capacity:</span>
-                    <span class="fw-bold"><%= room.roomType.capacity || 2 %> guests</span>
+                  <div class="col-md-6">
+                    <h6 class="text-muted fw-bold small mb-2">Flexible Options</h6>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>Hourly Rate:</span>
+                      <span class="fw-bold">
+                        $<%= room.roomType.pricing && room.roomType.pricing.hourly ? room.roomType.pricing.hourly.basePrice : '0' %> + 
+                        $<%= room.roomType.pricing && room.roomType.pricing.hourly ? room.roomType.pricing.hourly.additionalHourPrice : '0' %>/hr
+                      </span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>Overnight Stay:</span>
+                      <span class="fw-bold">$<%= room.roomType.pricing ? room.roomType.pricing.overnight : '0' %></span>
+                    </div>
+                    <div class="d-flex justify-content-between small mb-1">
+                      <span>Day Use:</span>
+                      <span class="fw-bold">$<%= room.roomType.pricing ? room.roomType.pricing.dayUse : '0' %></span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="d-flex justify-content-between small mt-3 pt-2 border-top">
+                  <div>
+                    <span class="badge bg-info">
+                      <i class="fas fa-user-friends me-1"></i> <%= room.roomType.capacity || 2 %> guests
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-muted">Late checkout fee: </span>
+                    <span class="fw-bold">$<%= room.roomType.lateCheckoutFee || '0' %>/hr</span>
                   </div>
                 </div>
                 

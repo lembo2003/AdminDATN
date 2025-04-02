@@ -55,38 +55,82 @@
                   </div>
                 </div>
                 
-                <div class="mb-4">
-                  <label for="roomTypeId" class="form-label">Room Type</label>
-                  <select class="form-select" id="roomTypeId" name="roomTypeId" required>
-                    <option value="">Select Room Type</option>
-                    <% roomTypes.forEach(type => { %>
-                      <option value="<%= type.id %>" data-daily-price="<%= type.pricing ? type.pricing.daily : '0' %>" 
-                      data-capacity="<%= type.capacity || 2 %>"
-                      data-overnight-price="<%= type.pricing ? type.pricing.overnight : '0' %>"
-                      data-description="<%= type.description || '' %>">
-                        <%= type.roomTypeName %> - $<%= type.pricing ? type.pricing.daily : '0' %>/night
-                      </option>
-                    <% }); %>
-                  </select>
-                  
-                  <!-- Room Type Preview -->
-                  <div class="mt-2 p-2 border rounded bg-light" id="roomTypePreview" style="display: none;">
-                    <div class="d-flex justify-content-between">
-                      <div>
-                        <span class="fw-bold" id="previewTypeName"></span>
-                        <p class="small text-muted mb-0" id="previewTypeDescription"></p>
-                      </div>
-                      <div class="text-end">
-                        <div class="fw-bold text-primary" id="previewTypePrice"></div>
-                        <small class="text-muted">per night</small>
-                      </div>
-                    </div>
-                    <div class="mt-1 small">
-                      <span class="badge bg-info" id="previewTypeCapacity"><i class="fas fa-user-friends me-1"></i> 2 guests</span>
-                    </div>
-                  </div>
-                </div>
-                
+<!-- Enhanced Room Type Selection & Preview -->
+<div class="mb-4">
+  <label for="roomTypeId" class="form-label">Room Type</label>
+  <select class="form-select" id="roomTypeId" name="roomTypeId" required>
+    <option value="">Select Room Type</option>
+    <% roomTypes.forEach(type => { %>
+      <option value="<%= type.id %>" 
+        data-daily-price="<%= type.pricing ? type.pricing.daily : '0' %>" 
+        data-capacity="<%= type.capacity || 2 %>"
+        data-overnight-price="<%= type.pricing ? type.pricing.overnight : '0' %>"
+        data-day-use-price="<%= type.pricing ? type.pricing.dayUse : '0' %>"
+        data-hourly-base="<%= type.pricing && type.pricing.hourly ? type.pricing.hourly.basePrice : '0' %>"
+        data-hourly-additional="<%= type.pricing && type.pricing.hourly ? type.pricing.hourly.additionalHourPrice : '0' %>"
+        data-weekly-price="<%= type.pricing ? type.pricing.weekly : '0' %>"
+        data-monthly-price="<%= type.pricing ? type.pricing.monthly : '0' %>"
+        data-late-checkout-fee="<%= type.lateCheckoutFee || '0' %>"
+        data-description="<%= type.description || '' %>">
+        <%= type.roomTypeName %> - $<%= type.pricing ? type.pricing.daily : '0' %>/night
+      </option>
+    <% }); %>
+  </select>
+  
+  <!-- Enhanced Room Type Preview -->
+  <div class="mt-3 border rounded bg-light" id="roomTypePreview" style="display: none;">
+    <div class="card-header bg-white border-bottom d-flex justify-content-between">
+      <div class="fw-bold" id="previewTypeName"></div>
+      <div class="text-primary fw-bold" id="previewTypePrice"></div>
+    </div>
+    <div class="card-body">
+      <p class="small text-muted mb-3" id="previewTypeDescription"></p>
+      
+      <div class="row">
+        <div class="col-md-6">
+          <h6 class="text-muted fw-bold small mb-2">Standard Options</h6>
+          <div class="d-flex justify-content-between small mb-1">
+            <span>Daily Rate:</span>
+            <span class="fw-bold" id="previewDailyPrice"></span>
+          </div>
+          <div class="d-flex justify-content-between small mb-1">
+            <span>Weekly Rate:</span>
+            <span class="fw-bold" id="previewWeeklyPrice"></span>
+          </div>
+          <div class="d-flex justify-content-between small mb-1">
+            <span>Monthly Rate:</span>
+            <span class="fw-bold" id="previewMonthlyPrice"></span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-muted fw-bold small mb-2">Flexible Options</h6>
+          <div class="d-flex justify-content-between small mb-1">
+            <span>Hourly Rate:</span>
+            <span class="fw-bold" id="previewHourlyPrice"></span>
+          </div>
+          <div class="d-flex justify-content-between small mb-1">
+            <span>Overnight Stay:</span>
+            <span class="fw-bold" id="previewOvernightPrice"></span>
+          </div>
+          <div class="d-flex justify-content-between small mb-1">
+            <span>Day Use:</span>
+            <span class="fw-bold" id="previewDayUsePrice"></span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="d-flex justify-content-between small mt-3 pt-2 border-top">
+        <div>
+          <span class="badge bg-info" id="previewTypeCapacity"><i class="fas fa-user-friends me-1"></i> 2 guests</span>
+        </div>
+        <div>
+          <span class="text-muted">Late checkout fee: </span>
+          <span class="fw-bold" id="previewLateCheckoutFee"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
                 <div class="mb-3">
                   <label for="description" class="form-label">Room Description</label>
                   <div id="editor" style="height: 200px; border: 1px solid #ced4da; border-radius: 0.25rem;"></div>
@@ -189,31 +233,59 @@
       document.getElementById('description').value = quill.root.innerHTML;
     });
     
-    // Room type preview
-    const roomTypeSelect = document.getElementById('roomTypeId');
-    const roomTypePreview = document.getElementById('roomTypePreview');
-    const previewTypeName = document.getElementById('previewTypeName');
-    const previewTypeDescription = document.getElementById('previewTypeDescription');
-    const previewTypePrice = document.getElementById('previewTypePrice');
-    const previewTypeCapacity = document.getElementById('previewTypeCapacity');
-    
-    roomTypeSelect.addEventListener('change', function() {
-      if (this.value) {
-        const selectedOption = this.options[this.selectedIndex];
-        const dailyPrice = selectedOption.dataset.dailyPrice || '0';
-        const capacity = selectedOption.dataset.capacity || '2';
-        const description = selectedOption.dataset.description || '';
-        
-        previewTypeName.textContent = selectedOption.text.split(' - ')[0];
-        previewTypeDescription.textContent = description;
-        previewTypePrice.textContent = '$' + dailyPrice;
-        previewTypeCapacity.innerHTML = `<i class="fas fa-user-friends me-1"></i> ${capacity} guests`;
-        
-        roomTypePreview.style.display = 'block';
-      } else {
-        roomTypePreview.style.display = 'none';
-      }
-    });
+    document.addEventListener('DOMContentLoaded', function() {
+  const roomTypeSelect = document.getElementById('roomTypeId');
+  const roomTypePreview = document.getElementById('roomTypePreview');
+  const previewTypeName = document.getElementById('previewTypeName');
+  const previewTypeDescription = document.getElementById('previewTypeDescription');
+  const previewTypePrice = document.getElementById('previewTypePrice');
+  const previewTypeCapacity = document.getElementById('previewTypeCapacity');
+  
+  // New preview elements
+  const previewDailyPrice = document.getElementById('previewDailyPrice');
+  const previewHourlyPrice = document.getElementById('previewHourlyPrice');
+  const previewOvernightPrice = document.getElementById('previewOvernightPrice');
+  const previewDayUsePrice = document.getElementById('previewDayUsePrice');
+  const previewWeeklyPrice = document.getElementById('previewWeeklyPrice');
+  const previewMonthlyPrice = document.getElementById('previewMonthlyPrice');
+  const previewLateCheckoutFee = document.getElementById('previewLateCheckoutFee');
+  
+  roomTypeSelect.addEventListener('change', function() {
+    if (this.value) {
+      const selectedOption = this.options[this.selectedIndex];
+      
+      // Get all data attributes
+      const dailyPrice = selectedOption.dataset.dailyPrice || '0';
+      const capacity = selectedOption.dataset.capacity || '2';
+      const hourlyBase = selectedOption.dataset.hourlyBase || '0';
+      const hourlyAdditional = selectedOption.dataset.hourlyAdditional || '0';
+      const overnightPrice = selectedOption.dataset.overnightPrice || '0';
+      const dayUsePrice = selectedOption.dataset.dayUsePrice || '0';
+      const weeklyPrice = selectedOption.dataset.weeklyPrice || '0';
+      const monthlyPrice = selectedOption.dataset.monthlyPrice || '0';
+      const lateCheckoutFee = selectedOption.dataset.lateCheckoutFee || '0';
+      const description = selectedOption.dataset.description || '';
+      
+      // Update preview elements
+      previewTypeName.textContent = selectedOption.text.split(' - ')[0];
+      previewTypeDescription.textContent = description;
+      previewTypePrice.textContent = '$' + dailyPrice + '/night';
+      previewTypeCapacity.innerHTML = `<i class="fas fa-user-friends me-1"></i> ${capacity} guests`;
+      
+      previewDailyPrice.textContent = '$' + dailyPrice;
+      previewHourlyPrice.textContent = '$' + hourlyBase + ' + $' + hourlyAdditional + '/hr';
+      previewOvernightPrice.textContent = '$' + overnightPrice;
+      previewDayUsePrice.textContent = '$' + dayUsePrice;
+      previewWeeklyPrice.textContent = '$' + weeklyPrice;
+      previewMonthlyPrice.textContent = '$' + monthlyPrice;
+      previewLateCheckoutFee.textContent = '$' + lateCheckoutFee + '/hr';
+      
+      roomTypePreview.style.display = 'block';
+    } else {
+      roomTypePreview.style.display = 'none';
+    }
+  });
+});
   });
 </script>
 

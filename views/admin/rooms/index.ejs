@@ -33,7 +33,8 @@
         </div>
       <% } %>
       
-<!-- Room Filters -->
+
+<!-- Room Filters - Updated to include price filter -->
 <div class="card mb-4">
   <div class="card-body">
     <form action="/admin/rooms" method="GET" class="row g-3">
@@ -55,17 +56,25 @@
           <option value="maintenance" <%= filters && filters.status === 'maintenance' ? 'selected' : '' %>>Maintenance</option>
         </select>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
+        <label for="maxPriceFilter" class="form-label">Max Price</label>
+        <div class="input-group">
+          <span class="input-group-text">$</span>
+          <input type="number" class="form-control" id="maxPriceFilter" name="maxPrice" placeholder="Max price" value="<%= filters && filters.maxPrice ? filters.maxPrice : '' %>">
+        </div>
+      </div>
+      <div class="col-md-2">
         <label for="searchInput" class="form-label">Search</label>
         <input type="text" class="form-control" id="searchInput" name="search" placeholder="Room name..." value="<%= filters && filters.search ? filters.search : '' %>">
       </div>
-      <div class="col-md-3 d-flex align-items-end">
+      <div class="col-md-2 d-flex align-items-end">
         <button type="submit" class="btn btn-primary me-2">Filter</button>
         <a href="/admin/rooms" class="btn btn-secondary">Clear</a>
       </div>
     </form>
   </div>
 </div>
+
 
 <!-- Search Results Summary -->
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -102,72 +111,78 @@
   </div>
 </div>
       
-      <!-- Rooms Table -->
-      <div class="card">
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Image</th>
-                  <th>Room ID</th>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Daily Rate</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% if(rooms && rooms.length > 0) { %>
-                  <% rooms.forEach(room => { %>
-                    <tr>
-                      <td>
-                        <img src="<%= room.imageUrl %>" alt="<%= room.roomName %>" class="rounded" width="50" height="50" style="object-fit: cover;">
-                      </td>
-                      <td><%= room.roomId.substring(0, 8) %>...</td>
-                      <td><%= room.roomName %></td>
-                      <td><%= room.roomType ? room.roomType.roomTypeName : 'N/A' %></td>
-                      <td>
-                        <% if(room.roomType && room.roomType.pricing) { %>
-                          $<%= room.roomType.pricing.daily %>
-                        <% } else { %>
-                          --
-                        <% } %>
-                      </td>
-                      <td>
-                        <% if(room.bookingState === 'available') { %>
-                          <span class="badge bg-success">Available</span>
-                        <% } else if(room.bookingState === 'booked') { %>
-                          <span class="badge bg-primary">Booked</span>
-                        <% } else if(room.bookingState === 'maintenance') { %>
-                          <span class="badge bg-warning">Maintenance</span>
-                        <% } else { %>
-                          <span class="badge bg-secondary"><%= room.bookingState %></span>
-                        <% } %>
-                      </td>
-                      <td>
-                        <div class="btn-group" role="group">
-                          <a href="/admin/rooms/edit/<%= room.id %>" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-edit"></i>
-                          </a>
-                          <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('<%= room.id %>', '<%= room.roomName %>')">
-                            <i class="fas fa-trash"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  <% }); %>
-                <% } else { %>
-                  <tr>
-                    <td colspan="7" class="text-center py-4">No rooms found</td>
-                  </tr>
-                <% } %>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+    <!-- Rooms Table with Enhanced Price Display -->
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Image</th>
+            <th>Room ID</th>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Pricing</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if(rooms && rooms.length > 0) { %>
+            <% rooms.forEach(room => { %>
+              <tr>
+                <td>
+                  <img src="<%= room.imageUrl %>" alt="<%= room.roomName %>" class="rounded" width="50" height="50" style="object-fit: cover;">
+                </td>
+                <td><%= room.roomId.substring(0, 8) %>...</td>
+                <td><%= room.roomName %></td>
+                <td><%= room.roomType ? room.roomType.roomTypeName : 'N/A' %></td>
+                <td>
+                  <% if(room.roomType && room.roomType.pricing) { %>
+                    <div class="small">
+                      <div class="text-primary fw-bold">$<%= room.roomType.pricing.daily %> / night</div>
+                      <div class="text-muted small">
+                        <span class="badge bg-secondary">Hourly from $<%= room.roomType.pricing.hourly ? room.roomType.pricing.hourly.basePrice : '0' %></span>
+                        <span class="badge bg-secondary">Overnight $<%= room.roomType.pricing.overnight || '0' %></span>
+                      </div>
+                    </div>
+                  <% } else { %>
+                    <span class="text-muted">No pricing</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if(room.bookingState === 'available') { %>
+                    <span class="badge bg-success">Available</span>
+                  <% } else if(room.bookingState === 'booked') { %>
+                    <span class="badge bg-primary">Booked</span>
+                  <% } else if(room.bookingState === 'maintenance') { %>
+                    <span class="badge bg-warning">Maintenance</span>
+                  <% } else { %>
+                    <span class="badge bg-secondary"><%= room.bookingState %></span>
+                  <% } %>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a href="/admin/rooms/edit/<%= room.id %>" class="btn btn-sm btn-outline-primary">
+                      <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteModal('<%= room.id %>', '<%= room.roomName %>')">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          <% } else { %>
+            <tr>
+              <td colspan="7" class="text-center py-4">No rooms found</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
     </main>
   </div>
 </div>

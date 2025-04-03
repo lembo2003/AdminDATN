@@ -1,5 +1,33 @@
 <%- include('../partials/header') %>
 
+<%
+  // Helper function to safely format price
+  function formatPrice(price) {
+    // Handle undefined, null or invalid prices
+    if (price === undefined || price === null || isNaN(Number(price))) {
+      return '$0.00';
+    }
+    
+    // Convert to number and format with 2 decimal places and commas
+    const numPrice = Number(price);
+    return '$' + numPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  
+  // Helper function to get room price based on data structure
+  function getRoomPrice(room) {
+    // First try roomType.pricing.daily (matching admin structure)
+    if (room.roomType && room.roomType.pricing && room.roomType.pricing.daily) {
+      return room.roomType.pricing.daily;
+    }
+    // Fallback to direct room.price if available
+    else if (room.price !== undefined && room.price !== null) {
+      return room.price;
+    }
+    // Last resort - return 0
+    return 0;
+  }
+%>
+
 <div class="container py-5">
   <!-- Page Header -->
   <div class="row mb-4">
@@ -84,19 +112,22 @@
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="roomsContainer">
         <% if(rooms && rooms.length > 0) { %>
           <% rooms.forEach(room => { %>
+            <% const roomPrice = getRoomPrice(room); %>
             <div class="col">
               <div class="card h-100 shadow-sm room-card">
-                <img src="<%= room.imageUrl %>" class="card-img-top" alt="<%= room.roomName %>">
+                <div class="position-relative">
+                  <img src="<%= room.imageUrl %>" class="card-img-top" alt="<%= room.roomName %>">
+                  <% if(room.roomType) { %>
+                    <span class="position-absolute top-0 start-0 badge bg-dark m-2"><%= room.roomType.roomTypeName %></span>
+                  <% } %>
+                </div>
                 <div class="card-body">
                   <div class="d-flex justify-content-between align-items-start mb-2">
                     <h5 class="card-title mb-0"><%= room.roomName %></h5>
-                    <span class="badge bg-primary">$<%= room.price %>/night</span>
+                    <span class="badge bg-primary room-price" data-price="<%= roomPrice %>">
+                      <%= formatPrice(roomPrice) %>/night
+                    </span>
                   </div>
-                  <p class="text-muted small mb-1">
-                    <% if(room.roomType) { %>
-                      <i class="fas fa-tag me-1"></i> <%= room.roomType.roomTypeName %>
-                    <% } %>
-                  </p>
                   <p class="card-text mt-2"><%- room.description.replace(/<[^>]*>/g, '').substring(0, 100) %>...</p>
                   <div class="d-flex justify-content-between mt-3">
                     <div>
@@ -142,20 +173,31 @@
 </div>
 
 <script>
-  // Price range display
+  // Initialize tooltips
+  document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+  });
+
+  // Price range display with safe formatting
   const priceRange = document.getElementById('priceRange');
   const priceValue = document.getElementById('priceValue');
   
   if (priceRange && priceValue) {
     priceRange.addEventListener('input', function() {
-      priceValue.textContent = this.value;
+      // Format with thousands separator
+      priceValue.textContent = Number(this.value).toLocaleString('en-US');
     });
     
     // Initialize with current value
-    priceValue.textContent = priceRange.value;
+    if (priceRange.value) {
+      priceValue.textContent = Number(priceRange.value).toLocaleString('en-US');
+    }
   }
   
-  // Sort functionality
+  // Sort functionality with error handling
   const sortOptions = document.getElementById('sortOptions');
   const roomsContainer = document.getElementById('roomsContainer');
   
@@ -164,8 +206,14 @@
       const rooms = Array.from(roomsContainer.querySelectorAll('.col'));
       
       rooms.sort((a, b) => {
-        const aPrice = parseInt(a.querySelector('.badge').textContent.replace('$', ''));
-        const bPrice = parseInt(b.querySelector('.badge').textContent.replace('$', ''));
+        // Get price from data attribute instead of parsing the text
+        const aPriceElement = a.querySelector('.room-price');
+        const bPriceElement = b.querySelector('.room-price');
+        
+        // Get raw price values from data attributes
+        const aPrice = aPriceElement ? Number(aPriceElement.dataset.price) || 0 : 0;
+        const bPrice = bPriceElement ? Number(bPriceElement.dataset.price) || 0 : 0;
+        
         const aName = a.querySelector('.card-title').textContent;
         const bName = b.querySelector('.card-title').textContent;
         
@@ -195,5 +243,27 @@
     });
   }
 </script>
+
+<style>
+  .room-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .room-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .card-img-top {
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  @media (max-width: 768px) {
+    .card-img-top {
+      height: 180px;
+    }
+  }
+</style>
 
 <%- include('../partials/footer') %>

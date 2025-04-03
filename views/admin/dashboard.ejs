@@ -29,15 +29,17 @@
     
     <!-- Main Content -->
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Dashboard</h1>
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <h1 class="h2">Admin Dashboard</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
           <div class="btn-group me-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+              <i class="fas fa-print me-1"></i> Print
+            </button>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+          <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" id="dateRangeSelector">
             <i class="fas fa-calendar me-1"></i>
-            This week
+            Today
           </button>
         </div>
       </div>
@@ -57,244 +59,327 @@
         </div>
       <% } %>
       
-      <!-- Stats Cards -->
-      <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-4 mb-4">
-        <div class="col">
-          <div class="card text-white bg-primary h-100">
+      <!-- Key Metrics -->
+      <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-primary shadow h-100 py-2">
             <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <h6 class="card-title">Total Rooms</h6>
-                  <h2 class="mb-0"><%= stats.totalRooms || 0 %></h2>
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                    Room Occupancy</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800"><%= stats.occupancyRate || 0 %>%</div>
+                  <div class="small text-muted mt-2"><%= stats.totalRooms - stats.availableRooms %> of <%= stats.totalRooms %> rooms occupied</div>
                 </div>
-                <i class="fas fa-bed fa-3x opacity-50"></i>
+                <div class="col-auto">
+                  <i class="fas fa-bed fa-2x text-gray-300"></i>
+                </div>
               </div>
-              <p class="card-text mt-3">
-                <span class="text-white-50">Available: </span>
-                <span class="text-white"><%= stats.availableRooms || 0 %></span>
-              </p>
             </div>
-            <div class="card-footer d-flex justify-content-between align-items-center">
-              <span>Occupancy Rate</span>
-              <span class="badge bg-white text-primary"><%= stats.occupancyRate || 0 %>%</span>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                    Monthly Revenue</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800">$<%= (totalRevenue || 0).toLocaleString() %></div>
+                  <div class="small text-muted mt-2">Revenue from bookings and orders</div>
+                </div>
+                <div class="col-auto">
+                  <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                </div>
+              </div>
             </div>
           </div>
         </div>
         
-        <div class="col">
-          <div class="card text-white bg-success h-100">
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-info shadow h-100 py-2">
             <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <h6 class="card-title">Total Bookings</h6>
-                  <h2 class="mb-0"><%= stats.totalBookings || 0 %></h2>
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                    Current Bookings</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800"><%= stats.totalBookings || 0 %></div>
+                  <div class="small text-muted mt-2"><%= stats.pendingBookings || 0 %> pending check-ins</div>
                 </div>
-                <i class="fas fa-calendar-check fa-3x opacity-50"></i>
+                <div class="col-auto">
+                  <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                </div>
               </div>
-              <p class="card-text mt-3">
-                <span class="text-white-50">Pending: </span>
-                <span class="text-white"><%= stats.pendingBookings || 0 %></span>
-              </p>
-            </div>
-            <div class="card-footer d-flex justify-content-between align-items-center">
-              <span>Guests Checked In</span>
-              <span class="badge bg-white text-success"><%= stats.checkedInGuests || 0 %></span>
             </div>
           </div>
         </div>
-        
-        <div class="col">
-          <div class="card text-white bg-info h-100">
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="card border-left-warning shadow h-100 py-2">
             <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <h6 class="card-title">Total Orders</h6>
-                  <h2 class="mb-0"><%= stats.totalOrders || 0 %></h2>
+              <div class="row no-gutters align-items-center">
+                <div class="col mr-2">
+                  <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                    Pending Orders</div>
+                  <div class="h5 mb-0 font-weight-bold text-gray-800"><%= stats.pendingOrders || 0 %></div>
+                  <div class="small text-muted mt-2">Room service orders awaiting delivery</div>
                 </div>
-                <i class="fas fa-shopping-cart fa-3x opacity-50"></i>
-              </div>
-              <p class="card-text mt-3">
-                <span class="text-white-50">Pending: </span>
-                <span class="text-white"><%= stats.pendingOrders || 0 %></span>
-              </p>
-            </div>
-            <div class="card-footer d-flex justify-content-between align-items-center">
-              <span>Room Service</span>
-              <span class="badge bg-white text-info"><%= stats.pendingOrders || 0 %> pending</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col">
-          <div class="card text-white bg-warning h-100">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <h6 class="card-title">Total Revenue</h6>
-                  <h2 class="mb-0">$<%= totalRevenue ? totalRevenue.toLocaleString() : 0 %></h2>
+                <div class="col-auto">
+                  <i class="fas fa-utensils fa-2x text-gray-300"></i>
                 </div>
-                <i class="fas fa-money-bill-wave fa-3x opacity-50"></i>
               </div>
-              <p class="card-text mt-3">
-                <span class="text-white-50">Users: </span>
-                <span class="text-white"><%= stats.totalUsers || 0 %></span>
-              </p>
             </div>
-            <div class="card-footer d-flex justify-content-between align-items-center">
-              <span>Revenue Growth</span>
-              <span class="badge bg-white text-warning">+15%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Recent Bookings -->
-      <div class="card mb-4">
-        <div class="card-header bg-light d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">Recent Bookings</h5>
-          <a href="/admin/bookings" class="btn btn-sm btn-primary">View All</a>
-        </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover mb-0">
-              <thead class="table-light">
-                <tr>
-                  <th>Booking ID</th>
-                  <th>Guest</th>
-                  <th>Room</th>
-                  <th>Check-In</th>
-                  <th>Check-Out</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% if(recentBookings && recentBookings.length > 0) { %>
-                  <% recentBookings.forEach(booking => { %>
-                    <tr>
-                      <td><%= booking.bookingId.substring(0, 8) %>...</td>
-                      <td><%= booking.user ? (booking.user.name || booking.user.email) : 'Unknown' %></td>
-                      <td><% if(booking.rooms && booking.rooms.length > 0) { %>
-                          <%= booking.rooms[0].roomName %><% if(booking.rooms.length > 1) { %> + <%= booking.rooms.length - 1 %> more<% } %>
-                        <% } else if(booking.room) { %>
-                          <%= booking.room.roomName %>
-                        <% } else { %>
-                          Unknown
-                        <% } %></td>
-                      <td><%= toDate(booking.checkInDate).toLocaleDateString() %></td>
-                      <td><%= toDate(booking.checkOutDate).toLocaleDateString() %></td>
-                      <td>
-                        <% if(booking.status === 'booked') { %>
-                          <span class="badge bg-info">Booked</span>
-                        <% } else if(booking.status === 'checked-in') { %>
-                          <span class="badge bg-success">Checked In</span>
-                        <% } else if(booking.status === 'checked-out') { %>
-                          <span class="badge bg-secondary">Checked Out</span>
-                        <% } else if(booking.status === 'cancelled') { %>
-                          <span class="badge bg-danger">Cancelled</span>
-                        <% } %>
-                      </td>
-                      <td>
-                        <a href="/admin/bookings/details/<%= booking.id %>" class="btn btn-sm btn-info">
-                          <i class="fas fa-eye"></i>
-                        </a>
-                      </td>
-                    </tr>
-                  <% }); %>
-                <% } else { %>
-                  <tr>
-                    <td colspan="7" class="text-center py-3">No recent bookings found</td>
-                  </tr>
-                <% } %>
-              </tbody>
-            </table>
           </div>
         </div>
       </div>
       
       <!-- Quick Actions -->
       <div class="row mb-4">
-        <div class="col-md-6">
-          <div class="card h-100">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">Quick Actions</h5>
+        <div class="col-md-12">
+          <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+              <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
             </div>
             <div class="card-body">
-              <div class="row g-3">
-                <div class="col-6">
-                  <a href="/admin/rooms/add" class="btn btn-primary btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
-                    <i class="fas fa-bed fa-2x mb-2"></i>
-                    <span>Add Room</span>
+              <div class="row">
+                <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                  <a href="/admin/rooms/add" class="btn btn-primary w-100 py-3">
+                    <i class="fas fa-bed mb-2 d-block fa-lg"></i>
+                    Add Room
                   </a>
                 </div>
-                <div class="col-6">
-                  <a href="/admin/room-types/add" class="btn btn-success btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
-                    <i class="fas fa-tags fa-2x mb-2"></i>
-                    <span>Add Room Type</span>
+                <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                  <a href="/admin/room-types/add" class="btn btn-success w-100 py-3">
+                    <i class="fas fa-tags mb-2 d-block fa-lg"></i>
+                    Add Room Type
                   </a>
                 </div>
-                <div class="col-6">
-                  <a href="/admin/staff/add" class="btn btn-info btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
-                    <i class="fas fa-user-tie fa-2x mb-2"></i>
-                    <span>Add Staff</span>
+                <div class="col-md-3 col-sm-6 mb-3 mb-sm-0">
+                  <a href="/admin/staff/add" class="btn btn-info w-100 py-3 text-white">
+                    <i class="fas fa-user-tie mb-2 d-block fa-lg"></i>
+                    Add Staff
                   </a>
                 </div>
-                <div class="col-6">
-                  <a href="/admin/order-items/add" class="btn btn-warning btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
-                    <i class="fas fa-utensils fa-2x mb-2"></i>
-                    <span>Add Menu Item</span>
+                <div class="col-md-3 col-sm-6">
+                  <a href="/admin/order-items/add" class="btn btn-warning w-100 py-3 text-white">
+                    <i class="fas fa-utensils mb-2 d-block fa-lg"></i>
+                    Add Menu Item
                   </a>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        
-        <div class="col-md-6">
-          <div class="card h-100">
-            <div class="card-header bg-light">
-              <h5 class="mb-0">System Status</h5>
+      </div>
+      
+      <!-- Content Row -->
+      <div class="row">
+        <!-- Recent Bookings Column -->
+        <div class="col-xl-8 col-lg-7">
+          <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+              <h6 class="m-0 font-weight-bold text-primary">Recent Bookings</h6>
+              <a href="/admin/bookings" class="btn btn-sm btn-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="bg-light">
+                    <tr>
+                      <th>Guest</th>
+                      <th>Room</th>
+                      <th>Check-In</th>
+                      <th>Check-Out</th>
+                      <th>Status</th>
+                      <th class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if(recentBookings && recentBookings.length > 0) { %>
+                      <% recentBookings.forEach(booking => { %>
+                        <tr>
+                          <td><%= booking.user ? (booking.user.name || booking.user.email) : 'Unknown' %></td>
+                          <td>
+                            <% if(booking.rooms && booking.rooms.length > 0) { %>
+                              <%= booking.rooms[0].roomName %><% if(booking.rooms.length > 1) { %> + <%= booking.rooms.length - 1 %> more<% } %>
+                            <% } else if(booking.room) { %>
+                              <%= booking.room.roomName %>
+                            <% } else { %>
+                              Unknown
+                            <% } %>
+                          </td>
+                          <td><%= toDate(booking.checkInDate).toLocaleDateString() %></td>
+                          <td><%= toDate(booking.checkOutDate).toLocaleDateString() %></td>
+                          <td>
+                            <% if(booking.status === 'booked') { %>
+                              <span class="badge bg-info">Booked</span>
+                            <% } else if(booking.status === 'checked-in') { %>
+                              <span class="badge bg-success">Checked In</span>
+                            <% } else if(booking.status === 'checked-out') { %>
+                              <span class="badge bg-secondary">Checked Out</span>
+                            <% } else if(booking.status === 'cancelled') { %>
+                              <span class="badge bg-danger">Cancelled</span>
+                            <% } %>
+                          </td>
+                          <td class="text-end">
+                            <div class="btn-group">
+                              <a href="/admin/bookings/details/<%= booking.id %>" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                              </a>
+                              <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                              </button>
+                              <ul class="dropdown-menu dropdown-menu-end">
+                                <% if(booking.status === 'booked') { %>
+                                  <li>
+                                    <form action="/admin/bookings/update-status/<%= booking.id %>" method="POST">
+                                      <input type="hidden" name="status" value="checked-in">
+                                      <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-check-circle text-success me-2"></i> Check In
+                                      </button>
+                                    </form>
+                                  </li>
+                                <% } else if(booking.status === 'checked-in') { %>
+                                  <li>
+                                    <form action="/admin/bookings/update-status/<%= booking.id %>" method="POST">
+                                      <input type="hidden" name="status" value="checked-out">
+                                      <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-check-circle text-warning me-2"></i> Check Out
+                                      </button>
+                                    </form>
+                                  </li>
+                                <% } %>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                  <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal<%= booking.id %>">
+                                    <i class="fas fa-trash me-2"></i> Delete
+                                  </button>
+                                </li>
+                              </ul>
+                            </div>
+                            
+                            <!-- Delete Modal -->
+                            <div class="modal fade" id="deleteModal<%= booking.id %>" tabindex="-1" aria-labelledby="deleteModalLabel<%= booking.id %>" aria-hidden="true">
+                              <div class="modal-dialog">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteModalLabel<%= booking.id %>">Delete Booking</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <p>Are you sure you want to delete this booking?</p>
+                                    <p>Guest: <strong><%= booking.user ? (booking.user.name || booking.user.email) : 'Unknown' %></strong></p>
+                                    <p>Room: <strong><% if(booking.rooms && booking.rooms.length > 0) { %><%= booking.rooms[0].roomName %><% if(booking.rooms.length > 1) { %> + <%= booking.rooms.length - 1 %> more<% } %><% } else if(booking.room) { %><%= booking.room.roomName %><% } else { %>Unknown<% } %></strong></p>
+                                    <div class="alert alert-warning">
+                                      <i class="fas fa-exclamation-triangle me-2"></i>
+                                      This action cannot be undone. The room will be marked as available.
+                                    </div>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <form action="/admin/bookings/delete/<%= booking.id %>?_method=DELETE" method="POST">
+                                      <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      <% }); %>
+                    <% } else { %>
+                      <tr>
+                        <td colspan="6" class="text-center py-4">No recent bookings found</td>
+                      </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Status & Info Column -->
+        <div class="col-xl-4 col-lg-5">
+          <!-- System Status -->
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">System Status</h6>
             </div>
             <div class="card-body">
-              <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <i class="fas fa-server me-2 text-primary"></i>
-                    Firebase Connection
+              <div class="mb-2 d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-server text-primary me-2"></i> Firebase Connection</div>
+                <span class="badge bg-success">Online</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-database text-primary me-2"></i> Database Status</div>
+                <span class="badge bg-success">Online</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-save text-primary me-2"></i> Storage Status</div>
+                <span class="badge bg-success">Online</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-sync-alt text-primary me-2"></i> Last Update</div>
+                <span class="small"><%= toDate(new Date()).toLocaleDateString() %></span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Today's Activities -->
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Today's Overview</h6>
+            </div>
+            <div class="card-body">
+              <div class="mb-3 pb-3 border-bottom">
+                <h6 class="small text-muted mb-1">Current Check-ins</h6>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div><i class="fas fa-sign-in-alt text-success me-2"></i> <%= stats.checkedInGuests || 0 %> guests</div>
+                  <a href="/admin/bookings?status=checked-in" class="small">View Details</a>
+                </div>
+              </div>
+              <div class="mb-3 pb-3 border-bottom">
+                <h6 class="small text-muted mb-1">Expected Check-outs</h6>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div><i class="fas fa-sign-out-alt text-warning me-2"></i> <%= stats.todayCheckOuts || 0 %> guests</div>
+                  <a href="/admin/bookings?status=checked-in&checkOutToday=true" class="small">View Details</a>
+                </div>
+              </div>
+              <div class="mb-3">
+                <h6 class="small text-muted mb-1">Room Service</h6>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div><i class="fas fa-utensils text-info me-2"></i> <%= stats.pendingOrders || 0 %> pending orders</div>
+                  <a href="/admin/orders?status=ordered" class="small">View Details</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Room Availability Summary -->
+          <div class="card shadow mb-4">
+            <div class="card-header py-3">
+              <h6 class="m-0 font-weight-bold text-primary">Room Availability</h6>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <div style="width: 100%;">
+                  <div class="progress" style="height: 25px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: <%= stats.availableRooms / stats.totalRooms * 100 %>%;" 
+                         aria-valuenow="<%= stats.availableRooms %>" aria-valuemin="0" aria-valuemax="<%= stats.totalRooms %>">
+                      <%= stats.availableRooms %> Available
+                    </div>
+                    <div class="progress-bar bg-danger" role="progressbar" style="width: <%= (stats.totalRooms - stats.availableRooms) / stats.totalRooms * 100 %>%;" 
+                         aria-valuenow="<%= stats.totalRooms - stats.availableRooms %>" aria-valuemin="0" aria-valuemax="<%= stats.totalRooms %>">
+                      <%= stats.totalRooms - stats.availableRooms %> Occupied
+                    </div>
                   </div>
-                  <span class="badge bg-success rounded-pill">Connected</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <i class="fas fa-database me-2 text-primary"></i>
-                    Database Status
-                  </div>
-                  <span class="badge bg-success rounded-pill">Online</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <i class="fas fa-save me-2 text-primary"></i>
-                    Storage Status
-                  </div>
-                  <span class="badge bg-success rounded-pill">Online</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <i class="fas fa-cloud me-2 text-primary"></i>
-                    API Status
-                  </div>
-                  <span class="badge bg-success rounded-pill">Online</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <i class="fas fa-sync-alt me-2 text-primary"></i>
-                    Last System Update
-                  </div>
-                  <span class="badge bg-secondary rounded-pill">
-                    <%= toDate(new Date()).toLocaleDateString() %>
-                  </span>
-                </li>
-              </ul>
+                </div>
+              </div>
+              <div class="text-center">
+                <a href="/admin/rooms" class="btn btn-sm btn-primary">Manage Rooms</a>
+              </div>
             </div>
           </div>
         </div>
@@ -302,5 +387,79 @@
     </main>
   </div>
 </div>
+
+<style>
+/* Color scheme classes */
+.border-left-primary {
+  border-left: 4px solid #4e73df;
+}
+
+.border-left-success {
+  border-left: 4px solid #1cc88a;
+}
+
+.border-left-info {
+  border-left: 4px solid #36b9cc;
+}
+
+.border-left-warning {
+  border-left: 4px solid #f6c23e;
+}
+
+.text-gray-300 {
+  color: #dddfeb!important;
+}
+
+.text-gray-800 {
+  color: #5a5c69!important;
+}
+
+.font-weight-bold {
+  font-weight: 700!important;
+}
+
+.text-xs {
+  font-size: .7rem;
+}
+
+.progress {
+  background-color: #eaecf4;
+}
+
+/* Card styles with consistent padding */
+.card {
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  background-color: #f8f9fc;
+  border-bottom: 1px solid #e3e6f0;
+}
+
+.card .card-header .dropdown .dropdown-menu {
+  line-height: 1.5;
+}
+
+.dropdown-menu {
+  font-size: 0.85rem;
+}
+
+/* Print styles */
+@media print {
+  .sidebar, .admin-sidebar, .navbar, .no-print {
+    display: none !important;
+  }
+  
+  main {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .card {
+    break-inside: avoid;
+  }
+}
+</style>
 
 <%- include('../partials/footer') %>

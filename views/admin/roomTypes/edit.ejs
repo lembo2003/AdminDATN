@@ -34,203 +34,373 @@
           <a href="/admin/room-types" class="btn btn-primary">Back to Room Types</a>
         </div>
       <% } else { %>
-        <!-- Edit Room Type Form -->
-        <div class="card">
+        <!-- Room Details Card -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">Room Type Details</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label text-muted">ID</label>
+                  <input type="text" class="form-control form-control-sm" value="<%= roomType.id %>" readonly>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label class="form-label text-muted">Created</label>
+                  <input type="text" class="form-control form-control-sm" 
+                        value="<%= roomType.createdAt && roomType.createdAt.seconds ? 
+                                new Date(roomType.createdAt.seconds * 1000).toLocaleString() : 'Unknown' %>" readonly>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-0">
+                  <label class="form-label text-muted">Last Updated</label>
+                  <input type="text" class="form-control form-control-sm" 
+                        value="<%= roomType.updatedAt && roomType.updatedAt.seconds ? 
+                                new Date(roomType.updatedAt.seconds * 1000).toLocaleString() : 'Unknown' %>" readonly>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-0">
+                  <label class="form-label text-muted">Rooms Using this Type</label>
+                  <div class="input-group input-group-sm">
+                    <input type="text" class="form-control" value="<%= roomType.roomCount || 0 %>" readonly>
+                    <a href="/admin/rooms?roomType=<%= roomType.id %>" class="btn btn-outline-primary">
+                      <i class="fas fa-external-link-alt"></i> View
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Room Type Form -->
+        <div class="card shadow-sm">
           <div class="card-body">
             <form action="/admin/room-types/edit/<%= roomType.id %>" method="POST">
-              <!-- Basic Information Section -->
-              <div class="mb-4">
-                <h5 class="border-bottom pb-2">Basic Information</h5>
-                <div class="row">
-                  <div class="col-md-6 mb-3">
-                    <label for="roomTypeName" class="form-label">Room Type Name *</label>
-                    <input type="text" class="form-control" id="roomTypeName" name="roomTypeName" value="<%= roomType.roomTypeName %>" required>
-                    <div class="form-text">E.g., Standard, Deluxe, Suite, etc.</div>
+              <div class="row">
+                <!-- Left Column -->
+                <div class="col-lg-8">
+                  <!-- Basic Information Section -->
+                  <div class="mb-4">
+                    <h5 class="border-bottom pb-2">Basic Information</h5>
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <label for="roomTypeName" class="form-label">Room Type Name *</label>
+                        <input type="text" class="form-control" id="roomTypeName" name="roomTypeName" 
+                              value="<%= roomType.roomTypeName %>" required>
+                        <div class="form-text">E.g., Standard, Deluxe, Suite, etc.</div>
+                      </div>
+                      
+                      <div class="col-md-6 mb-3">
+                        <label for="capacity" class="form-label">Maximum Capacity</label>
+                        <input type="number" class="form-control" id="capacity" name="capacity" 
+                              value="<%= roomType.capacity || 2 %>" min="1" max="10">
+                        <div class="form-text">Maximum number of guests allowed</div>
+                      </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                      <label for="description" class="form-label">Description</label>
+                      <textarea class="form-control" id="description" name="description" rows="3"><%= roomType.description || '' %></textarea>
+                      <div class="form-text">Provide a brief description of this room type.</div>
+                    </div>
                   </div>
-                  
-                  <div class="col-md-6 mb-3">
-                    <label for="capacity" class="form-label">Maximum Capacity</label>
-                    <input type="number" class="form-control" id="capacity" name="capacity" value="<%= roomType.capacity || 2 %>" min="1" max="10">
-                    <div class="form-text">Maximum number of guests allowed</div>
-                  </div>
-                </div>
-                
-                <div class="mb-3">
-                  <label for="description" class="form-label">Description</label>
-                  <textarea class="form-control" id="description" name="description" rows="3"><%= roomType.description || '' %></textarea>
-                  <div class="form-text">Provide a brief description of this room type.</div>
-                </div>
-              </div>
               
-              <!-- Pricing Section -->
-              <div class="mb-4">
-                <h5 class="border-bottom pb-2">Pricing Structure</h5>
-                
-                <!-- Daily Pricing -->
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label for="dailyPrice" class="form-label">Daily Price (per night) *</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="dailyPrice" name="dailyPrice" 
-                             value="<%= roomType.pricing ? roomType.pricing.daily : 0 %>" 
-                             min="0" step="0.01" required>
+                  <!-- Daily & Related Pricing Section -->
+                  <div class="mb-4">
+                    <h5 class="border-bottom pb-2">
+                      Daily & Related Pricing
+                      <span class="badge bg-primary ms-2">Standard Model</span>
+                    </h5>
+                    
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="dailyPrice" class="form-label">Daily Price (per night) *</label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" id="dailyPrice" name="dailyPrice" 
+                                value="<%= roomType.pricing && roomType.pricing.daily ? roomType.pricing.daily : '100' %>" 
+                                min="0" step="0.01" required>
+                        </div>
+                        <div class="form-text">Standard price per night (check-in 2PM to check-out 11AM)</div>
+                      </div>
+                      
+                      <div class="col-md-6">
+                        <label for="minimumStayDaily" class="form-label">Minimum Stay (Daily)</label>
+                        <div class="input-group">
+                          <input type="number" class="form-control" id="minimumStayDaily" name="minimumStayDaily" 
+                                value="<%= roomType.minimumStay && roomType.minimumStay.daily ? roomType.minimumStay.daily : '1' %>" 
+                                min="1" step="1">
+                          <span class="input-group-text">night(s)</span>
+                        </div>
+                        <div class="form-text">Minimum number of nights required for booking</div>
+                      </div>
                     </div>
-                    <div class="form-text">Standard price per night</div>
+                    
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="dayUsePrice" class="form-label">Day Use Price</label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" id="dayUsePrice" name="dayUsePrice" 
+                                value="<%= roomType.pricing && roomType.pricing.dayUse ? roomType.pricing.dayUse : '70' %>" 
+                                min="0" step="0.01">
+                        </div>
+                        <div class="form-text">Fixed price for day use without overnight stay (9AM-6PM)</div>
+                      </div>
+                      
+                      <div class="col-md-6">
+                        <label for="overnightPrice" class="form-label">Overnight Price</label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" id="overnightPrice" name="overnightPrice" 
+                                value="<%= roomType.pricing && roomType.pricing.overnight ? roomType.pricing.overnight : '80' %>" 
+                                min="0" step="0.01">
+                        </div>
+                        <div class="form-text">Fixed price for overnight stay (typically 6PM - 10AM)</div>
+                      </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="lateCheckoutFee" class="form-label">Late Checkout Fee (Per Hour)</label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" id="lateCheckoutFee" name="lateCheckoutFee" 
+                                value="<%= roomType.lateCheckoutFee || '15' %>" min="0" step="0.01">
+                        </div>
+                        <div class="form-text">Fee charged per hour for late checkouts</div>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div class="col-md-6">
-                    <label for="minimumStayDaily" class="form-label">Minimum Stay (Daily)</label>
-                    <div class="input-group">
-                      <input type="number" class="form-control" id="minimumStayDaily" name="minimumStayDaily" 
-                             value="<%= roomType.minimumStay ? roomType.minimumStay.daily : 1 %>" 
-                             min="1" step="1">
-                      <span class="input-group-text">night(s)</span>
+                  <!-- Hourly Pricing Section -->
+                  <div class="mb-4">
+                    <h5 class="border-bottom pb-2">
+                      Hourly Pricing
+                      <span class="badge bg-success ms-2">Short Stay Model</span>
+                    </h5>
+                    
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="hourlyBasePrice" class="form-label">First Hour Price</label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" id="hourlyBasePrice" name="hourlyBasePrice" 
+                                value="<%= roomType.pricing && roomType.pricing.hourly && roomType.pricing.hourly.basePrice ? 
+                                        roomType.pricing.hourly.basePrice : '30' %>" 
+                                min="0" step="0.01">
+                        </div>
+                        <div class="form-text">Price for the first hour (base rate)</div>
+                      </div>
+                      
+                      <div class="col-md-6">
+                        <label for="hourlyAdditionalPrice" class="form-label">Additional Hour Price</label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" id="hourlyAdditionalPrice" name="hourlyAdditionalPrice" 
+                                value="<%= roomType.pricing && roomType.pricing.hourly && roomType.pricing.hourly.additionalHourPrice ? 
+                                        roomType.pricing.hourly.additionalHourPrice : '15' %>" 
+                                min="0" step="0.01">
+                        </div>
+                        <div class="form-text">Price for each additional hour</div>
+                      </div>
                     </div>
-                    <div class="form-text">Minimum number of nights required for booking</div>
-                  </div>
-                </div>
-                
-                <!-- Hourly Pricing -->
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label for="hourlyBasePrice" class="form-label">Hourly Base Price</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="hourlyBasePrice" name="hourlyBasePrice" 
-                             value="<%= roomType.pricing && roomType.pricing.hourly ? roomType.pricing.hourly.basePrice : 0 %>" 
-                             min="0" step="0.01">
+                    
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="minHourlyDuration" class="form-label">Minimum Duration</label>
+                        <div class="input-group">
+                          <input type="number" class="form-control" id="minHourlyDuration" name="minHourlyDuration" 
+                                value="<%= roomType.hourlySettings && roomType.hourlySettings.minDuration ? 
+                                        roomType.hourlySettings.minDuration : '1' %>" 
+                                min="1" max="6" step="1">
+                          <span class="input-group-text">hour(s)</span>
+                        </div>
+                        <div class="form-text">Minimum hours required for hourly booking</div>
+                      </div>
+                      
+                      <div class="col-md-6">
+                        <label for="maxHourlyDuration" class="form-label">Maximum Duration</label>
+                        <div class="input-group">
+                          <input type="number" class="form-control" id="maxHourlyDuration" name="maxHourlyDuration" 
+                                value="<%= roomType.hourlySettings && roomType.hourlySettings.maxDuration ? 
+                                        roomType.hourlySettings.maxDuration : '6' %>" 
+                                min="1" max="12" step="1">
+                          <span class="input-group-text">hour(s)</span>
+                        </div>
+                        <div class="form-text">Maximum hours allowed for hourly booking</div>
+                      </div>
                     </div>
-                    <div class="form-text">Price for the first hour</div>
                   </div>
                   
-                  <div class="col-md-6">
-                    <label for="hourlyAdditionalPrice" class="form-label">Additional Hour Price</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="hourlyAdditionalPrice" name="hourlyAdditionalPrice" 
-                             value="<%= roomType.pricing && roomType.pricing.hourly ? roomType.pricing.hourly.additionalHourPrice : 0 %>" 
-                             min="0" step="0.01">
+                  <!-- Extended Stay Pricing Section -->
+                  <div class="mb-4">
+                    <h5 class="border-bottom pb-2">
+                      Extended Stay Pricing
+                      <span class="badge bg-info ms-2">Long Stay Model</span>
+                    </h5>
+                    
+                    <!-- Weekly Pricing -->
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="weeklyPrice" class="form-label">Weekly Price</label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" id="weeklyPrice" name="weeklyPrice" 
+                                value="<%= roomType.pricing && roomType.pricing.weekly ? roomType.pricing.weekly : '630' %>" 
+                                min="0" step="0.01">
+                        </div>
+                        <div class="form-text">Price for a 7-night stay (10% discount suggested)</div>
+                      </div>
+                      
+                      <div class="col-md-6">
+                        <label for="minimumStayWeekly" class="form-label">Minimum Stay (Weekly)</label>
+                        <div class="input-group">
+                          <input type="number" class="form-control" id="minimumStayWeekly" name="minimumStayWeekly" 
+                                value="<%= roomType.minimumStay && roomType.minimumStay.weekly ? 
+                                        roomType.minimumStay.weekly : '7' %>" 
+                                min="1" step="1">
+                          <span class="input-group-text">night(s)</span>
+                        </div>
+                        <div class="form-text">Minimum nights for weekly rate (typically 7)</div>
+                      </div>
                     </div>
-                    <div class="form-text">Price for each additional hour</div>
+                    
+                    <!-- Monthly Pricing -->
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label for="monthlyPrice" class="form-label">Monthly Price</label>
+                        <div class="input-group">
+                          <span class="input-group-text">$</span>
+                          <input type="number" class="form-control" id="monthlyPrice" name="monthlyPrice" 
+                                value="<%= roomType.pricing && roomType.pricing.monthly ? roomType.pricing.monthly : '2240' %>" 
+                                min="0" step="0.01">
+                        </div>
+                        <div class="form-text">Price for a 28+ night stay (20% discount suggested)</div>
+                      </div>
+                      
+                      <div class="col-md-6">
+                        <label for="minimumStayMonthly" class="form-label">Minimum Stay (Monthly)</label>
+                        <div class="input-group">
+                          <input type="number" class="form-control" id="minimumStayMonthly" name="minimumStayMonthly" 
+                                value="<%= roomType.minimumStay && roomType.minimumStay.monthly ? 
+                                        roomType.minimumStay.monthly : '28' %>" 
+                                min="1" step="1">
+                          <span class="input-group-text">night(s)</span>
+                        </div>
+                        <div class="form-text">Minimum nights for monthly rate (typically 28)</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 
-                <!-- Other Pricing Types -->
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label for="overnightPrice" class="form-label">Overnight Price</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="overnightPrice" name="overnightPrice" 
-                             value="<%= roomType.pricing ? roomType.pricing.overnight : 0 %>" 
-                             min="0" step="0.01">
+                <!-- Right Column - Pricing Preview -->
+                <div class="col-lg-4">
+                  <div class="card sticky-top" style="top: 16px">
+                    <div class="card-header bg-light">
+                      <h5 class="mb-0">Pricing Preview</h5>
                     </div>
-                    <div class="form-text">Fixed price for overnight stay (typically 6 PM - 10 AM)</div>
-                  </div>
-                  
-                  <div class="col-md-6">
-                    <label for="dayUsePrice" class="form-label">Day Use Price</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="dayUsePrice" name="dayUsePrice" 
-                             value="<%= roomType.pricing ? roomType.pricing.dayUse : 0 %>" 
-                             min="0" step="0.01">
+                    <div class="card-body">
+                      <div class="pricing-preview">
+                        <h6 class="border-bottom pb-2 mb-3">Daily Pricing</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div>Daily Rate:</div>
+                          <div class="fw-bold" id="previewDailyPrice">
+                            $<%= roomType.pricing && roomType.pricing.daily ? roomType.pricing.daily : '100.00' %>
+                          </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div>Day Use (9AM-6PM):</div>
+                          <div class="fw-bold" id="previewDayUsePrice">
+                            $<%= roomType.pricing && roomType.pricing.dayUse ? roomType.pricing.dayUse : '70.00' %>
+                          </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                          <div>Overnight (6PM-10AM):</div>
+                          <div class="fw-bold" id="previewOvernightPrice">
+                            $<%= roomType.pricing && roomType.pricing.overnight ? roomType.pricing.overnight : '80.00' %>
+                          </div>
+                        </div>
+                        
+                        <h6 class="border-bottom pb-2 mb-3">Hourly Pricing</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div>First Hour:</div>
+                          <div class="fw-bold" id="previewHourlyBasePrice">
+                            $<%= roomType.pricing && roomType.pricing.hourly && roomType.pricing.hourly.basePrice ? 
+                                roomType.pricing.hourly.basePrice : '30.00' %>
+                          </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div>Each Additional Hour:</div>
+                          <div class="fw-bold" id="previewHourlyAdditionalPrice">
+                            $<%= roomType.pricing && roomType.pricing.hourly && roomType.pricing.hourly.additionalHourPrice ? 
+                                roomType.pricing.hourly.additionalHourPrice : '15.00' %>
+                          </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                          <div>Sample 3-hour Stay:</div>
+                          <div class="fw-bold" id="previewHourly3HourPrice">
+                            $<%= 
+                              parseFloat(roomType.pricing && roomType.pricing.hourly && roomType.pricing.hourly.basePrice ? 
+                                roomType.pricing.hourly.basePrice : 30) + 
+                              (parseFloat(roomType.pricing && roomType.pricing.hourly && roomType.pricing.hourly.additionalHourPrice ? 
+                                roomType.pricing.hourly.additionalHourPrice : 15) * 2)
+                            %>
+                          </div>
+                        </div>
+                        
+                        <h6 class="border-bottom pb-2 mb-3">Extended Stay</h6>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div>Weekly (7 nights):</div>
+                          <div class="fw-bold" id="previewWeeklyPrice">
+                            $<%= roomType.pricing && roomType.pricing.weekly ? roomType.pricing.weekly : '630.00' %>
+                          </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div>Savings vs. Daily:</div>
+                          <div class="fw-bold text-success" id="previewWeeklySavings">
+                            <%= 
+                              Math.round(100 - ((roomType.pricing && roomType.pricing.weekly ? roomType.pricing.weekly : 630) / 
+                                ((roomType.pricing && roomType.pricing.daily ? roomType.pricing.daily : 100) * 7) * 100)) 
+                            %>%
+                          </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                          <div>Monthly (28 nights):</div>
+                          <div class="fw-bold" id="previewMonthlyPrice">
+                            $<%= roomType.pricing && roomType.pricing.monthly ? roomType.pricing.monthly : '2,240.00' %>
+                          </div>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                          <div>Savings vs. Daily:</div>
+                          <div class="fw-bold text-success" id="previewMonthlySavings">
+                            <%= 
+                              Math.round(100 - ((roomType.pricing && roomType.pricing.monthly ? roomType.pricing.monthly : 2240) / 
+                                ((roomType.pricing && roomType.pricing.daily ? roomType.pricing.daily : 100) * 28) * 100)) 
+                            %>%
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="alert alert-warning mt-3 mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Changing pricing may affect future bookings but won't affect existing bookings.
+                      </div>
                     </div>
-                    <div class="form-text">Fixed price for day use without overnight stay</div>
-                  </div>
-                </div>
-                
-                <!-- Extended Stay Pricing -->
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label for="weeklyPrice" class="form-label">Weekly Price</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="weeklyPrice" name="weeklyPrice" 
-                             value="<%= roomType.pricing ? roomType.pricing.weekly : 0 %>" 
-                             min="0" step="0.01">
-                    </div>
-                    <div class="form-text">Price for a 7-night stay</div>
-                  </div>
-                  
-                  <div class="col-md-6">
-                    <label for="monthlyPrice" class="form-label">Monthly Price</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="monthlyPrice" name="monthlyPrice" 
-                             value="<%= roomType.pricing ? roomType.pricing.monthly : 0 %>" 
-                             min="0" step="0.01">
-                    </div>
-                    <div class="form-text">Price for a 28+ night stay</div>
-                  </div>
-                </div>
-                
-                <!-- Minimum Stay for Extended Bookings -->
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label for="minimumStayWeekly" class="form-label">Minimum Stay (Weekly)</label>
-                    <div class="input-group">
-                      <input type="number" class="form-control" id="minimumStayWeekly" name="minimumStayWeekly" 
-                             value="<%= roomType.minimumStay ? roomType.minimumStay.weekly : 7 %>" 
-                             min="1" step="1">
-                      <span class="input-group-text">night(s)</span>
-                    </div>
-                    <div class="form-text">Minimum nights for weekly rate (typically 7)</div>
-                  </div>
-                  
-                  <div class="col-md-6">
-                    <label for="minimumStayMonthly" class="form-label">Minimum Stay (Monthly)</label>
-                    <div class="input-group">
-                      <input type="number" class="form-control" id="minimumStayMonthly" name="minimumStayMonthly" 
-                             value="<%= roomType.minimumStay ? roomType.minimumStay.monthly : 28 %>" 
-                             min="1" step="1">
-                      <span class="input-group-text">night(s)</span>
-                    </div>
-                    <div class="form-text">Minimum nights for monthly rate (typically 28)</div>
-                  </div>
-                </div>
-                
-                <!-- Late Checkout Fee -->
-                <div class="row">
-                  <div class="col-md-6">
-                    <label for="lateCheckoutFee" class="form-label">Late Checkout Fee (Per Hour)</label>
-                    <div class="input-group">
-                      <span class="input-group-text">$</span>
-                      <input type="number" class="form-control" id="lateCheckoutFee" name="lateCheckoutFee" 
-                             value="<%= roomType.lateCheckoutFee || 0 %>" 
-                             min="0" step="0.01">
-                    </div>
-                    <div class="form-text">Fee charged per hour for late checkouts</div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- System Information -->
-              <div class="mb-4">
-                <h5 class="border-bottom pb-2">System Information</h5>
-                <div class="row mb-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Room Type ID</label>
-                    <input type="text" class="form-control" value="<%= roomType.roomTypeId %>" disabled readonly>
-                    <div class="form-text">This is the unique identifier for this room type and cannot be changed.</div>
-                  </div>
-                </div>
-                
-                <div class="row">
-                  <div class="col-md-6">
-                    <label class="form-label">Created</label>
-                    <input type="text" class="form-control" value="<%= new Date(roomType.createdAt.seconds * 1000).toLocaleString() %>" disabled readonly>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Last Updated</label>
-                    <input type="text" class="form-control" value="<%= new Date(roomType.updatedAt.seconds * 1000).toLocaleString() %>" disabled readonly>
                   </div>
                 </div>
               </div>
               
               <!-- Form Actions -->
-              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                 <a href="/admin/room-types" class="btn btn-outline-secondary me-md-2">Cancel</a>
                 <button type="submit" class="btn btn-primary">Update Room Type</button>
               </div>
@@ -245,58 +415,69 @@
 <!-- JavaScript for Auto-Calculating Prices -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    // Input elements
     const dailyPriceInput = document.getElementById('dailyPrice');
-    const weeklyPriceInput = document.getElementById('weeklyPrice');
-    const monthlyPriceInput = document.getElementById('monthlyPrice');
-    const overnightPriceInput = document.getElementById('overnightPrice');
     const dayUsePriceInput = document.getElementById('dayUsePrice');
+    const overnightPriceInput = document.getElementById('overnightPrice');
     const hourlyBasePriceInput = document.getElementById('hourlyBasePrice');
     const hourlyAdditionalPriceInput = document.getElementById('hourlyAdditionalPrice');
+    const weeklyPriceInput = document.getElementById('weeklyPrice');
+    const monthlyPriceInput = document.getElementById('monthlyPrice');
     const lateCheckoutFeeInput = document.getElementById('lateCheckoutFee');
     
-    // Auto-calculate prices based on daily price
-    dailyPriceInput.addEventListener('input', function() {
-      if (this.value) {
-        const dailyPrice = parseFloat(this.value);
-        
-        // Only update if the fields haven't been manually edited
-        if (!weeklyPriceInput.dataset.manuallyEdited) {
-          weeklyPriceInput.value = (dailyPrice * 7 * 0.9).toFixed(2);
-        }
-        
-        if (!monthlyPriceInput.dataset.manuallyEdited) {
-          monthlyPriceInput.value = (dailyPrice * 28 * 0.8).toFixed(2);
-        }
-        
-        if (!overnightPriceInput.dataset.manuallyEdited) {
-          overnightPriceInput.value = (dailyPrice * 0.8).toFixed(2);
-        }
-        
-        if (!dayUsePriceInput.dataset.manuallyEdited) {
-          dayUsePriceInput.value = (dailyPrice * 0.7).toFixed(2);
-        }
-        
-        if (!hourlyBasePriceInput.dataset.manuallyEdited) {
-          hourlyBasePriceInput.value = (dailyPrice * 0.3).toFixed(2);
-        }
-        
-        if (!hourlyAdditionalPriceInput.dataset.manuallyEdited) {
-          hourlyAdditionalPriceInput.value = (dailyPrice * 0.15).toFixed(2);
-        }
-        
-        if (!lateCheckoutFeeInput.dataset.manuallyEdited) {
-          lateCheckoutFeeInput.value = (dailyPrice * 0.15).toFixed(2);
-        }
+    // Preview elements
+    const previewDailyPrice = document.getElementById('previewDailyPrice');
+    const previewDayUsePrice = document.getElementById('previewDayUsePrice');
+    const previewOvernightPrice = document.getElementById('previewOvernightPrice');
+    const previewHourlyBasePrice = document.getElementById('previewHourlyBasePrice');
+    const previewHourlyAdditionalPrice = document.getElementById('previewHourlyAdditionalPrice');
+    const previewHourly3HourPrice = document.getElementById('previewHourly3HourPrice');
+    const previewWeeklyPrice = document.getElementById('previewWeeklyPrice');
+    const previewWeeklySavings = document.getElementById('previewWeeklySavings');
+    const previewMonthlyPrice = document.getElementById('previewMonthlyPrice');
+    const previewMonthlySavings = document.getElementById('previewMonthlySavings');
+    
+    // Update preview on page load
+    updatePreview();
+    
+    // Add input event listeners to price fields
+    [dailyPriceInput, dayUsePriceInput, overnightPriceInput, 
+     hourlyBasePriceInput, hourlyAdditionalPriceInput, 
+     weeklyPriceInput, monthlyPriceInput].forEach(input => {
+      if (input) {
+        input.addEventListener('input', function() {
+          updatePreview();
+        });
       }
     });
     
-    // Mark price inputs as manually edited when changed
-    [weeklyPriceInput, monthlyPriceInput, overnightPriceInput, dayUsePriceInput, 
-     hourlyBasePriceInput, hourlyAdditionalPriceInput, lateCheckoutFeeInput].forEach(input => {
-      input.addEventListener('change', function() {
-        this.dataset.manuallyEdited = 'true';
-      });
-    });
+    // Update preview function
+    function updatePreview() {
+      const dailyPrice = parseFloat(dailyPriceInput.value) || 0;
+      const dayUsePrice = parseFloat(dayUsePriceInput.value) || 0;
+      const overnightPrice = parseFloat(overnightPriceInput.value) || 0;
+      const hourlyBasePrice = parseFloat(hourlyBasePriceInput.value) || 0;
+      const hourlyAdditionalPrice = parseFloat(hourlyAdditionalPriceInput.value) || 0;
+      const weeklyPrice = parseFloat(weeklyPriceInput.value) || 0;
+      const monthlyPrice = parseFloat(monthlyPriceInput.value) || 0;
+      
+      // Calculate prices for preview
+      const threeHourPrice = hourlyBasePrice + (hourlyAdditionalPrice * 2);
+      const weeklySavingsPercent = dailyPrice > 0 ? Math.round(100 - (weeklyPrice / (dailyPrice * 7) * 100)) : 10;
+      const monthlySavingsPercent = dailyPrice > 0 ? Math.round(100 - (monthlyPrice / (dailyPrice * 28) * 100)) : 20;
+      
+      // Update preview elements
+      if (previewDailyPrice) previewDailyPrice.textContent = '$' + dailyPrice.toFixed(2);
+      if (previewDayUsePrice) previewDayUsePrice.textContent = '$' + dayUsePrice.toFixed(2);
+      if (previewOvernightPrice) previewOvernightPrice.textContent = '$' + overnightPrice.toFixed(2);
+      if (previewHourlyBasePrice) previewHourlyBasePrice.textContent = '$' + hourlyBasePrice.toFixed(2);
+      if (previewHourlyAdditionalPrice) previewHourlyAdditionalPrice.textContent = '$' + hourlyAdditionalPrice.toFixed(2);
+      if (previewHourly3HourPrice) previewHourly3HourPrice.textContent = '$' + threeHourPrice.toFixed(2);
+      if (previewWeeklyPrice) previewWeeklyPrice.textContent = '$' + weeklyPrice.toFixed(2);
+      if (previewWeeklySavings) previewWeeklySavings.textContent = weeklySavingsPercent + '%';
+      if (previewMonthlyPrice) previewMonthlyPrice.textContent = '$' + monthlyPrice.toFixed(2);
+      if (previewMonthlySavings) previewMonthlySavings.textContent = monthlySavingsPercent + '%';
+    }
   });
 </script>
 

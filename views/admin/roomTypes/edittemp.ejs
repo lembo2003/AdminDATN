@@ -10,7 +10,7 @@
     <!-- Main Content -->
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 admin-content">
       <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2"><%= title %></h1>
+        <h1 class="h2">Edit Room Type</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
           <a href="/admin/room-types" class="btn btn-sm btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back to Room Types
@@ -26,7 +26,7 @@
         </div>
       <% } %>
       
-      <% if (!roomType && action === 'edit') { %>
+      <% if (!roomType) { %>
         <div class="alert alert-danger">
           Room type not found
         </div>
@@ -34,32 +34,30 @@
           <a href="/admin/room-types" class="btn btn-primary">Back to Room Types</a>
         </div>
       <% } else { %>
-        <!-- Room Type Form -->
+        <!-- Edit Room Type Form -->
         <div class="card">
           <div class="card-body">
-            <form action="<%= action === 'add' ? '/admin/room-types/add' : '/admin/room-types/edit/' + roomType.id %>" method="POST">
+            <form action="/admin/room-types/edit/<%= roomType.id %>" method="POST">
               <!-- Basic Information Section -->
               <div class="mb-4">
                 <h5 class="border-bottom pb-2">Basic Information</h5>
                 <div class="row">
                   <div class="col-md-6 mb-3">
                     <label for="roomTypeName" class="form-label">Room Type Name *</label>
-                    <input type="text" class="form-control" id="roomTypeName" name="roomTypeName" 
-                          value="<%= roomType ? roomType.roomTypeName : '' %>" required>
+                    <input type="text" class="form-control" id="roomTypeName" name="roomTypeName" value="<%= roomType.roomTypeName %>" required>
                     <div class="form-text">E.g., Standard, Deluxe, Suite, etc.</div>
                   </div>
                   
                   <div class="col-md-6 mb-3">
                     <label for="capacity" class="form-label">Maximum Capacity</label>
-                    <input type="number" class="form-control" id="capacity" name="capacity" 
-                          value="<%= roomType && roomType.capacity ? roomType.capacity : '2' %>" min="1" max="10">
+                    <input type="number" class="form-control" id="capacity" name="capacity" value="<%= roomType.capacity || 2 %>" min="1" max="10">
                     <div class="form-text">Maximum number of guests allowed</div>
                   </div>
                 </div>
                 
                 <div class="mb-3">
                   <label for="description" class="form-label">Description</label>
-                  <textarea class="form-control" id="description" name="description" rows="3"><%= roomType ? roomType.description : '' %></textarea>
+                  <textarea class="form-control" id="description" name="description" rows="3"><%= roomType.description || '' %></textarea>
                   <div class="form-text">Provide a brief description of this room type.</div>
                 </div>
               </div>
@@ -75,7 +73,7 @@
                     <div class="input-group">
                       <span class="input-group-text">$</span>
                       <input type="number" class="form-control" id="dailyPrice" name="dailyPrice" 
-                             value="<%= roomType && roomType.pricing ? roomType.pricing.daily : '' %>" 
+                             value="<%= roomType.pricing ? roomType.pricing.daily : 0 %>" 
                              min="0" step="0.01" required>
                     </div>
                     <div class="form-text">Standard price per night</div>
@@ -85,7 +83,7 @@
                     <label for="minimumStayDaily" class="form-label">Minimum Stay (Daily)</label>
                     <div class="input-group">
                       <input type="number" class="form-control" id="minimumStayDaily" name="minimumStayDaily" 
-                             value="<%= roomType && roomType.minimumStay ? roomType.minimumStay.daily : '1' %>" 
+                             value="<%= roomType.minimumStay ? roomType.minimumStay.daily : 1 %>" 
                              min="1" step="1">
                       <span class="input-group-text">night(s)</span>
                     </div>
@@ -100,7 +98,7 @@
                     <div class="input-group">
                       <span class="input-group-text">$</span>
                       <input type="number" class="form-control" id="hourlyBasePrice" name="hourlyBasePrice" 
-                             value="<%= roomType && roomType.pricing && roomType.pricing.hourly ? roomType.pricing.hourly.basePrice : '' %>" 
+                             value="<%= roomType.pricing && roomType.pricing.hourly ? roomType.pricing.hourly.basePrice : 0 %>" 
                              min="0" step="0.01">
                     </div>
                     <div class="form-text">Price for the first hour</div>
@@ -111,7 +109,7 @@
                     <div class="input-group">
                       <span class="input-group-text">$</span>
                       <input type="number" class="form-control" id="hourlyAdditionalPrice" name="hourlyAdditionalPrice" 
-                             value="<%= roomType && roomType.pricing && roomType.pricing.hourly ? roomType.pricing.hourly.additionalHourPrice : '' %>" 
+                             value="<%= roomType.pricing && roomType.pricing.hourly ? roomType.pricing.hourly.additionalHourPrice : 0 %>" 
                              min="0" step="0.01">
                     </div>
                     <div class="form-text">Price for each additional hour</div>
@@ -125,7 +123,7 @@
                     <div class="input-group">
                       <span class="input-group-text">$</span>
                       <input type="number" class="form-control" id="overnightPrice" name="overnightPrice" 
-                             value="<%= roomType && roomType.pricing ? roomType.pricing.overnight : '' %>" 
+                             value="<%= roomType.pricing ? roomType.pricing.overnight : 0 %>" 
                              min="0" step="0.01">
                     </div>
                     <div class="form-text">Fixed price for overnight stay (typically 6 PM - 10 AM)</div>
@@ -136,7 +134,7 @@
                     <div class="input-group">
                       <span class="input-group-text">$</span>
                       <input type="number" class="form-control" id="dayUsePrice" name="dayUsePrice" 
-                             value="<%= roomType && roomType.pricing ? roomType.pricing.dayUse : '' %>" 
+                             value="<%= roomType.pricing ? roomType.pricing.dayUse : 0 %>" 
                              min="0" step="0.01">
                     </div>
                     <div class="form-text">Fixed price for day use without overnight stay</div>
@@ -150,10 +148,10 @@
                     <div class="input-group">
                       <span class="input-group-text">$</span>
                       <input type="number" class="form-control" id="weeklyPrice" name="weeklyPrice" 
-                             value="<%= roomType && roomType.pricing ? roomType.pricing.weekly : '' %>" 
+                             value="<%= roomType.pricing ? roomType.pricing.weekly : 0 %>" 
                              min="0" step="0.01">
                     </div>
-                    <div class="form-text">Price for a 7-night stay (leave empty to calculate based on daily price)</div>
+                    <div class="form-text">Price for a 7-night stay</div>
                   </div>
                   
                   <div class="col-md-6">
@@ -161,10 +159,10 @@
                     <div class="input-group">
                       <span class="input-group-text">$</span>
                       <input type="number" class="form-control" id="monthlyPrice" name="monthlyPrice" 
-                             value="<%= roomType && roomType.pricing ? roomType.pricing.monthly : '' %>" 
+                             value="<%= roomType.pricing ? roomType.pricing.monthly : 0 %>" 
                              min="0" step="0.01">
                     </div>
-                    <div class="form-text">Price for a 28+ night stay (leave empty to calculate based on daily price)</div>
+                    <div class="form-text">Price for a 28+ night stay</div>
                   </div>
                 </div>
                 
@@ -174,7 +172,7 @@
                     <label for="minimumStayWeekly" class="form-label">Minimum Stay (Weekly)</label>
                     <div class="input-group">
                       <input type="number" class="form-control" id="minimumStayWeekly" name="minimumStayWeekly" 
-                             value="<%= roomType && roomType.minimumStay ? roomType.minimumStay.weekly : '7' %>" 
+                             value="<%= roomType.minimumStay ? roomType.minimumStay.weekly : 7 %>" 
                              min="1" step="1">
                       <span class="input-group-text">night(s)</span>
                     </div>
@@ -185,7 +183,7 @@
                     <label for="minimumStayMonthly" class="form-label">Minimum Stay (Monthly)</label>
                     <div class="input-group">
                       <input type="number" class="form-control" id="minimumStayMonthly" name="minimumStayMonthly" 
-                             value="<%= roomType && roomType.minimumStay ? roomType.minimumStay.monthly : '28' %>" 
+                             value="<%= roomType.minimumStay ? roomType.minimumStay.monthly : 28 %>" 
                              min="1" step="1">
                       <span class="input-group-text">night(s)</span>
                     </div>
@@ -200,7 +198,7 @@
                     <div class="input-group">
                       <span class="input-group-text">$</span>
                       <input type="number" class="form-control" id="lateCheckoutFee" name="lateCheckoutFee" 
-                             value="<%= roomType && roomType.lateCheckoutFee ? roomType.lateCheckoutFee : '' %>" 
+                             value="<%= roomType.lateCheckoutFee || 0 %>" 
                              min="0" step="0.01">
                     </div>
                     <div class="form-text">Fee charged per hour for late checkouts</div>
@@ -208,37 +206,33 @@
                 </div>
               </div>
               
-              <% if (action === 'edit') { %>
-                <!-- System Information (Edit Mode Only) -->
-                <div class="mb-4">
-                  <h5 class="border-bottom pb-2">System Information</h5>
-                  <div class="row">
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Room Type ID</label>
-                      <input type="text" class="form-control" value="<%= roomType.roomTypeId %>" disabled readonly>
-                      <div class="form-text">This is the unique identifier for this room type and cannot be changed.</div>
-                    </div>
-                  </div>
-                  
-                  <div class="row">
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Created</label>
-                      <input type="text" class="form-control" value="<%= new Date(roomType.createdAt.seconds * 1000).toLocaleString() %>" disabled readonly>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                      <label class="form-label">Last Updated</label>
-                      <input type="text" class="form-control" value="<%= new Date(roomType.updatedAt.seconds * 1000).toLocaleString() %>" disabled readonly>
-                    </div>
+              <!-- System Information -->
+              <div class="mb-4">
+                <h5 class="border-bottom pb-2">System Information</h5>
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label">Room Type ID</label>
+                    <input type="text" class="form-control" value="<%= roomType.roomTypeId %>" disabled readonly>
+                    <div class="form-text">This is the unique identifier for this room type and cannot be changed.</div>
                   </div>
                 </div>
-              <% } %>
+                
+                <div class="row">
+                  <div class="col-md-6">
+                    <label class="form-label">Created</label>
+                    <input type="text" class="form-control" value="<%= new Date(roomType.createdAt.seconds * 1000).toLocaleString() %>" disabled readonly>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Last Updated</label>
+                    <input type="text" class="form-control" value="<%= new Date(roomType.updatedAt.seconds * 1000).toLocaleString() %>" disabled readonly>
+                  </div>
+                </div>
+              </div>
               
               <!-- Form Actions -->
               <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                 <a href="/admin/room-types" class="btn btn-outline-secondary me-md-2">Cancel</a>
-                <button type="submit" class="btn btn-primary">
-                  <%= action === 'add' ? 'Add Room Type' : 'Update Room Type' %>
-                </button>
+                <button type="submit" class="btn btn-primary">Update Room Type</button>
               </div>
             </form>
           </div>
@@ -256,69 +250,52 @@
     const monthlyPriceInput = document.getElementById('monthlyPrice');
     const overnightPriceInput = document.getElementById('overnightPrice');
     const dayUsePriceInput = document.getElementById('dayUsePrice');
+    const hourlyBasePriceInput = document.getElementById('hourlyBasePrice');
+    const hourlyAdditionalPriceInput = document.getElementById('hourlyAdditionalPrice');
+    const lateCheckoutFeeInput = document.getElementById('lateCheckoutFee');
     
-    // Auto-calculate weekly price (7 days with 10% discount)
+    // Auto-calculate prices based on daily price
     dailyPriceInput.addEventListener('input', function() {
-      if (this.value && weeklyPriceInput.value === '') {
+      if (this.value) {
         const dailyPrice = parseFloat(this.value);
-        // Apply 10% discount for weekly rate
-        const weeklyPrice = (dailyPrice * 7 * 0.9).toFixed(2);
-        weeklyPriceInput.value = weeklyPrice;
-      }
-      
-      // Auto-calculate monthly price (28 days with 20% discount)
-      if (this.value && monthlyPriceInput.value === '') {
-        const dailyPrice = parseFloat(this.value);
-        // Apply 20% discount for monthly rate
-        const monthlyPrice = (dailyPrice * 28 * 0.8).toFixed(2);
-        monthlyPriceInput.value = monthlyPrice;
-      }
-      
-      // Auto-suggest overnight price (80% of daily rate)
-      if (this.value && overnightPriceInput.value === '') {
-        const dailyPrice = parseFloat(this.value);
-        const overnightPrice = (dailyPrice * 0.8).toFixed(2);
-        overnightPriceInput.value = overnightPrice;
-      }
-      
-      // Auto-suggest day use price (70% of daily rate)
-      if (this.value && dayUsePriceInput.value === '') {
-        const dailyPrice = parseFloat(this.value);
-        const dayUsePrice = (dailyPrice * 0.7).toFixed(2);
-        dayUsePriceInput.value = dayUsePrice;
+        
+        // Only update if the fields haven't been manually edited
+        if (!weeklyPriceInput.dataset.manuallyEdited) {
+          weeklyPriceInput.value = (dailyPrice * 7 * 0.9).toFixed(2);
+        }
+        
+        if (!monthlyPriceInput.dataset.manuallyEdited) {
+          monthlyPriceInput.value = (dailyPrice * 28 * 0.8).toFixed(2);
+        }
+        
+        if (!overnightPriceInput.dataset.manuallyEdited) {
+          overnightPriceInput.value = (dailyPrice * 0.8).toFixed(2);
+        }
+        
+        if (!dayUsePriceInput.dataset.manuallyEdited) {
+          dayUsePriceInput.value = (dailyPrice * 0.7).toFixed(2);
+        }
+        
+        if (!hourlyBasePriceInput.dataset.manuallyEdited) {
+          hourlyBasePriceInput.value = (dailyPrice * 0.3).toFixed(2);
+        }
+        
+        if (!hourlyAdditionalPriceInput.dataset.manuallyEdited) {
+          hourlyAdditionalPriceInput.value = (dailyPrice * 0.15).toFixed(2);
+        }
+        
+        if (!lateCheckoutFeeInput.dataset.manuallyEdited) {
+          lateCheckoutFeeInput.value = (dailyPrice * 0.15).toFixed(2);
+        }
       }
     });
     
-    // Auto-calculate hourly price based on daily price
-    dailyPriceInput.addEventListener('input', function() {
-      const hourlyBasePriceInput = document.getElementById('hourlyBasePrice');
-      const hourlyAdditionalPriceInput = document.getElementById('hourlyAdditionalPrice');
-      
-      if (this.value && hourlyBasePriceInput.value === '') {
-        const dailyPrice = parseFloat(this.value);
-        // Base hour price typically 25-30% of daily rate
-        const baseHourPrice = (dailyPrice * 0.3).toFixed(2);
-        hourlyBasePriceInput.value = baseHourPrice;
-      }
-      
-      if (this.value && hourlyAdditionalPriceInput.value === '') {
-        const dailyPrice = parseFloat(this.value);
-        // Additional hour typically 10-15% of daily rate
-        const additionalHourPrice = (dailyPrice * 0.15).toFixed(2);
-        hourlyAdditionalPriceInput.value = additionalHourPrice;
-      }
-    });
-    
-    // Auto-populate late checkout fee (15% of daily rate per hour)
-    dailyPriceInput.addEventListener('input', function() {
-      const lateCheckoutFeeInput = document.getElementById('lateCheckoutFee');
-      
-      if (this.value && lateCheckoutFeeInput.value === '') {
-        const dailyPrice = parseFloat(this.value);
-        // Late checkout fee typically 15% of daily rate per hour
-        const lateCheckoutFee = (dailyPrice * 0.15).toFixed(2);
-        lateCheckoutFeeInput.value = lateCheckoutFee;
-      }
+    // Mark price inputs as manually edited when changed
+    [weeklyPriceInput, monthlyPriceInput, overnightPriceInput, dayUsePriceInput, 
+     hourlyBasePriceInput, hourlyAdditionalPriceInput, lateCheckoutFeeInput].forEach(input => {
+      input.addEventListener('change', function() {
+        this.dataset.manuallyEdited = 'true';
+      });
     });
   });
 </script>

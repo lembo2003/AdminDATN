@@ -1,5 +1,25 @@
 <%- include('../../partials/header') %>
 
+<%
+  // Helper function to safely convert any type of timestamp to a JavaScript Date
+  function toDate(timestamp) {
+    if (!timestamp) return new Date();
+    
+    // Handle Firestore Timestamp objects (with seconds and nanoseconds)
+    if (timestamp.seconds && timestamp.nanoseconds !== undefined) {
+      return new Date(timestamp.seconds * 1000);
+    }
+    
+    // Handle regular Date objects
+    if (timestamp instanceof Date) {
+      return timestamp;
+    }
+    
+    // Handle numeric timestamps or strings
+    return new Date(timestamp);
+  }
+%>
+
 <div class="container-fluid">
   <div class="row">
     <!-- Admin Sidebar -->
@@ -52,7 +72,7 @@
                   </div>
                   <div class="col-md-6">
                     <h6 class="text-muted">Booking Type</h6>
-                    <p class="mb-0"><%= booking.bookingType.charAt(0).toUpperCase() + booking.bookingType.slice(1) %></p>
+                    <p class="mb-0"><%= booking.bookingType ? (booking.bookingType.charAt(0).toUpperCase() + booking.bookingType.slice(1)) : 'Standard' %></p>
                   </div>
                 </div>
                 
@@ -60,15 +80,15 @@
                   <div class="col-md-6">
                     <h6 class="text-muted">Check-in Date & Time</h6>
                     <p class="mb-0">
-                      <%= new Date(booking.checkInDate).toLocaleDateString() %>, 
-                      <%= new Date(booking.checkInDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                      <%= toDate(booking.checkInDate).toLocaleDateString() %>, 
+                      <%= toDate(booking.checkInDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
                     </p>
                   </div>
                   <div class="col-md-6">
                     <h6 class="text-muted">Check-out Date & Time</h6>
                     <p class="mb-0">
-                      <%= new Date(booking.checkOutDate).toLocaleDateString() %>, 
-                      <%= new Date(booking.checkOutDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                      <%= toDate(booking.checkOutDate).toLocaleDateString() %>, 
+                      <%= toDate(booking.checkOutDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
                     </p>
                   </div>
                 </div>
@@ -80,18 +100,18 @@
                   </div>
                   <div class="col-md-6">
                     <h6 class="text-muted">Total Rooms</h6>
-                    <p class="mb-0"><%= booking.roomCount %> Room(s)</p>
+                    <p class="mb-0"><%= booking.roomCount || 1 %> Room(s)</p>
                   </div>
                 </div>
                 
                 <div class="row mb-4">
                   <div class="col-md-6">
                     <h6 class="text-muted">Created</h6>
-                    <p class="mb-0"><%= new Date(booking.createdAt).toLocaleString() %></p>
+                    <p class="mb-0"><%= toDate(booking.createdAt).toLocaleString() %></p>
                   </div>
                   <div class="col-md-6">
                     <h6 class="text-muted">Last Updated</h6>
-                    <p class="mb-0"><%= new Date(booking.updatedAt).toLocaleString() %></p>
+                    <p class="mb-0"><%= toDate(booking.updatedAt).toLocaleString() %></p>
                   </div>
                 </div>
                 
@@ -205,7 +225,7 @@
                   <% if (booking.user.createdAt) { %>
                     <div class="mb-0">
                       <div class="text-muted small">User Since</div>
-                      <div><%= new Date(booking.user.createdAt.seconds * 1000).toLocaleDateString() %></div>
+                      <div><%= toDate(booking.user.createdAt).toLocaleDateString() %></div>
                     </div>
                   <% } %>
                 <% } else { %>

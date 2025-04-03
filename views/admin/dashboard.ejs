@@ -1,5 +1,25 @@
 <%- include('../partials/header') %>
 
+<%
+  // Helper function to safely convert any type of timestamp to a JavaScript Date
+  function toDate(timestamp) {
+    if (!timestamp) return new Date();
+    
+    // Handle Firestore Timestamp objects (with seconds and nanoseconds)
+    if (timestamp.seconds && timestamp.nanoseconds !== undefined) {
+      return new Date(timestamp.seconds * 1000);
+    }
+    
+    // Handle regular Date objects
+    if (timestamp instanceof Date) {
+      return timestamp;
+    }
+    
+    // Handle numeric timestamps or strings
+    return new Date(timestamp);
+  }
+%>
+
 <div class="container-fluid">
   <div class="row">
     <!-- Admin Sidebar -->
@@ -154,9 +174,15 @@
                     <tr>
                       <td><%= booking.bookingId.substring(0, 8) %>...</td>
                       <td><%= booking.user ? (booking.user.name || booking.user.email) : 'Unknown' %></td>
-                      <td><%= booking.room ? booking.room.roomName : 'Unknown' %></td>
-                      <td><%= new Date(booking.checkInDate).toLocaleDateString() %></td>
-                      <td><%= new Date(booking.checkOutDate).toLocaleDateString() %></td>
+                      <td><% if(booking.rooms && booking.rooms.length > 0) { %>
+                          <%= booking.rooms[0].roomName %><% if(booking.rooms.length > 1) { %> + <%= booking.rooms.length - 1 %> more<% } %>
+                        <% } else if(booking.room) { %>
+                          <%= booking.room.roomName %>
+                        <% } else { %>
+                          Unknown
+                        <% } %></td>
+                      <td><%= toDate(booking.checkInDate).toLocaleDateString() %></td>
+                      <td><%= toDate(booking.checkOutDate).toLocaleDateString() %></td>
                       <td>
                         <% if(booking.status === 'booked') { %>
                           <span class="badge bg-info">Booked</span>
@@ -265,7 +291,7 @@
                     Last System Update
                   </div>
                   <span class="badge bg-secondary rounded-pill">
-                    <%= new Date().toLocaleDateString() %>
+                    <%= toDate(new Date()).toLocaleDateString() %>
                   </span>
                 </li>
               </ul>

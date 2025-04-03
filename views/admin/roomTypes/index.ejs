@@ -34,18 +34,18 @@
       <% } %>
       
       <!-- Room Types Table -->
-      <div class="card">
+      <div class="card shadow-sm">
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover table-striped mb-0">
               <thead class="table-light">
                 <tr>
                   <th>Name</th>
                   <th>Daily Rate</th>
                   <th>Hourly Rate</th>
-                  <th>Weekly/Monthly</th>
+                  <th>Overnight</th>
+                  <th>Extended Stay</th>
                   <th>Capacity</th>
-                  <th>Description</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -55,27 +55,46 @@
                     <tr>
                       <td>
                         <strong><%= roomType.roomTypeName %></strong>
-                        <div class="small text-muted"><%= roomType.roomTypeId.substring(0, 8) %>...</div>
+                        <div class="small text-muted"><%= roomType.id.substring(0, 8) %>...</div>
                       </td>
                       <td>
                         <div class="text-primary fw-bold">
                           $<%= roomType.pricing ? roomType.pricing.daily : '0' %>
                         </div>
                         <div class="small text-muted">
-                          Overnight: $<%= roomType.pricing ? roomType.pricing.overnight : '0' %>
+                          Day use: $<%= roomType.pricing ? roomType.pricing.dayUse : '0' %>
                         </div>
                       </td>
                       <td>
                         <% if (roomType.pricing && roomType.pricing.hourly) { %>
-                          $<%= roomType.pricing.hourly.basePrice %> + $<%= roomType.pricing.hourly.additionalHourPrice %>/hr
+                          <div>
+                            $<%= roomType.pricing.hourly.basePrice %> (1st hour)
+                          </div>
+                          <div class="small text-muted">
+                            +$<%= roomType.pricing.hourly.additionalHourPrice %>/extra hr
+                          </div>
                         <% } else { %>
-                          --
+                          <span class="text-muted">Not set</span>
                         <% } %>
                       </td>
                       <td>
-                        <div class="small">
-                          <div>Weekly: $<%= roomType.pricing ? roomType.pricing.weekly : '0' %></div>
-                          <div>Monthly: $<%= roomType.pricing ? roomType.pricing.monthly : '0' %></div>
+                        <div>
+                          $<%= roomType.pricing ? roomType.pricing.overnight : '0' %>
+                        </div>
+                        <div class="small text-muted">
+                          6PM - 10AM
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex flex-column">
+                          <div class="small">
+                            <i class="fas fa-calendar-week me-1"></i> Weekly: 
+                            $<%= roomType.pricing ? roomType.pricing.weekly : '0' %>
+                          </div>
+                          <div class="small">
+                            <i class="fas fa-calendar-alt me-1"></i> Monthly: 
+                            $<%= roomType.pricing ? roomType.pricing.monthly : '0' %>
+                          </div>
                         </div>
                       </td>
                       <td>
@@ -84,18 +103,15 @@
                         </span>
                       </td>
                       <td>
-                        <% if(roomType.description) { %>
-                          <%= roomType.description.length > 50 ? roomType.description.substring(0, 50) + '...' : roomType.description %>
-                        <% } else { %>
-                          <span class="text-muted">No description</span>
-                        <% } %>
-                      </td>
-                      <td>
                         <div class="btn-group" role="group">
-                          <a href="/admin/room-types/edit/<%= roomType.id %>" class="btn btn-sm btn-outline-primary">
+                          <a href="/admin/rooms?roomType=<%= roomType.id %>" class="btn btn-sm btn-outline-secondary" title="View Rooms">
+                            <i class="fas fa-door-open"></i>
+                          </a>
+                          <a href="/admin/room-types/edit/<%= roomType.id %>" class="btn btn-sm btn-outline-primary" title="Edit Room Type">
                             <i class="fas fa-edit"></i>
                           </a>
-                          <button type="button" class="btn btn-sm btn-outline-danger delete-btn" onclick="checkDeleteRoomType('<%= roomType.id %>', '<%= roomType.roomTypeName %>')">
+                          <button type="button" class="btn btn-sm btn-outline-danger" title="Delete Room Type" 
+                                 onclick="confirmDelete('<%= roomType.id %>', '<%= roomType.roomTypeName %>')">
                             <i class="fas fa-trash"></i>
                           </button>
                         </div>
@@ -104,7 +120,14 @@
                   <% }); %>
                 <% } else { %>
                   <tr>
-                    <td colspan="7" class="text-center py-4">No room types found</td>
+                    <td colspan="7" class="text-center py-4">
+                      <div class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i> No room types found
+                      </div>
+                      <a href="/admin/room-types/add" class="btn btn-sm btn-primary mt-2">
+                        <i class="fas fa-plus me-1"></i> Add Your First Room Type
+                      </a>
+                    </td>
                   </tr>
                 <% } %>
               </tbody>
@@ -112,120 +135,81 @@
           </div>
         </div>
       </div>
+      
+      <!-- Statistics Card -->
+      <% if(roomTypes && roomTypes.length > 0) { %>
+        <div class="row mt-4">
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-header bg-light">
+                <h5 class="mb-0">Room Type Statistics</h5>
+              </div>
+              <div class="card-body">
+                <div class="row text-center">
+                  <div class="col-4">
+                    <div class="border-end">
+                      <h3 class="mb-0"><%= roomTypes.length %></h3>
+                      <small class="text-muted">Total Types</small>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div class="border-end">
+                      <h3 class="mb-0">
+                        $<%= Math.max(...roomTypes.map(rt => rt.pricing ? (rt.pricing.daily || 0) : 0)) %>
+                      </h3>
+                      <small class="text-muted">Max Daily</small>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <h3 class="mb-0">
+                      $<%= Math.min(...roomTypes.filter(rt => rt.pricing && rt.pricing.daily > 0).map(rt => rt.pricing ? (rt.pricing.daily || Infinity) : Infinity)) %>
+                    </h3>
+                    <small class="text-muted">Min Daily</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } %>
     </main>
   </div>
 </div>
 
-<!-- Common Delete Modal -->
-<div class="modal fade" id="deleteRoomTypeModal" tabindex="-1" aria-labelledby="deleteRoomTypeModalLabel" aria-hidden="true">
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="deleteRoomTypeModalLabel">Delete Room Type</h5>
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div id="deleteModalSpinner" class="text-center p-4">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <p class="mt-2">Checking room dependencies...</p>
-        </div>
-        
-        <div id="deleteModalContent" style="display: none;">
-          <p id="deleteRoomTypeMessage">Are you sure you want to delete this room type?</p>
-          
-          <div id="roomWarning" class="alert alert-danger" style="display: none;">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            <span id="roomCountMessage">Cannot delete room type. It is being used by rooms.</span>
-          </div>
-          
-          <div id="generalWarning" class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle me-2"></i>
-            This action cannot be undone. Any rooms using this type will need to be reassigned.
-          </div>
+        <p id="deleteMessage">Are you sure you want to delete this room type?</p>
+        <div class="alert alert-warning">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          This action cannot be undone. Any rooms using this type will need to be reassigned.
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <form id="deleteRoomTypeForm" action="/admin/room-types/delete/" method="POST" style="display: inline; margin: 0;">
+        <form id="deleteForm" action="/admin/room-types/delete/" method="POST">
           <input type="hidden" name="_method" value="DELETE">
-          <button type="submit" id="deleteButton" class="btn btn-danger">Delete</button>
+          <button type="submit" class="btn btn-danger">Delete</button>
         </form>
       </div>
     </div>
   </div>
 </div>
 
-<%- include('../../partials/footer') %>
-
 <script>
-  // Improved delete check to first verify if rooms are using this room type
-  async function checkDeleteRoomType(roomTypeId, roomTypeName) {
-    // Show the modal with loading spinner
-    const modal = new bootstrap.Modal(document.getElementById('deleteRoomTypeModal'), {
-      backdrop: 'static',
-      keyboard: false
-    });
+  function confirmDelete(id, name) {
+    document.getElementById('deleteMessage').textContent = `Are you sure you want to delete the room type "${name}"?`;
+    document.getElementById('deleteForm').action = `/admin/room-types/delete/${id}?_method=DELETE`;
     
-    // Reset modal state
-    document.getElementById('deleteModalSpinner').style.display = 'block';
-    document.getElementById('deleteModalContent').style.display = 'none';
-    document.getElementById('roomWarning').style.display = 'none';
-    document.getElementById('deleteButton').disabled = false;
-    
-    // Update form action
-    document.getElementById('deleteRoomTypeForm').action = `/admin/room-types/delete/${roomTypeId}?_method=DELETE`;
-    
-    // Update confirmation message
-    document.getElementById('deleteRoomTypeMessage').textContent = `Are you sure you want to delete room type "${roomTypeName}"?`;
-    
-    // Show the modal
-    modal.show();
-    
-    try {
-      // Check if any rooms use this room type
-      const response = await fetch(`/api/room-types/${roomTypeId}/room-count`);
-      const data = await response.json();
-      
-      // Hide spinner
-      document.getElementById('deleteModalSpinner').style.display = 'none';
-      document.getElementById('deleteModalContent').style.display = 'block';
-      
-      if (data.count > 0) {
-        // Show warning and disable delete button
-        document.getElementById('roomWarning').style.display = 'block';
-        document.getElementById('roomCountMessage').textContent = 
-          `Cannot delete room type. It is being used by ${data.count} room(s).`;
-        document.getElementById('deleteButton').disabled = true;
-      }
-    } catch (error) {
-      console.error('Error checking room dependencies:', error);
-      
-      // If API fails, show modal content without specific warning
-      document.getElementById('deleteModalSpinner').style.display = 'none';
-      document.getElementById('deleteModalContent').style.display = 'block';
-    }
-  }
-  
-  // Fallback function if API is not available
-  function openDeleteModal(roomTypeId, roomTypeName) {
-    // Update the form action
-    document.getElementById('deleteRoomTypeForm').action = `/admin/room-types/delete/${roomTypeId}?_method=DELETE`;
-    
-    // Update the confirmation message
-    document.getElementById('deleteRoomTypeMessage').textContent = `Are you sure you want to delete room type "${roomTypeName}"?`;
-    
-    // Hide spinner, show content
-    document.getElementById('deleteModalSpinner').style.display = 'none';
-    document.getElementById('deleteModalContent').style.display = 'block';
-    
-    // Show the modal
-    const modal = new bootstrap.Modal(document.getElementById('deleteRoomTypeModal'), {
-      backdrop: 'static',
-      keyboard: false
-    });
-    
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
     modal.show();
   }
 </script>
+
+<%- include('../../partials/footer') %>

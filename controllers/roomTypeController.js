@@ -306,3 +306,5 @@ exports.deleteRoomType = async (req, res) => {
     res.redirect('/admin/room-types');
   }
 };
+
+//need to fix add and update for room type, missing attributes

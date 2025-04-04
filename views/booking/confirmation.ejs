@@ -1,5 +1,25 @@
 <%- include('../partials/header') %>
 
+<%
+  // Helper function to safely convert any type of timestamp to a JavaScript Date
+  function toDate(timestamp) {
+    if (!timestamp) return new Date();
+    
+    // Handle Firestore Timestamp objects (with seconds and nanoseconds)
+    if (timestamp.seconds && timestamp.nanoseconds !== undefined) {
+      return new Date(timestamp.seconds * 1000);
+    }
+    
+    // Handle regular Date objects
+    if (timestamp instanceof Date) {
+      return timestamp;
+    }
+    
+    // Handle numeric timestamps or strings
+    return new Date(timestamp);
+  }
+%>
+
 <div class="container py-5">
   <!-- Breadcrumb -->
   <nav aria-label="breadcrumb" class="mb-4">
@@ -46,7 +66,17 @@
               <div class="col-md-8">
                 <p class="mb-0"><strong>Booking ID:</strong> <%= booking.bookingId.substring(0, 12) %>...</p>
                 <p class="mb-0"><strong>Status:</strong> 
-                  <span class="badge bg-success">Confirmed</span>
+                  <% if(booking.status === 'booked') { %>
+                    <span class="badge bg-info">Booked</span>
+                  <% } else if(booking.status === 'checked-in') { %>
+                    <span class="badge bg-success">Checked In</span>
+                  <% } else if(booking.status === 'checked-out') { %>
+                    <span class="badge bg-secondary">Checked Out</span>
+                  <% } else if(booking.status === 'cancelled') { %>
+                    <span class="badge bg-danger">Cancelled</span>
+                  <% } else { %>
+                    <span class="badge bg-secondary"><%= booking.status %></span>
+                  <% } %>
                 </p>
               </div>
               <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -67,28 +97,28 @@
               <div class="mb-3">
                 <p class="mb-1 text-muted small">Booking Type</p>
                 <p class="mb-0 fw-bold">
-                  <%= booking.bookingType.charAt(0).toUpperCase() + booking.bookingType.slice(1) %>
+                  <%= booking.bookingType ? (booking.bookingType.charAt(0).toUpperCase() + booking.bookingType.slice(1)) : 'Standard' %>
                 </p>
               </div>
               <div class="mb-3">
                 <p class="mb-1 text-muted small">Check-in</p>
                 <p class="mb-0 fw-bold">
-                  <%= new Date(booking.checkInDate).toLocaleDateString() %>, 
-                  <%= new Date(booking.checkInDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                  <%= toDate(booking.checkInDate).toLocaleDateString() %>, 
+                  <%= toDate(booking.checkInDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
                 </p>
               </div>
               <div class="mb-3">
                 <p class="mb-1 text-muted small">Check-out</p>
                 <p class="mb-0 fw-bold">
-                  <%= new Date(booking.checkOutDate).toLocaleDateString() %>,
-                  <%= new Date(booking.checkOutDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                  <%= toDate(booking.checkOutDate).toLocaleDateString() %>,
+                  <%= toDate(booking.checkOutDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
                 </p>
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
                 <p class="mb-1 text-muted small">Total Rooms</p>
-                <p class="mb-0 fw-bold"><%= booking.roomCount %> Room(s)</p>
+                <p class="mb-0 fw-bold"><%= booking.roomCount || 1 %> Room(s)</p>
               </div>
               <div class="mb-3">
                 <p class="mb-1 text-muted small">Guests</p>
@@ -176,7 +206,7 @@
                   
                   <div class="d-flex justify-content-between fw-bold">
                     <span>Total:</span>
-                    <span>$<%= booking.totalPrice.toFixed(2) %></span>
+                    <span>$<%= ((booking.totalPrice) + (booking.lateCheckoutFee || 0)).toFixed(2) %></span>
                   </div>
                 </div>
               </div>
@@ -199,11 +229,13 @@
               <i class="fas fa-arrow-left me-1"></i> Back to My Bookings
             </a>
             
-            <form action="/bookings/cancel/<%= booking.id %>" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
-              <button type="submit" class="btn btn-danger">
-                <i class="fas fa-times-circle me-1"></i> Cancel Booking
-              </button>
-            </form>
+            <% if(booking.status === 'booked') { %>
+              <form action="/bookings/cancel/<%= booking.id %>" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                <button type="submit" class="btn btn-danger">
+                  <i class="fas fa-times-circle me-1"></i> Cancel Booking
+                </button>
+              </form>
+            <% } %>
           </div>
         </div>
       </div>

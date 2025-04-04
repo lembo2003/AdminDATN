@@ -108,6 +108,7 @@ class Booking {
       numberOfGuests: bookingData.numberOfGuests || 1,
       totalPrice,
       status: bookingData.status || 'booked', // booked, checked-in, checked-out, cancelled
+      paymentMethod: bookingData.paymentMethod || 'cash', // cash, credit_card, debit_card, paypal
       paymentStatus: bookingData.paymentStatus || 'pending', // pending, paid, refunded
       qrCodeUrl,
       specialRequests: bookingData.specialRequests || '',

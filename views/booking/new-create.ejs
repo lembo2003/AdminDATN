@@ -232,8 +232,11 @@
             <hr class="my-4">
             
             <!-- Booking Summary -->
-            <div class="booking-summary p-3 mb-4 rounded">
-              <h5 class="mb-3">Booking Summary</h5>
+            <div class="booking-summary p-3 mb-4 rounded bg-light border">
+              <h5 class="mb-3 d-flex justify-content-between align-items-center">
+                <span>Booking Summary</span>
+                <span class="badge bg-primary" id="totalRoomsSelected">0 Rooms</span>
+              </h5>
               
               <div id="selectedRoomsContainer">
                 <div class="alert alert-warning" id="noRoomsSelectedAlert">
@@ -247,26 +250,39 @@
                 </div>
               </div>
               
-              <div class="row mb-2">
-                <div class="col-7">Booking Type:</div>
-                <div class="col-5 text-end"><span id="summaryBookingType">Daily</span></div>
+              <div class="row g-2 mb-2">
+                <div class="col-7 col-md-8">Booking Type:</div>
+                <div class="col-5 col-md-4 text-end"><span id="summaryBookingType">Daily</span></div>
               </div>
-              <div class="row mb-2">
-                <div class="col-7">Stay Duration:</div>
-                <div class="col-5 text-end"><span id="stayDuration">1 night</span></div>
+              <div class="row g-2 mb-2">
+                <div class="col-7 col-md-8">Stay Duration:</div>
+                <div class="col-5 col-md-4 text-end"><span id="stayDuration">1 night</span></div>
               </div>
-              <div class="row mb-2">
-                <div class="col-7">Subtotal:</div>
-                <div class="col-5 text-end">$<span id="subtotal">0</span></div>
+              <div class="row g-2 mb-2">
+                <div class="col-7 col-md-8">Check-in:</div>
+                <div class="col-5 col-md-4 text-end"><span id="summaryCheckIn">-</span></div>
               </div>
-              <div class="row mb-2">
-                <div class="col-7">Taxes & Fees (12%):</div>
-                <div class="col-5 text-end">$<span id="taxesAndFees">0</span></div>
+              <div class="row g-2 mb-2">
+                <div class="col-7 col-md-8">Check-out:</div>
+                <div class="col-5 col-md-4 text-end"><span id="summaryCheckOut">-</span></div>
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-7 col-md-8">Subtotal:</div>
+                <div class="col-5 col-md-4 text-end">$<span id="subtotal">0.00</span></div>
+              </div>
+              <div class="row g-2 mb-2">
+                <div class="col-7 col-md-8">Taxes & Fees (12%):</div>
+                <div class="col-5 col-md-4 text-end">$<span id="taxesAndFees">0.00</span></div>
               </div>
               
-              <div class="row fw-bold mt-2 pt-2 border-top">
-                <div class="col-7">Total Amount:</div>
-                <div class="col-5 text-end">$<span id="totalAmount">0</span></div>
+              <div class="row g-2 fw-bold mt-2 pt-2 border-top">
+                <div class="col-7 col-md-8">Total Amount:</div>
+                <div class="col-5 col-md-4 text-end text-primary fs-5">$<span id="totalAmount">0.00</span></div>
+              </div>
+              
+              <div class="mt-3 small text-muted">
+                <i class="fas fa-info-circle me-1"></i> 
+                Taxes and fees are calculated at 12% of the subtotal.
               </div>
             </div>
             
@@ -377,10 +393,140 @@
     // Update form based on booking type
     function updateBookingTypeSettings() {
       const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
       
-      // Update time inputs based on booking type
-      checkInTimeInput.value = timePresets[selectedBookingType].checkIn;
-      checkOutTimeInput.value = timePresets[selectedBookingType].checkOut;
+      const todayFormatted = today.toISOString().split('T')[0];
+      const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+      
+      // Reset date input min/max constraints
+      checkInDateInput.min = todayFormatted;
+      checkInDateInput.removeAttribute('max');
+      checkOutDateInput.removeAttribute('min');
+      checkOutDateInput.removeAttribute('max');
+      
+      // Make both date/time inputs enabled by default
+      checkInDateInput.disabled = false;
+      checkInTimeInput.disabled = false;
+      checkOutDateInput.disabled = false;
+      checkOutTimeInput.disabled = false;
+      
+      // Apply constraints based on booking type
+      switch(selectedBookingType) {
+        case 'hourly':
+          // For hourly: Check-in date is today, time is current hour rounded up
+          checkInDateInput.value = todayFormatted;
+          checkInDateInput.disabled = true; // Can't change date for hourly
+          
+          // Round up current time to the next hour
+          const currentHour = today.getHours();
+          const nextHour = (currentHour + 1) % 24;
+          const formattedNextHour = String(nextHour).padStart(2, '0') + ':00';
+          
+          checkInTimeInput.value = formattedNextHour;
+          
+          // Set checkout limits (max 24 hours from check-in)
+          checkOutDateInput.value = todayFormatted; // Same day by default
+          
+          // Calculate max checkout time (24 hours from check-in)
+          const maxCheckoutDate = new Date(today);
+          maxCheckoutDate.setHours(nextHour);
+          maxCheckoutDate.setDate(maxCheckoutDate.getDate() + 1);
+          
+          if (maxCheckoutDate.getDate() !== today.getDate()) {
+            checkOutDateInput.max = maxCheckoutDate.toISOString().split('T')[0];
+          }
+          break;
+          
+        case 'overnight':
+          // For overnight: Fixed times (6 PM to 10 AM next day)
+          checkInTimeInput.value = '18:00';
+          checkInTimeInput.disabled = true;
+          
+          // Set checkout to next day at 10 AM
+          const checkInDate = new Date(checkInDateInput.value + 'T00:00:00');
+          const nextDay = new Date(checkInDate);
+          nextDay.setDate(nextDay.getDate() + 1);
+          
+          checkOutDateInput.value = nextDay.toISOString().split('T')[0];
+          checkOutDateInput.disabled = true;
+          
+          checkOutTimeInput.value = '10:00';
+          checkOutTimeInput.disabled = true;
+          break;
+          
+        case 'dayUse':
+          // For day use: Same day only (9 AM to 6 PM)
+          checkInDateInput.value = todayFormatted;
+          checkInDateInput.max = todayFormatted; // Can only select today
+          
+          checkInTimeInput.value = '09:00';
+          checkInTimeInput.disabled = true;
+          
+          checkOutDateInput.value = todayFormatted;
+          checkOutDateInput.disabled = true; // Same day only
+          
+          checkOutTimeInput.value = '18:00';
+          checkOutTimeInput.disabled = true;
+          break;
+          
+        case 'daily':
+          // For daily: Standard booking, must be at least 24 hours
+          checkInTimeInput.value = timePresets[selectedBookingType].checkIn;
+          checkOutTimeInput.value = timePresets[selectedBookingType].checkOut;
+          
+          // Ensure checkout is at least the next day
+          const checkInDaily = new Date(checkInDateInput.value + 'T00:00:00');
+          const nextDayDaily = new Date(checkInDaily);
+          nextDayDaily.setDate(nextDayDaily.getDate() + 1);
+          
+          if (new Date(checkOutDateInput.value) < nextDayDaily) {
+            checkOutDateInput.value = nextDayDaily.toISOString().split('T')[0];
+          }
+          break;
+          
+        case 'weekly':
+          // For weekly: Must be at least 7 days
+          checkInTimeInput.value = timePresets[selectedBookingType].checkIn;
+          checkOutTimeInput.value = timePresets[selectedBookingType].checkOut;
+          
+          // Set minimum checkout to check-in + 7 days
+          const checkInWeekly = new Date(checkInDateInput.value + 'T00:00:00');
+          const weekLater = new Date(checkInWeekly);
+          weekLater.setDate(weekLater.getDate() + 7);
+          
+          const weekLaterFormatted = weekLater.toISOString().split('T')[0];
+          checkOutDateInput.min = weekLaterFormatted;
+          
+          if (new Date(checkOutDateInput.value) < weekLater) {
+            checkOutDateInput.value = weekLaterFormatted;
+          }
+          break;
+          
+        case 'monthly':
+          // For monthly: Must be at least 28 days
+          checkInTimeInput.value = timePresets[selectedBookingType].checkIn;
+          checkOutTimeInput.value = timePresets[selectedBookingType].checkOut;
+          
+          // Set minimum checkout to check-in + 28 days
+          const checkInMonthly = new Date(checkInDateInput.value + 'T00:00:00');
+          const monthLater = new Date(checkInMonthly);
+          monthLater.setDate(monthLater.getDate() + 28);
+          
+          const monthLaterFormatted = monthLater.toISOString().split('T')[0];
+          checkOutDateInput.min = monthLaterFormatted;
+          
+          if (new Date(checkOutDateInput.value) < monthLater) {
+            checkOutDateInput.value = monthLaterFormatted;
+          }
+          break;
+          
+        default:
+          // Default settings
+          checkInTimeInput.value = timePresets[selectedBookingType].checkIn;
+          checkOutTimeInput.value = timePresets[selectedBookingType].checkOut;
+      }
       
       // Update description
       bookingTypeDescription.textContent = bookingTypeDescriptions[selectedBookingType];
@@ -474,6 +620,9 @@
       const checkOutDate = checkOutDateInput.value;
       const checkOutTime = checkOutTimeInput.value;
       
+      // Update the booking summary with the current dates
+      updateBookingSummary();
+      
       try {
         // Make API call to backend to calculate price
         const response = await fetch('/bookings/calculate-price', {
@@ -555,6 +704,13 @@
     
     // Update the booking summary display
     function updateBookingSummary() {
+      // Update total rooms badge
+      let totalRoomsCount = 0;
+      selectedRooms.forEach(room => {
+        totalRoomsCount += room.quantity;
+      });
+      document.getElementById('totalRoomsSelected').textContent = `${totalRoomsCount} Room${totalRoomsCount !== 1 ? 's' : ''}`;
+      
       // Toggle selected rooms list visibility
       if (selectedRooms.length > 0) {
         noRoomsSelectedAlert.style.display = 'none';
@@ -566,13 +722,26 @@
         // Add each selected room to the list
         selectedRooms.forEach(room => {
           const roomItem = document.createElement('div');
-          roomItem.className = 'row mb-2';
+          roomItem.className = 'row g-2 mb-2 align-items-center';
           roomItem.innerHTML = `
-            <div class="col-7">${room.roomTypeName} x ${room.quantity}</div>
-            <div class="col-5 text-end">$${room.totalPrice.toFixed(2)}</div>
+            <div class="col-7 col-md-8">
+              <div class="fw-medium">${room.roomTypeName} x ${room.quantity}</div>
+              <div class="small text-muted">${getFormattedPricePerNight(room)}</div>
+            </div>
+            <div class="col-5 col-md-4 text-end fw-medium">$${room.totalPrice.toFixed(2)}</div>
           `;
           selectedRoomsList.appendChild(roomItem);
         });
+        
+        // Format dates for summary
+        const checkInDateTime = new Date(`${checkInDateInput.value}T${checkInTimeInput.value}`);
+        const checkOutDateTime = new Date(`${checkOutDateInput.value}T${checkOutTimeInput.value}`);
+        
+        const formattedCheckIn = formatDateTimeForSummary(checkInDateTime);
+        const formattedCheckOut = formatDateTimeForSummary(checkOutDateTime);
+        
+        document.getElementById('summaryCheckIn').textContent = formattedCheckIn;
+        document.getElementById('summaryCheckOut').textContent = formattedCheckOut;
         
         // Update summary calculations
         const taxRate = 0.12; // 12%
@@ -590,6 +759,8 @@
         selectedRoomsList.style.display = 'none';
         
         // Reset summary values
+        document.getElementById('summaryCheckIn').textContent = '-';
+        document.getElementById('summaryCheckOut').textContent = '-';
         subtotalElement.textContent = '0.00';
         taxesAndFeesElement.textContent = '0.00';
         totalAmountElement.textContent = '0.00';
@@ -599,18 +770,131 @@
       }
     }
     
+    // Format date and time for summary display
+    function formatDateTimeForSummary(dateTime) {
+      const options = { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric',
+        hour: 'numeric', 
+        minute: 'numeric' 
+      };
+      return dateTime.toLocaleDateString('en-US', options);
+    }
+    
+    // Get formatted price per night text
+    function getFormattedPricePerNight(room) {
+      const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
+      const pricePerUnit = room.totalPrice / room.quantity;
+      
+      let unitText = '';
+      switch(selectedBookingType) {
+        case 'hourly':
+          unitText = 'per hour';
+          break;
+        case 'overnight':
+          unitText = 'per night';
+          break;
+        case 'dayUse':
+          unitText = 'per day';
+          break;
+        case 'weekly':
+          unitText = 'per week';
+          break;
+        case 'monthly':
+          unitText = 'per month';
+          break;
+        default:
+          unitText = 'per night';
+      }
+      
+      return `$${pricePerUnit.toFixed(2)} ${unitText}`;
+    }
+    
     // Set minimum check-out date when check-in date is selected
     checkInDateInput.addEventListener('change', function() {
       if (this.value) {
-        const nextDay = new Date(this.value);
-        nextDay.setDate(nextDay.getDate() + 1);
+        const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
+        const checkInDate = new Date(this.value);
         
-        const nextDayFormatted = nextDay.toISOString().split('T')[0];
-        checkOutDateInput.min = nextDayFormatted;
-        
-        // If check-out is before or same as new check-in, update it
-        if (checkOutDateInput.value && new Date(checkOutDateInput.value) <= new Date(this.value)) {
-          checkOutDateInput.value = nextDayFormatted;
+        // Apply constraints based on booking type
+        switch(selectedBookingType) {
+          case 'hourly':
+            // For hourly: Check-in date is fixed to today
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            checkInDate.setHours(0, 0, 0, 0);
+            
+            if (checkInDate.getTime() !== today.getTime()) {
+              const todayFormatted = today.toISOString().split('T')[0];
+              this.value = todayFormatted;
+            }
+            break;
+            
+          case 'overnight':
+            // For overnight: Update check-out date to the next day
+            const nextDayOvernight = new Date(checkInDate);
+            nextDayOvernight.setDate(nextDayOvernight.getDate() + 1);
+            const nextDayOvernightFormatted = nextDayOvernight.toISOString().split('T')[0];
+            
+            checkOutDateInput.value = nextDayOvernightFormatted;
+            break;
+            
+          case 'dayUse':
+            // For day use: Check-in and check-out must be the same day (today)
+            const todayDayUse = new Date();
+            todayDayUse.setHours(0, 0, 0, 0);
+            checkInDate.setHours(0, 0, 0, 0);
+            
+            if (checkInDate.getTime() !== todayDayUse.getTime()) {
+              const todayFormatted = todayDayUse.toISOString().split('T')[0];
+              this.value = todayFormatted;
+            }
+            
+            checkOutDateInput.value = this.value; // Same day
+            break;
+            
+          case 'daily':
+            // For daily: Ensure check-out is at least the next day
+            const nextDayDaily = new Date(checkInDate);
+            nextDayDaily.setDate(nextDayDaily.getDate() + 1);
+            const nextDayDailyFormatted = nextDayDaily.toISOString().split('T')[0];
+            
+            checkOutDateInput.min = nextDayDailyFormatted;
+            
+            // If check-out is before or same as new check-in, update it
+            if (checkOutDateInput.value && new Date(checkOutDateInput.value) <= checkInDate) {
+              checkOutDateInput.value = nextDayDailyFormatted;
+            }
+            break;
+            
+          case 'weekly':
+            // For weekly: Ensure check-out is at least 7 days later
+            const weekLater = new Date(checkInDate);
+            weekLater.setDate(weekLater.getDate() + 7);
+            const weekLaterFormatted = weekLater.toISOString().split('T')[0];
+            
+            checkOutDateInput.min = weekLaterFormatted;
+            
+            // If check-out is less than 7 days from check-in, update it
+            if (checkOutDateInput.value && new Date(checkOutDateInput.value) < weekLater) {
+              checkOutDateInput.value = weekLaterFormatted;
+            }
+            break;
+            
+          case 'monthly':
+            // For monthly: Ensure check-out is at least 28 days later
+            const monthLater = new Date(checkInDate);
+            monthLater.setDate(monthLater.getDate() + 28);
+            const monthLaterFormatted = monthLater.toISOString().split('T')[0];
+            
+            checkOutDateInput.min = monthLaterFormatted;
+            
+            // If check-out is less than 28 days from check-in, update it
+            if (checkOutDateInput.value && new Date(checkOutDateInput.value) < monthLater) {
+              checkOutDateInput.value = monthLaterFormatted;
+            }
+            break;
         }
         
         updateStayDuration();
@@ -658,7 +942,11 @@
     // Initialize form based on current booking type
     updateBookingTypeSettings();
     updateStayDuration();
+
+    //scrap the above. base on this, please just make the month and week like day use. We can only choose the date. Not the other, and the check in time and check out boxes update accordingly. Make hourly to be restricted to in the time of the day from 7am to 10pm, in the same day only. Make daily to be that we can only chose date (check in, check out to count the days), the time gonna be 9pm the check in date to 9pm the next day,
   });
 </script>
 
+
 <%- include('../partials/footer') %>
+

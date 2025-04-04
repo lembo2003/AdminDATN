@@ -34,7 +34,6 @@ exports.getRoomTypes = async (req, res) => {
  * Render room type add form
  */
 exports.getAddRoomType = (req, res) => {
-  // Changed to render 'admin/roomTypes/add' instead of 'form'
   res.render('admin/roomTypes/add', {
     title: 'Add Room Type',
     user: req.session.user,
@@ -53,7 +52,7 @@ exports.postAddRoomType = async (req, res) => {
       roomTypeName,
       description,
       capacity,
-      // Pricing
+      // Pricing fields as flat properties
       dailyPrice,
       hourlyBasePrice,
       hourlyAdditionalPrice,
@@ -94,34 +93,26 @@ exports.postAddRoomType = async (req, res) => {
       return res.redirect('/admin/room-types/add');
     }
 
-    // Create room type with structured pricing data
+    // Create room type with flat properties (not nested)
     await RoomType.create({
       roomTypeName,
       description,
       capacity: parseInt(capacity, 10) || 2,
-      // Structured pricing object
-      pricing: {
-        daily: parseFloat(dailyPrice) || 0,
-        hourly: {
-          basePrice: parseFloat(hourlyBasePrice) || 0,
-          additionalHourPrice: parseFloat(hourlyAdditionalPrice) || 0
-        },
-        overnight: parseFloat(overnightPrice) || 0,
-        dayUse: parseFloat(dayUsePrice) || 0,
-        weekly: parseFloat(weeklyPrice) || 0,
-        monthly: parseFloat(monthlyPrice) || 0
-      },
+      // Flat pricing fields
+      dailyPrice: parseFloat(dailyPrice) || 0,
+      hourlyBasePrice: parseFloat(hourlyBasePrice) || 0,
+      hourlyAdditionalPrice: parseFloat(hourlyAdditionalPrice) || 0,
+      overnightPrice: parseFloat(overnightPrice) || 0,
+      dayUsePrice: parseFloat(dayUsePrice) || 0,
+      weeklyPrice: parseFloat(weeklyPrice) || 0,
+      monthlyPrice: parseFloat(monthlyPrice) || 0,
       // Minimum stay requirements
-      minimumStay: {
-        daily: parseInt(minimumStayDaily, 10) || 1,
-        weekly: parseInt(minimumStayWeekly, 10) || 7,
-        monthly: parseInt(minimumStayMonthly, 10) || 28
-      },
+      minimumStayDaily: parseInt(minimumStayDaily, 10) || 1,
+      minimumStayWeekly: parseInt(minimumStayWeekly, 10) || 7,
+      minimumStayMonthly: parseInt(minimumStayMonthly, 10) || 28,
       // Hourly settings
-      hourlySettings: {
-        minDuration: parseInt(minHourlyDuration, 10) || 1,
-        maxDuration: parseInt(maxHourlyDuration, 10) || 6
-      },
+      minHourlyDuration: parseInt(minHourlyDuration, 10) || 1,
+      maxHourlyDuration: parseInt(maxHourlyDuration, 10) || 6,
       // Fees
       lateCheckoutFee: parseFloat(lateCheckoutFee) || 0
     });
@@ -156,7 +147,6 @@ exports.getEditRoomType = async (req, res) => {
     // Add room count to the room type object
     roomType.roomCount = roomsUsingThisType.length;
 
-    // Changed to render 'admin/roomTypes/edit' instead of 'form'
     res.render('admin/roomTypes/edit', {
       title: 'Edit Room Type',
       roomType,
@@ -182,7 +172,7 @@ exports.postUpdateRoomType = async (req, res) => {
       roomTypeName,
       description,
       capacity,
-      // Pricing
+      // Pricing fields as flat properties
       dailyPrice,
       hourlyBasePrice,
       hourlyAdditionalPrice,
@@ -231,34 +221,26 @@ exports.postUpdateRoomType = async (req, res) => {
       return res.redirect(`/admin/room-types/edit/${roomTypeId}`);
     }
 
-    // Update room type with structured pricing data
+    // Update room type with flat properties (not nested)
     await RoomType.update(roomTypeId, {
       roomTypeName,
       description,
       capacity: parseInt(capacity, 10) || 2,
-      // Structured pricing object
-      pricing: {
-        daily: parseFloat(dailyPrice) || 0,
-        hourly: {
-          basePrice: parseFloat(hourlyBasePrice) || 0,
-          additionalHourPrice: parseFloat(hourlyAdditionalPrice) || 0
-        },
-        overnight: parseFloat(overnightPrice) || 0,
-        dayUse: parseFloat(dayUsePrice) || 0,
-        weekly: parseFloat(weeklyPrice) || 0,
-        monthly: parseFloat(monthlyPrice) || 0
-      },
+      // Flat pricing fields
+      dailyPrice: parseFloat(dailyPrice) || 0,
+      hourlyBasePrice: parseFloat(hourlyBasePrice) || 0,
+      hourlyAdditionalPrice: parseFloat(hourlyAdditionalPrice) || 0,
+      overnightPrice: parseFloat(overnightPrice) || 0,
+      dayUsePrice: parseFloat(dayUsePrice) || 0,
+      weeklyPrice: parseFloat(weeklyPrice) || 0,
+      monthlyPrice: parseFloat(monthlyPrice) || 0,
       // Minimum stay requirements
-      minimumStay: {
-        daily: parseInt(minimumStayDaily, 10) || 1,
-        weekly: parseInt(minimumStayWeekly, 10) || 7,
-        monthly: parseInt(minimumStayMonthly, 10) || 28
-      },
+      minimumStayDaily: parseInt(minimumStayDaily, 10) || 1,
+      minimumStayWeekly: parseInt(minimumStayWeekly, 10) || 7,
+      minimumStayMonthly: parseInt(minimumStayMonthly, 10) || 28,
       // Hourly settings
-      hourlySettings: {
-        minDuration: parseInt(minHourlyDuration, 10) || 1,
-        maxDuration: parseInt(maxHourlyDuration, 10) || 6
-      },
+      minHourlyDuration: parseInt(minHourlyDuration, 10) || 1,
+      maxHourlyDuration: parseInt(maxHourlyDuration, 10) || 6,
       // Fees
       lateCheckoutFee: parseFloat(lateCheckoutFee) || 0
     });
@@ -306,5 +288,3 @@ exports.deleteRoomType = async (req, res) => {
     res.redirect('/admin/room-types');
   }
 };
-
-//need to fix add and update for room type, missing attributes

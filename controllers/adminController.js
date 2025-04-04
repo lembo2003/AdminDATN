@@ -637,6 +637,34 @@ exports.deleteBooking = async (req, res) => {
 };
 
 /**
+ * Update booking payment status
+ */
+/**
+ * Update booking payment status
+ */
+exports.updateBookingPaymentStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { paymentStatus } = req.body;
+
+    // Validate the payment status
+    if (!['pending', 'paid', 'refunded'].includes(paymentStatus)) {
+      req.flash('error_msg', 'Invalid payment status');
+      return res.redirect(`/admin/bookings/details/${bookingId}`);
+    }
+
+    // Use the dedicated updatePaymentStatus method
+    await Booking.updatePaymentStatus(bookingId, paymentStatus);
+
+    req.flash('success_msg', `Payment status updated to ${paymentStatus}`);
+    res.redirect(`/admin/bookings/details/${bookingId}`);
+  } catch (error) {
+    console.error('Update booking payment status error:', error);
+    req.flash('error_msg', 'Error updating payment status');
+    res.redirect(`/admin/bookings/details/${req.params.bookingId}`);
+  }
+};
+/**
  * Order Management
  */
 
@@ -802,10 +830,10 @@ exports.getAddOrderItem = (req, res) => {
 // Process add order item form
 exports.postAddOrderItem = async (req, res) => {
   try {
-    const { 
-      name, 
-      category, 
-      description, 
+    const {
+      name,
+      category,
+      description,
       price,
       calories,
       protein,
@@ -892,10 +920,10 @@ exports.getEditOrderItem = async (req, res) => {
 exports.postEditOrderItem = async (req, res) => {
   try {
     const { itemId } = req.params;
-    const { 
-      name, 
-      category, 
-      description, 
+    const {
+      name,
+      category,
+      description,
       price,
       calories,
       protein,

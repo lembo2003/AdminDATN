@@ -53,7 +53,7 @@ router.get('/bookings', adminController.getBookings);
 router.get('/bookings/details/:bookingId', adminController.getBookingDetails);
 router.post('/bookings/update-status/:bookingId', adminController.updateBookingStatus);
 // Remove undefined controller methods
-// router.post('/bookings/update-payment-status/:bookingId', adminController.updateBookingPaymentStatus);
+router.post('/bookings/update-payment-status/:bookingId', adminController.updateBookingPaymentStatus);
 // router.post('/bookings/late-checkout/:bookingId', adminController.handleLateCheckout);
 router.delete('/bookings/delete/:bookingId', adminController.deleteBooking);
 

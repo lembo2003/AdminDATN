@@ -292,7 +292,7 @@
             <div class="form-check mb-4">
               <input class="form-check-input" type="checkbox" id="termsCheck" required>
               <label class="form-check-label" for="termsCheck">
-                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
+                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" id="termsModalLink">terms and conditions</a>
               </label>
             </div>
             
@@ -307,7 +307,7 @@
 </div>
 
 <!-- Terms and Conditions Modal -->
-<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true" data-bs-backdrop="static">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -370,9 +370,9 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Time presets for different booking types
   const timePresets = {
-    hourly: { checkIn: '07:00', checkOut: '22:00' },    // Updated for 7am-10pm restriction
+    hourly: { checkIn: '07:00', checkOut: '22:00' },    // 7am-10pm restriction
     overnight: { checkIn: '18:00', checkOut: '10:00' },
-    daily: { checkIn: '21:00', checkOut: '21:00' },     // Updated for 9pm-9pm
+    daily: { checkIn: '09:00', checkOut: '21:00' },     // Updated: 9am check-in, 9pm check-out
     dayUse: { checkIn: '09:00', checkOut: '18:00' },
     weekly: { checkIn: '14:00', checkOut: '11:00' },
     monthly: { checkIn: '14:00', checkOut: '11:00' }
@@ -936,7 +936,7 @@ document.addEventListener('DOMContentLoaded', function() {
             roomTypeId,
             roomTypeName,
             quantity,
-            basePrice, // Store the per-unit price
+            basePrice: basePrice || 0, // Store the per-unit price, default to 0 if NaN
             totalPrice
           });
           
@@ -978,12 +978,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Get stay duration text for clarity
         const stayDurationText = getStayDurationText();
-        const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
         
         roomItem.innerHTML = `
           <div class="col-7 col-md-8">
             <div class="fw-medium">${room.roomTypeName} x ${room.quantity}</div>
-            <div class="small text-muted">${getFormattedPricePerNight(room)} x ${stayDurationText} x ${room.quantity} ${room.quantity !== 1 ? 'rooms' : 'room'}</div>
+            <div class="small text-muted">${getFormattedPricePerNight(room)} x ${stayDurationText}</div>
           </div>
           <div class="col-5 col-md-4 text-end fw-medium">$${room.totalPrice.toFixed(2)}</div>
         `;
@@ -1036,8 +1035,15 @@ document.addEventListener('DOMContentLoaded', function() {
   // Get formatted price per night text
   function getFormattedPricePerNight(room) {
     const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
-    // Use the basePrice (per-unit price), not the total price
-    const pricePerUnit = room.basePrice;
+    
+    // Ensure basePrice is a valid number, use fallback if not
+    let pricePerUnit = 0;
+    if (typeof room.basePrice === 'number' && !isNaN(room.basePrice)) {
+      pricePerUnit = room.basePrice;
+    } else {
+      // If basePrice is NaN, try to parse the totalPrice divided by quantity as fallback
+      pricePerUnit = room.totalPrice / room.quantity || 0;
+    }
     
     let unitText = '';
     switch(selectedBookingType) {
@@ -1109,6 +1115,30 @@ document.addEventListener('DOMContentLoaded', function() {
       this.disabled = false;
     });
   });
+  
+  // Fix for modal backdrop issue
+  document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal-backdrop') || 
+        event.target.closest('[data-bs-dismiss="modal"]')) {
+      // Remove modal-backdrop and modal-open classes if they exist
+      document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    }
+  });
+  
+  // Additional fix for modal backdrop - ensure proper cleanup when modal is closed
+  const termsModal = document.getElementById('termsModal');
+  if (termsModal) {
+    termsModal.addEventListener('hidden.bs.modal', function () {
+      // Ensure modal backdrop is removed
+      document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    });
+  }
   
   // Initialize form based on current booking type
   updateBookingTypeSettings();

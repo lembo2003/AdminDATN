@@ -165,7 +165,6 @@
                                   <%= roomType.pricing ? roomType.pricing.daily : '0' %>
                                 </span>
                                 <span class="price-period">/ night</span>
-                                <span class="small text-muted room-price-note">(per stay)</span>
                               </p>
                             </div>
                             <div class="col-md-5">
@@ -233,11 +232,8 @@
             <hr class="my-4">
             
             <!-- Booking Summary -->
-            <div class="booking-summary p-3 mb-4 rounded bg-light border">
-              <h5 class="mb-3 d-flex justify-content-between align-items-center">
-                <span>Booking Summary</span>
-                <span class="badge bg-primary" id="totalRoomsSelected">0 Rooms</span>
-              </h5>
+            <div class="booking-summary p-3 mb-4 rounded">
+              <h5 class="mb-3">Booking Summary</h5>
               
               <div id="selectedRoomsContainer">
                 <div class="alert alert-warning" id="noRoomsSelectedAlert">
@@ -251,48 +247,33 @@
                 </div>
               </div>
               
-              <div class="row g-2 mb-2">
-                <div class="col-7 col-md-8">Booking Type:</div>
-                <div class="col-5 col-md-4 text-end"><span id="summaryBookingType">Daily</span></div>
+              <div class="row mb-2">
+                <div class="col-7">Booking Type:</div>
+                <div class="col-5 text-end"><span id="summaryBookingType">Daily</span></div>
               </div>
-              <div class="row g-2 mb-2">
-                <div class="col-7 col-md-8">Stay Duration:</div>
-                <div class="col-5 col-md-4 text-end"><span id="stayDuration">1 night</span></div>
+              <div class="row mb-2">
+                <div class="col-7">Stay Duration:</div>
+                <div class="col-5 text-end"><span id="stayDuration">1 night</span></div>
               </div>
-              <div class="row g-2 mb-2">
-                <div class="col-7 col-md-8">Check-in:</div>
-                <div class="col-5 col-md-4 text-end"><span id="summaryCheckIn">-</span></div>
+              <div class="row mb-2">
+                <div class="col-7">Subtotal:</div>
+                <div class="col-5 text-end">$<span id="subtotal">0</span></div>
               </div>
-              <div class="row g-2 mb-2">
-                <div class="col-7 col-md-8">Check-out:</div>
-                <div class="col-5 col-md-4 text-end"><span id="summaryCheckOut">-</span></div>
-              </div>
-              <div class="row g-2 mb-2">
-                <div class="col-7 col-md-8">Subtotal:</div>
-                <div class="col-5 col-md-4 text-end">$<span id="subtotal">0.00</span></div>
+              <div class="row mb-2">
+                <div class="col-7">Taxes & Fees (12%):</div>
+                <div class="col-5 text-end">$<span id="taxesAndFees">0</span></div>
               </div>
               
-              <div class="row g-2 fw-bold mt-2 pt-2 border-top">
-                <div class="col-7 col-md-8">Total Amount:</div>
-                <div class="col-5 col-md-4 text-end text-primary fs-5">$<span id="totalAmount">0.00</span></div>
-              </div>
-              
-              <div class="d-flex justify-content-end mt-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshPrices">
-                  <i class="fas fa-sync-alt me-1"></i> Refresh Prices
-                </button>
-              </div>
-              
-              <div class="mt-3 small text-muted">
-                <i class="fas fa-info-circle me-1"></i> 
-                If prices appear incorrect, use the refresh button above.
+              <div class="row fw-bold mt-2 pt-2 border-top">
+                <div class="col-7">Total Amount:</div>
+                <div class="col-5 text-end">$<span id="totalAmount">0</span></div>
               </div>
             </div>
             
             <div class="form-check mb-4">
               <input class="form-check-input" type="checkbox" id="termsCheck" required>
               <label class="form-check-label" for="termsCheck">
-                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal" id="termsModalLink">terms and conditions</a>
+                I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
               </label>
             </div>
             
@@ -347,803 +328,374 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  // DOM elements
-  const bookingForm = document.getElementById('bookingForm');
-  const checkInDateInput = document.getElementById('checkInDate');
-  const checkInTimeInput = document.getElementById('checkInTime');
-  const checkOutDateInput = document.getElementById('checkOutDate');
-  const checkOutTimeInput = document.getElementById('checkOutTime');
-  const bookingTypeInputs = document.querySelectorAll('input[name="bookingType"]');
-  const bookingTypeDescription = document.getElementById('bookingTypeDescription');
-  const termsCheckbox = document.getElementById('termsCheck');
-  const confirmButton = document.getElementById('confirmButton');
-  const roomQuantitySelects = document.querySelectorAll('.room-quantity');
-  const noRoomsSelectedAlert = document.getElementById('noRoomsSelectedAlert');
-  const selectedRoomsList = document.getElementById('selectedRoomsList');
-  
-  // Booking summary elements
-  const summaryBookingType = document.getElementById('summaryBookingType');
-  const stayDuration = document.getElementById('stayDuration');
-  const subtotalElement = document.getElementById('subtotal');
-  const totalAmountElement = document.getElementById('totalAmount');
-  
-  // Time presets for different booking types
-  const timePresets = {
-    hourly: { checkIn: '07:00', checkOut: '22:00' },    // 7am-10pm restriction
-    overnight: { checkIn: '18:00', checkOut: '10:00' },
-    daily: { checkIn: '09:00', checkOut: '21:00' },     // Updated: 9am check-in, 9pm check-out
-    dayUse: { checkIn: '09:00', checkOut: '18:00' },
-    weekly: { checkIn: '14:00', checkOut: '11:00' },
-    monthly: { checkIn: '14:00', checkOut: '11:00' }
-  };
-  
-  // Description text for each booking type
-  const bookingTypeDescriptions = {
-    hourly: 'Hourly booking allows you to book a room between 7am and 10pm on the same day. Pay only for the time you need.',
-    overnight: 'Overnight booking gives you a room from evening (6 PM) until morning (10 AM). Perfect for a single night\'s stay.',
-    daily: 'Daily booking includes a stay from 9 PM on your check-in date to 9 PM on your check-out date.',
-    dayUse: 'Day use booking allows you to use the room during the day (9 AM - 6 PM) without spending the night.',
-    weekly: 'Weekly booking offers a discounted rate for stays of 7 nights or more. Check-in and check-out times are automatically set.',
-    monthly: 'Monthly booking provides our best rate for extended stays of 28 nights or more. Check-in and check-out times are automatically set.'
-  };
-  
-  // Store selected rooms data
-  let selectedRooms = [];
-  let totalSubtotal = 0;
-  
-  // Helper function to get current stay duration text
-  function getStayDurationText() {
-    const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
-    const checkInDateTime = new Date(`${checkInDateInput.value}T${checkInTimeInput.value}`);
-    const checkOutDateTime = new Date(`${checkOutDateInput.value}T${checkOutTimeInput.value}`);
+  document.addEventListener('DOMContentLoaded', function() {
+    // DOM elements
+    const bookingForm = document.getElementById('bookingForm');
+    const checkInDateInput = document.getElementById('checkInDate');
+    const checkInTimeInput = document.getElementById('checkInTime');
+    const checkOutDateInput = document.getElementById('checkOutDate');
+    const checkOutTimeInput = document.getElementById('checkOutTime');
+    const bookingTypeInputs = document.querySelectorAll('input[name="bookingType"]');
+    const bookingTypeDescription = document.getElementById('bookingTypeDescription');
+    const termsCheckbox = document.getElementById('termsCheck');
+    const confirmButton = document.getElementById('confirmButton');
+    const roomQuantitySelects = document.querySelectorAll('.room-quantity');
+    const noRoomsSelectedAlert = document.getElementById('noRoomsSelectedAlert');
+    const selectedRoomsList = document.getElementById('selectedRoomsList');
     
-    // Get time difference in milliseconds
-    const timeDiff = checkOutDateTime - checkInDateTime;
+    // Booking summary elements
+    const summaryBookingType = document.getElementById('summaryBookingType');
+    const stayDuration = document.getElementById('stayDuration');
+    const subtotalElement = document.getElementById('subtotal');
+    const taxesAndFeesElement = document.getElementById('taxesAndFees');
+    const totalAmountElement = document.getElementById('totalAmount');
     
-    if (timeDiff <= 0) {
-      return 'invalid duration';
-    }
+    // Time presets for different booking types
+    const timePresets = {
+      hourly: { checkIn: '07:00', checkOut: '22:00' },    // 7am-10pm restriction
+      overnight: { checkIn: '18:00', checkOut: '10:00' }, // Evening to morning
+      daily: { checkIn: '09:00', checkOut: '21:00' },     // 9am to 9pm across days
+      dayUse: { checkIn: '09:00', checkOut: '18:00' },    // Same-day use
+      weekly: { checkIn: '14:00', checkOut: '11:00' },    // Week-long stay
+      monthly: { checkIn: '14:00', checkOut: '11:00' }    // Month-long stay
+    };
     
-    switch(selectedBookingType) {
-      case 'hourly':
-        const hours = Math.ceil(timeDiff / (1000 * 60 * 60));
-        return `${hours} hour${hours !== 1 ? 's' : ''}`;
-      case 'overnight':
-        return '1 night';
-      case 'dayUse':
-        return '1 day';
-      case 'weekly':
-        return '1 week';
-      case 'monthly':
-        return '1 month';
-      case 'daily':
-      default:
-        const days = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-        return `${days} night${days !== 1 ? 's' : ''}`;
-    }
-  }
-  
-  // Update form based on booking type
-  function updateBookingTypeSettings() {
-    const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // Description text for each booking type
+    const bookingTypeDescriptions = {
+      hourly: 'Hourly booking allows you to book a room between 7am and 10pm on the same day. Pay only for the time you need.',
+      overnight: 'Overnight booking gives you a room from evening (6 PM) until morning (10 AM) the next day.',
+      daily: 'Daily booking includes a stay from 9am on your check-in date to 9pm on your check-out date.',
+      dayUse: 'Day use booking allows you to use the room during the day (9 AM - 6 PM) without spending the night.',
+      weekly: 'Weekly booking offers a discounted rate for stays of 7 nights. Check-in and check-out times are automatically set.',
+      monthly: 'Monthly booking provides our best rate for 28-night stays. Check-in and check-out times are automatically set.'
+    };
     
-    const todayFormatted = today.toISOString().split('T')[0];
-    const tomorrowFormatted = tomorrow.toISOString().split('T')[0];
+    // Store selected rooms data
+    let selectedRooms = [];
+    let totalSubtotal = 0;
     
-    // Reset date input min/max constraints
-    checkInDateInput.min = todayFormatted;
-    checkInDateInput.removeAttribute('max');
-    checkOutDateInput.removeAttribute('min');
-    checkOutDateInput.removeAttribute('max');
-    
-    // Make both date/time inputs enabled by default
-    checkInDateInput.disabled = false;
-    checkInTimeInput.disabled = false;
-    checkOutDateInput.disabled = false;
-    checkOutTimeInput.disabled = false;
-    
-    // Apply constraints based on booking type
-    switch(selectedBookingType) {
-      case 'hourly':
-        // For hourly: Same day only, time restricted to 7am to 10pm
-        checkInDateInput.value = todayFormatted;
-        checkInDateInput.max = todayFormatted; // Can only select today
-        
-        checkInTimeInput.value = timePresets.hourly.checkIn;
-        checkInTimeInput.min = '07:00';
-        checkInTimeInput.max = '22:00';
-        
-        checkOutDateInput.value = todayFormatted;
-        checkOutDateInput.disabled = true; // Same day only
-        
-        checkOutTimeInput.value = timePresets.hourly.checkOut;
-        checkOutTimeInput.min = checkInTimeInput.value;
-        checkOutTimeInput.max = '22:00';
-        break;
-        
-      case 'overnight':
-        // For overnight: Fixed times (6 PM to 10 AM next day)
-        checkInTimeInput.value = timePresets.overnight.checkIn;
-        checkInTimeInput.disabled = true;
-        
-        // Set checkout to next day at 10 AM
-        const checkInDate = new Date(checkInDateInput.value + 'T00:00:00');
-        const nextDay = new Date(checkInDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-        
-        checkOutDateInput.value = nextDay.toISOString().split('T')[0];
-        checkOutDateInput.disabled = true;
-        
-        checkOutTimeInput.value = timePresets.overnight.checkOut;
-        checkOutTimeInput.disabled = true;
-        break;
-        
-      case 'dayUse':
-        // For day use: Same day only (9 AM to 6 PM)
-        checkInDateInput.value = todayFormatted;
-        checkInDateInput.max = todayFormatted; // Can only select today
-        
-        checkInTimeInput.value = timePresets.dayUse.checkIn;
-        checkInTimeInput.disabled = true;
-        
-        checkOutDateInput.value = todayFormatted;
-        checkOutDateInput.disabled = true; // Same day only
-        
-        checkOutTimeInput.value = timePresets.dayUse.checkOut;
-        checkOutTimeInput.disabled = true;
-        break;
-        
-      case 'daily':
-        // For daily: 9 PM to 9 PM, only choose dates
-        checkInTimeInput.value = timePresets.daily.checkIn;
-        checkInTimeInput.disabled = true;
-        
-        // Ensure checkout is at least the next day
-        const checkInDaily = new Date(checkInDateInput.value + 'T00:00:00');
-        const nextDayDaily = new Date(checkInDaily);
-        nextDayDaily.setDate(nextDayDaily.getDate() + 1);
-        
-        if (new Date(checkOutDateInput.value) < nextDayDaily) {
-          checkOutDateInput.value = nextDayDaily.toISOString().split('T')[0];
-        }
-        
-        checkOutTimeInput.value = timePresets.daily.checkOut;
-        checkOutTimeInput.disabled = true;
-        break;
-        
-      case 'weekly':
-        // For weekly: Fixed check-in/check-out times, exactly 7 days
-        checkInTimeInput.value = timePresets.weekly.checkIn;
-        checkInTimeInput.disabled = true;
-        
-        // Set checkout to exactly 7 days after check-in
-        const checkInWeekly = new Date(checkInDateInput.value + 'T00:00:00');
-        const weekLater = new Date(checkInWeekly);
-        weekLater.setDate(weekLater.getDate() + 7);
-        
-        const weekLaterFormatted = weekLater.toISOString().split('T')[0];
-        checkOutDateInput.value = weekLaterFormatted;
-        checkOutDateInput.disabled = true; // Lock the checkout date
-        
-        checkOutTimeInput.value = timePresets.weekly.checkOut;
-        checkOutTimeInput.disabled = true;
-        break;
-        
-      case 'monthly':
-        // For monthly: Fixed check-in/check-out times, exactly 28 days
-        checkInTimeInput.value = timePresets.monthly.checkIn;
-        checkInTimeInput.disabled = true;
-        
-        // Set checkout to exactly 28 days after check-in
-        const checkInMonthly = new Date(checkInDateInput.value + 'T00:00:00');
-        const monthLater = new Date(checkInMonthly);
-        monthLater.setDate(monthLater.getDate() + 28);
-        
-        const monthLaterFormatted = monthLater.toISOString().split('T')[0];
-        checkOutDateInput.value = monthLaterFormatted;
-        checkOutDateInput.disabled = true; // Lock the checkout date
-        
-        checkOutTimeInput.value = timePresets.monthly.checkOut;
-        checkOutTimeInput.disabled = true;
-        break;
-        
-      default:
-        // Default settings
-        checkInTimeInput.value = timePresets[selectedBookingType].checkIn;
-        checkOutTimeInput.value = timePresets[selectedBookingType].checkOut;
-    }
-    
-    // Update description
-    bookingTypeDescription.textContent = bookingTypeDescriptions[selectedBookingType];
-    
-    // Update summary
-    summaryBookingType.textContent = selectedBookingType.charAt(0).toUpperCase() + selectedBookingType.slice(1);
-    
-    // Update price text next to room prices
-    const pricePeriod = document.querySelectorAll('.price-period');
-    switch(selectedBookingType) {
-      case 'hourly':
-        pricePeriod.forEach(el => el.textContent = '/ hour');
-        break;
-      case 'overnight':
-        pricePeriod.forEach(el => el.textContent = '/ night');
-        break;
-      case 'dayUse':
-        pricePeriod.forEach(el => el.textContent = '/ day');
-        break;
-      case 'weekly':
-        pricePeriod.forEach(el => el.textContent = '/ week');
-        break;
-      case 'monthly':
-        pricePeriod.forEach(el => el.textContent = '/ month');
-        break;
-      default:
-        pricePeriod.forEach(el => el.textContent = '/ night');
-    }
-    
-    // Update prices for all room types
-    updateAllRoomPrices();
-  }
-  
-  // Handle booking type change
-  bookingTypeInputs.forEach(input => {
-    input.addEventListener('change', function() {
-      // Reset all selections and calculations to avoid carrying over data
-      // Reset room quantity selections
-      roomQuantitySelects.forEach(select => {
-        select.value = "0"; // Reset to 0
-      });
-      
-      // Clear selected rooms and totals
-      selectedRooms = [];
-      totalSubtotal = 0;
-      
-      // Reset summary
-      document.getElementById('selectedRoomsList').innerHTML = '';
-      document.getElementById('totalRoomsSelected').textContent = "0 Rooms";
-      document.getElementById('summaryCheckIn').textContent = '-';
-      document.getElementById('summaryCheckOut').textContent = '-';
-      document.getElementById('subtotal').textContent = '0.00';
-      document.getElementById('totalAmount').textContent = '0.00';
-      
-      // Show the no rooms selected alert
-      document.getElementById('noRoomsSelectedAlert').style.display = 'block';
-      document.getElementById('selectedRoomsList').style.display = 'none';
-      
-      // Disable the confirm button
-      confirmButton.disabled = true;
-      
-      // Now update booking type settings
-      updateBookingTypeSettings();
-      updateStayDuration();
-      updateAllRoomPrices();
-    });
-  });
-  
-  // Set minimum check-out date when check-in date is selected
-  checkInDateInput.addEventListener('change', function() {
-    if (this.value) {
+    // Update form based on booking type
+    function updateBookingTypeSettings() {
       const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
-      const checkInDate = new Date(this.value);
       
-      // Immediately trigger price update when date changes
-      setTimeout(() => {
-        updateStayDuration();
-        updateAllRoomPrices();
-      }, 100);
+      // Update time inputs based on booking type
+      checkInTimeInput.value = timePresets[selectedBookingType].checkIn;
+      checkOutTimeInput.value = timePresets[selectedBookingType].checkOut;
       
-      // Apply constraints based on booking type
+      // Update description
+      bookingTypeDescription.textContent = bookingTypeDescriptions[selectedBookingType];
+      
+      // Update summary
+      summaryBookingType.textContent = selectedBookingType.charAt(0).toUpperCase() + selectedBookingType.slice(1);
+      
+      // Update price text next to room prices
+      const pricePeriod = document.querySelectorAll('.price-period');
       switch(selectedBookingType) {
         case 'hourly':
-          // For hourly: Check-in date is fixed to today
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          checkInDate.setHours(0, 0, 0, 0);
-          
-          if (checkInDate.getTime() !== today.getTime()) {
-            const todayFormatted = today.toISOString().split('T')[0];
-            this.value = todayFormatted;
-          }
-          
-          // Reset checkout to same day
-          checkOutDateInput.value = this.value;
+          pricePeriod.forEach(el => el.textContent = '/ hour');
           break;
-          
         case 'overnight':
-          // For overnight: Update check-out date to the next day
-          const nextDayOvernight = new Date(checkInDate);
-          nextDayOvernight.setDate(nextDayOvernight.getDate() + 1);
-          const nextDayOvernightFormatted = nextDayOvernight.toISOString().split('T')[0];
-          
-          checkOutDateInput.value = nextDayOvernightFormatted;
+          pricePeriod.forEach(el => el.textContent = '/ night');
           break;
-          
         case 'dayUse':
-          // For day use: Check-in and check-out must be the same day (today)
-          const todayDayUse = new Date();
-          todayDayUse.setHours(0, 0, 0, 0);
-          checkInDate.setHours(0, 0, 0, 0);
-          
-          if (checkInDate.getTime() !== todayDayUse.getTime()) {
-            const todayFormatted = todayDayUse.toISOString().split('T')[0];
-            this.value = todayFormatted;
-          }
-          
-          checkOutDateInput.value = this.value; // Same day
+          pricePeriod.forEach(el => el.textContent = '/ day');
           break;
-          
-        case 'daily':
-          // For daily: Ensure check-out is at least the next day
-          const nextDayDaily = new Date(checkInDate);
-          nextDayDaily.setDate(nextDayDaily.getDate() + 1);
-          const nextDayDailyFormatted = nextDayDaily.toISOString().split('T')[0];
-          
-          checkOutDateInput.min = nextDayDailyFormatted;
-          
-          // If check-out is before or same as new check-in, update it
-          if (checkOutDateInput.value && new Date(checkOutDateInput.value) <= checkInDate) {
-            checkOutDateInput.value = nextDayDailyFormatted;
-          }
-          break;
-          
         case 'weekly':
-          // For weekly: Set checkout to exactly 7 days later
-          const weekLater = new Date(checkInDate);
-          weekLater.setDate(weekLater.getDate() + 7);
-          const weekLaterFormatted = weekLater.toISOString().split('T')[0];
-          
-          // Set to exactly 7 days
-          checkOutDateInput.value = weekLaterFormatted;
+          pricePeriod.forEach(el => el.textContent = '/ week');
           break;
-          
         case 'monthly':
-          // For monthly: Set checkout to exactly 28 days later
-          const monthLater = new Date(checkInDate);
-          monthLater.setDate(monthLater.getDate() + 28);
-          const monthLaterFormatted = monthLater.toISOString().split('T')[0];
-          
-          // Set to exactly 28 days
-          checkOutDateInput.value = monthLaterFormatted;
+          pricePeriod.forEach(el => el.textContent = '/ month');
           break;
-      }
-    }
-  });
-  
-  // Handle hourly booking time changes
-  checkInTimeInput.addEventListener('change', function() {
-    const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
-    
-    if (selectedBookingType === 'hourly') {
-      // Ensure check-out time is after check-in time
-      if (checkOutTimeInput.value <= this.value) {
-        // Set check-out time to be at least 1 hour later
-        const checkInHour = parseInt(this.value.split(':')[0]);
-        const checkOutHour = Math.min(checkInHour + 1, 22); // Don't go beyond 10 PM
-        checkOutTimeInput.value = `${String(checkOutHour).padStart(2, '0')}:00`;
+        default:
+          pricePeriod.forEach(el => el.textContent = '/ night');
       }
       
-      // Update minimum check-out time
-      checkOutTimeInput.min = this.value;
+      // Update prices for all room types
+      updateAllRoomPrices();
     }
     
-    updateStayDuration();
-    updateAllRoomPrices();
-  });
-  
-  // Handle checkout time changes
-  checkOutTimeInput.addEventListener('change', function() {
-    updateStayDuration();
-    updateAllRoomPrices();
-  });
-  
-  // Handle checkout date changes
-  checkOutDateInput.addEventListener('change', function() {
-    updateStayDuration();
-    updateAllRoomPrices();
-  });
-  
-  // Calculate and update stay duration display
-  function updateStayDuration() {
-    const checkInDateTime = new Date(`${checkInDateInput.value}T${checkInTimeInput.value}`);
-    const checkOutDateTime = new Date(`${checkOutDateInput.value}T${checkOutTimeInput.value}`);
-    
-    // Get time difference in milliseconds
-    const timeDiff = checkOutDateTime - checkInDateTime;
-    
-    if (timeDiff <= 0) {
-      stayDuration.textContent = 'Invalid dates';
-      return;
-    }
-    
-    const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
-    
-    // Display duration based on booking type
-    switch(selectedBookingType) {
-      case 'hourly':
-        const hours = Math.ceil(timeDiff / (1000 * 60 * 60));
-        stayDuration.textContent = `${hours} hour${hours !== 1 ? 's' : ''}`;
-        break;
-      case 'overnight':
-        stayDuration.textContent = '1 night';
-        break;
-      case 'dayUse':
-        stayDuration.textContent = '1 day';
-        break;
-      case 'weekly':
-        // Always exactly 1 week for weekly bookings
-        stayDuration.textContent = '1 week';
-        break;
-      case 'monthly':
-        // Always exactly 1 month for monthly bookings
-        stayDuration.textContent = '1 month';
-        break;
-      case 'daily':
-      default:
-        const days = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-        stayDuration.textContent = `${days} night${days !== 1 ? 's' : ''}`;
-    }
-    
-    // Format dates for summary
-    const formattedCheckIn = formatDateTimeForSummary(checkInDateTime);
-    const formattedCheckOut = formatDateTimeForSummary(checkOutDateTime);
-    
-    document.getElementById('summaryCheckIn').textContent = formattedCheckIn;
-    document.getElementById('summaryCheckOut').textContent = formattedCheckOut;
-  }
-  
-  // Calculate prices for a specific room type
-  async function calculateRoomPrice(roomTypeId, quantity) {
-    const bookingType = document.querySelector('input[name="bookingType"]:checked').value;
-    const checkInDate = checkInDateInput.value;
-    const checkInTime = checkInTimeInput.value;
-    const checkOutDate = checkOutDateInput.value;
-    const checkOutTime = checkOutTimeInput.value;
-    
-    try {
-      // Make API call to backend to calculate price
-      const response = await fetch('/bookings/calculate-price', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          roomTypeId,
-          quantity,
-          bookingType,
-          checkInDate,
-          checkInTime,
-          checkOutDate,
-          checkOutTime
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (data.error) {
-        console.error('Error calculating price:', data.error);
-        return 0;
-      }
-      
-      // IMPORTANT: Always update room base price display regardless of quantity
-      // This ensures we show the per-unit price, not the total price
-      document.getElementById(`price_${roomTypeId}`).textContent = data.pricePerRoom.toFixed(2);
-      
-      // Return the total price for the selected quantity and duration
-      return data.totalPrice;
-    } catch (error) {
-      console.error('Error calculating price:', error);
-      return 0;
-    }
-  }
-  
-  // Update all room prices based on current booking parameters
-  async function updateAllRoomPrices() {
-    // Reset selected rooms
-    selectedRooms = [];
-    totalSubtotal = 0;
-    
-    // Show loading indicator
-    const roomPriceElements = document.querySelectorAll('.room-price');
-    roomPriceElements.forEach(el => {
-      el.innerHTML = '<small><i class="fas fa-sync fa-spin"></i> Calculating...</small>';
+    // Handle booking type change
+    bookingTypeInputs.forEach(input => {
+      input.addEventListener('change', updateBookingTypeSettings);
     });
     
-    // Also update price periods based on current booking type
-    const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
-    const pricePeriod = document.querySelectorAll('.price-period');
-    const priceNotes = document.querySelectorAll('.room-price-note');
-    switch(selectedBookingType) {
-      case 'hourly':
-        pricePeriod.forEach(el => el.textContent = '/ hour');
-        priceNotes.forEach(el => el.textContent = '(per hour stay)');
-        break;
-      case 'overnight':
-        pricePeriod.forEach(el => el.textContent = '/ night');
-        priceNotes.forEach(el => el.textContent = '(per overnight stay)');
-        break;
-      case 'dayUse':
-        pricePeriod.forEach(el => el.textContent = '/ day');
-        priceNotes.forEach(el => el.textContent = '(per day use)');
-        break;
-      case 'weekly':
-        pricePeriod.forEach(el => el.textContent = '/ week');
-        priceNotes.forEach(el => el.textContent = '(for full 7-day week)');
-        break;
-      case 'monthly':
-        pricePeriod.forEach(el => el.textContent = '/ month');
-        priceNotes.forEach(el => el.textContent = '(for full 28-day month)');
-        break;
-      default:
-        pricePeriod.forEach(el => el.textContent = '/ night');
-        priceNotes.forEach(el => el.textContent = '(per night stay)');
-    }
-    
-    // First do a single request for calculating base prices
-    // This will update all room price displays with the correct per-unit price
-    try {
-      // Create a dummy request to calculate base prices
-      const response = await fetch('/bookings/calculate-base-prices', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          bookingType: selectedBookingType,
-          checkInDate: checkInDateInput.value,
-          checkInTime: checkInTimeInput.value,
-          checkOutDate: checkOutDateInput.value,
-          checkOutTime: checkOutTimeInput.value
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (!data.error && data.roomPrices) {
-        // Update all room price displays with base prices
-        Object.keys(data.roomPrices).forEach(roomTypeId => {
-          const price = data.roomPrices[roomTypeId];
-          const priceElement = document.getElementById(`price_${roomTypeId}`);
-          if (priceElement) {
-            priceElement.textContent = price.toFixed(2);
-          }
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching base prices:', error);
-    }
-    
-    // Then process each room quantity selection to calculate totals
-    const promises = [];
-    
-    roomQuantitySelects.forEach(select => {
-      const roomTypeId = select.id.replace('roomQuantity_', '');
-      const quantity = parseInt(select.value, 10);
-      
-      if (quantity > 0) {
-        // Get room type name
-        const roomCard = document.querySelector(`.room-type-card[data-room-type-id="${roomTypeId}"]`);
-        const roomTypeName = roomCard.querySelector('h6').textContent;
-        const basePrice = parseFloat(document.getElementById(`price_${roomTypeId}`).textContent);
-        
-        // Calculate price for this room type based on quantity
-        const pricePromise = calculateRoomPrice(roomTypeId, quantity).then(totalPrice => {
-          // Add to selected rooms with both base price and total price
-          selectedRooms.push({
-            roomTypeId,
-            roomTypeName,
-            quantity,
-            basePrice: basePrice || 0, // Store the per-unit price, default to 0 if NaN
-            totalPrice
-          });
-          
-          totalSubtotal += totalPrice;
-        });
-        
-        promises.push(pricePromise);
-      }
-    });
-    
-    // Wait for all price calculations to complete
-    await Promise.all(promises);
-    
-    // Update booking summary
-    updateBookingSummary();
-  }
-  
-  // Update the booking summary display
-  function updateBookingSummary() {
-    // Update total rooms badge
-    let totalRoomsCount = 0;
-    selectedRooms.forEach(room => {
-      totalRoomsCount += room.quantity;
-    });
-    document.getElementById('totalRoomsSelected').textContent = `${totalRoomsCount} Room${totalRoomsCount !== 1 ? 's' : ''}`;
-    
-    // Toggle selected rooms list visibility
-    if (selectedRooms.length > 0) {
-      noRoomsSelectedAlert.style.display = 'none';
-      selectedRoomsList.style.display = 'block';
-      
-      // Clear existing list
-      selectedRoomsList.innerHTML = '';
-      
-      // Add each selected room to the list
-      selectedRooms.forEach(room => {
-        const roomItem = document.createElement('div');
-        roomItem.className = 'row g-2 mb-2 align-items-center';
-
-        // Get stay duration text for clarity
-        const stayDurationText = getStayDurationText();
-        
-        roomItem.innerHTML = `
-          <div class="col-7 col-md-8">
-            <div class="fw-medium">${room.roomTypeName} x ${room.quantity}</div>
-            <div class="small text-muted">${getFormattedPricePerNight(room)} x ${stayDurationText}</div>
-          </div>
-          <div class="col-5 col-md-4 text-end fw-medium">$${room.totalPrice.toFixed(2)}</div>
-        `;
-        selectedRoomsList.appendChild(roomItem);
-      });
-      
-      // Format dates for summary
+    // Calculate and update stay duration display
+    function updateStayDuration() {
       const checkInDateTime = new Date(`${checkInDateInput.value}T${checkInTimeInput.value}`);
       const checkOutDateTime = new Date(`${checkOutDateInput.value}T${checkOutTimeInput.value}`);
       
-      const formattedCheckIn = formatDateTimeForSummary(checkInDateTime);
-      const formattedCheckOut = formatDateTimeForSummary(checkOutDateTime);
+      // Get time difference in milliseconds
+      const timeDiff = checkOutDateTime - checkInDateTime;
       
-      document.getElementById('summaryCheckIn').textContent = formattedCheckIn;
-      document.getElementById('summaryCheckOut').textContent = formattedCheckOut;
+      if (timeDiff <= 0) {
+        stayDuration.textContent = 'Invalid dates';
+        return;
+      }
       
-      // Update summary calculations (removed taxes)
-      subtotalElement.textContent = totalSubtotal.toFixed(2);
-      totalAmountElement.textContent = totalSubtotal.toFixed(2); // Total is now the same as subtotal
+      const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
       
-      // Enable booking button if terms are agreed
-      confirmButton.disabled = !termsCheckbox.checked;
-    } else {
-      noRoomsSelectedAlert.style.display = 'block';
-      selectedRoomsList.style.display = 'none';
+      // Display duration based on booking type
+      switch(selectedBookingType) {
+        case 'hourly':
+          const hours = Math.ceil(timeDiff / (1000 * 60 * 60));
+          stayDuration.textContent = `${hours} hour${hours !== 1 ? 's' : ''}`;
+          break;
+        case 'overnight':
+          stayDuration.textContent = '1 night';
+          break;
+        case 'dayUse':
+          stayDuration.textContent = '1 day';
+          break;
+        case 'weekly':
+          const weeks = Math.ceil(timeDiff / (1000 * 60 * 60 * 24 * 7));
+          stayDuration.textContent = `${weeks} week${weeks !== 1 ? 's' : ''}`;
+          break;
+        case 'monthly':
+          const months = Math.ceil(timeDiff / (1000 * 60 * 60 * 24 * 30));
+          stayDuration.textContent = `${months} month${months !== 1 ? 's' : ''}`;
+          break;
+        case 'daily':
+        default:
+          const days = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+          stayDuration.textContent = `${days} night${days !== 1 ? 's' : ''}`;
+      }
       
-      // Reset summary values
-      document.getElementById('summaryCheckIn').textContent = '-';
-      document.getElementById('summaryCheckOut').textContent = '-';
-      subtotalElement.textContent = '0.00';
-      totalAmountElement.textContent = '0.00';
+      // Update room prices when dates change
+      updateAllRoomPrices();
+    }
+    
+    // Calculate prices for a specific room type
+    async function calculateRoomPrice(roomTypeId, quantity) {
+      if (quantity <= 0) return 0;
       
-      // Disable booking button
-      confirmButton.disabled = true;
-    }
-  }
-  
-  // Format date and time for summary display
-  function formatDateTimeForSummary(dateTime) {
-    const options = { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric',
-      hour: 'numeric', 
-      minute: 'numeric' 
-    };
-    return dateTime.toLocaleDateString('en-US', options);
-  }
-  
-  // Get formatted price per night text
-  function getFormattedPricePerNight(room) {
-    const selectedBookingType = document.querySelector('input[name="bookingType"]:checked').value;
-    
-    // Ensure basePrice is a valid number, use fallback if not
-    let pricePerUnit = 0;
-    if (typeof room.basePrice === 'number' && !isNaN(room.basePrice)) {
-      pricePerUnit = room.basePrice;
-    } else {
-      // If basePrice is NaN, try to parse the totalPrice divided by quantity as fallback
-      pricePerUnit = room.totalPrice / room.quantity || 0;
-    }
-    
-    let unitText = '';
-    switch(selectedBookingType) {
-      case 'hourly':
-        unitText = 'per hour';
-        break;
-      case 'overnight':
-        unitText = 'per night';
-        break;
-      case 'dayUse':
-        unitText = 'per day';
-        break;
-      case 'weekly':
-        unitText = 'per week';
-        break;
-      case 'monthly':
-        unitText = 'per month';
-        break;
-      default:
-        unitText = 'per night';
+      const bookingType = document.querySelector('input[name="bookingType"]:checked').value;
+      const checkInDate = checkInDateInput.value;
+      const checkInTime = checkInTimeInput.value;
+      const checkOutDate = checkOutDateInput.value;
+      const checkOutTime = checkOutTimeInput.value;
+      
+      try {
+        // Make API call to backend to calculate price
+        const response = await fetch('/bookings/calculate-price', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            roomTypeId,
+            quantity,
+            bookingType,
+            checkInDate,
+            checkInTime,
+            checkOutDate,
+            checkOutTime
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+          console.error('Error calculating price:', data.error);
+          return 0;
+        }
+        
+        // Update room price display if quantity > 0
+        if (quantity > 0) {
+          document.getElementById(`price_${roomTypeId}`).textContent = data.pricePerRoom.toFixed(2);
+        }
+        
+        return data.totalPrice;
+      } catch (error) {
+        console.error('Error calculating price:', error);
+        return 0;
+      }
     }
     
-    return `$${pricePerUnit.toFixed(2)} ${unitText}`;
-  }
-  
-  // Handle room quantity changes
-  roomQuantitySelects.forEach(select => {
-    select.addEventListener('change', updateAllRoomPrices);
-  });
-  
-  // Handle terms checkbox
-  termsCheckbox.addEventListener('change', function() {
-    // Only enable button if rooms are selected
-    if (selectedRooms.length > 0) {
-      confirmButton.disabled = !this.checked;
+    // Update all room prices based on current booking parameters
+    async function updateAllRoomPrices() {
+      // Reset selected rooms
+      selectedRooms = [];
+      totalSubtotal = 0;
+      
+      // Process each room quantity selection
+      const promises = [];
+      
+      roomQuantitySelects.forEach(select => {
+        const roomTypeId = select.id.replace('roomQuantity_', '');
+        const quantity = parseInt(select.value, 10);
+        
+        if (quantity > 0) {
+          // Get room type name
+          const roomCard = document.querySelector(`.room-type-card[data-room-type-id="${roomTypeId}"]`);
+          const roomTypeName = roomCard.querySelector('h6').textContent;
+          
+          // Calculate price for this room type
+          const pricePromise = calculateRoomPrice(roomTypeId, quantity).then(totalPrice => {
+            // Add to selected rooms
+            selectedRooms.push({
+              roomTypeId,
+              roomTypeName,
+              quantity,
+              totalPrice
+            });
+            
+            totalSubtotal += totalPrice;
+          });
+          
+          promises.push(pricePromise);
+        }
+      });
+      
+      // Wait for all price calculations to complete
+      await Promise.all(promises);
+      
+      // Update booking summary
+      updateBookingSummary();
     }
-  });
-  
-  // Validate form before submission
-  bookingForm.addEventListener('submit', function(event) {
-    if (selectedRooms.length === 0) {
-      event.preventDefault();
-      alert('Please select at least one room to continue.');
-      return false;
+    
+    // Update the booking summary display
+    function updateBookingSummary() {
+      // Toggle selected rooms list visibility
+      if (selectedRooms.length > 0) {
+        noRoomsSelectedAlert.style.display = 'none';
+        selectedRoomsList.style.display = 'block';
+        
+        // Clear existing list
+        selectedRoomsList.innerHTML = '';
+        
+        // Add each selected room to the list
+        selectedRooms.forEach(room => {
+          const roomItem = document.createElement('div');
+          roomItem.className = 'row mb-2';
+          roomItem.innerHTML = `
+            <div class="col-7">${room.roomTypeName} x ${room.quantity}</div>
+            <div class="col-5 text-end">$${room.totalPrice.toFixed(2)}</div>
+          `;
+          selectedRoomsList.appendChild(roomItem);
+        });
+        
+        // Update summary calculations
+        const taxRate = 0.12; // 12%
+        const taxes = totalSubtotal * taxRate;
+        const total = totalSubtotal + taxes;
+        
+        subtotalElement.textContent = totalSubtotal.toFixed(2);
+        taxesAndFeesElement.textContent = taxes.toFixed(2);
+        totalAmountElement.textContent = total.toFixed(2);
+        
+        // Add hidden field for form submission
+        let roomSelectionsInput = bookingForm.querySelector('input[name="roomSelections"]');
+        if (roomSelectionsInput) {
+          roomSelectionsInput.remove();
+        }
+        
+        roomSelectionsInput = document.createElement('input');
+        roomSelectionsInput.type = 'hidden';
+        roomSelectionsInput.name = 'roomSelections';
+        roomSelectionsInput.value = JSON.stringify(selectedRooms.map(room => ({
+          roomTypeId: room.roomTypeId,
+          quantity: room.quantity
+        })));
+        
+        bookingForm.appendChild(roomSelectionsInput);
+        
+        // Enable booking button if terms are agreed
+        confirmButton.disabled = !termsCheckbox.checked;
+      } else {
+        noRoomsSelectedAlert.style.display = 'block';
+        selectedRoomsList.style.display = 'none';
+        
+        // Reset summary values
+        subtotalElement.textContent = '0.00';
+        taxesAndFeesElement.textContent = '0.00';
+        totalAmountElement.textContent = '0.00';
+        
+        // Disable booking button
+        confirmButton.disabled = true;
+      }
     }
     
-    const checkInDateTime = new Date(`${checkInDateInput.value}T${checkInTimeInput.value}`);
-    const checkOutDateTime = new Date(`${checkOutDateInput.value}T${checkOutTimeInput.value}`);
-    
-    if (checkOutDateTime <= checkInDateTime) {
-      event.preventDefault();
-      alert('Check-out date/time must be after check-in date/time.');
-      return false;
-    }
-    
-    return true;
-  });
-  
-  // Add event listener for refresh prices button
-  document.getElementById('refreshPrices').addEventListener('click', function() {
-    // Show loading indicator
-    this.innerHTML = '<i class="fas fa-sync-alt fa-spin me-1"></i> Refreshing...';
-    this.disabled = true;
-    
-    // Clear and recalculate all prices
-    updateAllRoomPrices().then(() => {
-      // Reset button after prices are refreshed
-      this.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Refresh Prices';
-      this.disabled = false;
+    // Set minimum check-out date when check-in date is selected
+    checkInDateInput.addEventListener('change', function() {
+      if (this.value) {
+        const nextDay = new Date(this.value);
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        const nextDayFormatted = nextDay.toISOString().split('T')[0];
+        checkOutDateInput.min = nextDayFormatted;
+        
+        // If check-out is before or same as new check-in, update it
+        if (checkOutDateInput.value && new Date(checkOutDateInput.value) <= new Date(this.value)) {
+          checkOutDateInput.value = nextDayFormatted;
+        }
+        
+        updateStayDuration();
+      }
     });
-  });
-  
-  // Fix for modal backdrop issue
-  document.addEventListener('click', function(event) {
-    if (event.target.classList.contains('modal-backdrop') || 
-        event.target.closest('[data-bs-dismiss="modal"]')) {
-      // Remove modal-backdrop and modal-open classes if they exist
-      document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-      document.body.classList.remove('modal-open');
-      document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
-    }
-  });
-  
-  // Additional fix for modal backdrop - ensure proper cleanup when modal is closed
-  const termsModal = document.getElementById('termsModal');
-  if (termsModal) {
-    termsModal.addEventListener('hidden.bs.modal', function () {
-      // Ensure modal backdrop is removed
-      document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-      document.body.classList.remove('modal-open');
-      document.body.style.overflow = '';
-      document.body.style.paddingRight = '';
+    
+    // Update date/time related calculations
+    checkInTimeInput.addEventListener('change', updateStayDuration);
+    checkOutDateInput.addEventListener('change', updateStayDuration);
+    checkOutTimeInput.addEventListener('change', updateStayDuration);
+    
+    // Handle room quantity changes
+    roomQuantitySelects.forEach(select => {
+      select.addEventListener('change', updateAllRoomPrices);
     });
-  }
-  
-  // Initialize form based on current booking type
-  updateBookingTypeSettings();
-  updateStayDuration();
-});
+    
+    // Handle terms checkbox
+    termsCheckbox.addEventListener('change', function() {
+      // Only enable button if rooms are selected
+      if (selectedRooms.length > 0) {
+        confirmButton.disabled = !this.checked;
+      }
+    });
+    
+    // Validate form before submission
+    bookingForm.addEventListener('submit', function(event) {
+      if (selectedRooms.length === 0) {
+        event.preventDefault();
+        alert('Please select at least one room to continue.');
+        return;
+      }
+      
+      const checkInDateTime = new Date(`${checkInDateInput.value}T${checkInTimeInput.value}`);
+      const checkOutDateTime = new Date(`${checkOutDateInput.value}T${checkOutTimeInput.value}`);
+      
+      if (checkOutDateTime <= checkInDateTime) {
+        event.preventDefault();
+        alert('Check-out date/time must be after check-in date/time.');
+        return;
+      }
+      
+      // Add roomSelections field if it doesn't exist
+      if (!bookingForm.querySelector('input[name="roomSelections"]')) {
+        const roomSelectionsInput = document.createElement('input');
+        roomSelectionsInput.type = 'hidden';
+        roomSelectionsInput.name = 'roomSelections';
+        roomSelectionsInput.value = JSON.stringify(selectedRooms.map(room => ({
+          roomTypeId: room.roomTypeId,
+          quantity: room.quantity
+        })));
+        
+        bookingForm.appendChild(roomSelectionsInput);
+      }
+    });
+    
+    // Fix modal backdrop issue
+    const modal = document.getElementById('termsModal');
+    if (modal) {
+      modal.addEventListener('hidden.bs.modal', function() {
+        document.body.classList.remove('modal-open');
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
+      });
+    }
+    
+    // Initialize form based on current booking type
+    updateBookingTypeSettings();
+    updateStayDuration();
+  });
 </script>
 
 <%- include('../partials/footer') %>

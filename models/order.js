@@ -13,31 +13,31 @@ class Order {
    */
   static async create(orderData) {
     const orderId = `order_${uuidv4()}`;
-    
+
     // Verify user exists
     const user = await User.getByUid(orderData.userId);
     if (!user) {
       throw new Error('User not found');
     }
-    
+
     // Verify items exist and calculate total price
     let totalPrice = 0;
     const itemsList = [];
-    
+
     for (const item of orderData.items) {
       const orderItem = await OrderItem.getById(item.itemId);
-      
+
       if (!orderItem) {
         throw new Error(`Order item ${item.itemId} not found`);
       }
-      
+
       if (!orderItem.isAvailable) {
         throw new Error(`Order item ${orderItem.name} is not available`);
       }
-      
+
       const itemTotal = orderItem.price * item.quantity;
       totalPrice += itemTotal;
-      
+
       itemsList.push({
         itemId: item.itemId,
         name: orderItem.name,
@@ -46,7 +46,7 @@ class Order {
         total: itemTotal
       });
     }
-    
+
     const newOrder = {
       orderId,
       userId: user.id,
@@ -63,7 +63,7 @@ class Order {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    
+
     await ordersCollection.doc(orderId).set(newOrder);
     return { id: orderId, ...newOrder };
   }
@@ -75,18 +75,18 @@ class Order {
    */
   static async getById(orderId) {
     const orderDoc = await ordersCollection.doc(orderId).get();
-    
+
     if (!orderDoc.exists) {
       return null;
     }
-    
+
     const orderData = orderDoc.data();
-    
+
     // Get user info
     const user = await User.getByUid(orderData.userId);
-    
-    return { 
-      id: orderDoc.id, 
+
+    return {
+      id: orderDoc.id,
       ...orderData,
       user
     };
@@ -99,49 +99,49 @@ class Order {
    */
   static async getAll(filters = {}) {
     let query = ordersCollection;
-    
+
     // Apply filters
     if (filters.userId) {
       query = query.where('userId', '==', filters.userId);
     }
-    
+
     if (filters.status) {
       query = query.where('status', '==', filters.status);
     }
-    
+
     if (filters.paymentStatus) {
       query = query.where('paymentStatus', '==', filters.paymentStatus);
     }
-    
+
     if (filters.staffId) {
       query = query.where('staffId', '==', filters.staffId);
     }
-    
+
     // Date range filters
     if (filters.fromDate) {
       const fromDate = new Date(filters.fromDate);
       query = query.where('createdAt', '>=', fromDate);
     }
-    
+
     // Order by creation date by default
     query = query.orderBy('createdAt', filters.order === 'asc' ? 'asc' : 'desc');
-    
+
     const snapshot = await query.get();
-    
+
     const orders = [];
     for (const doc of snapshot.docs) {
       const orderData = doc.data();
-      
+
       // Get user info for each order
       const user = await User.getByUid(orderData.userId);
-      
+
       orders.push({
         id: doc.id,
         ...orderData,
         user
       });
     }
-    
+
     return orders;
   }
 
@@ -156,7 +156,7 @@ class Order {
       ...orderData,
       updatedAt: new Date()
     };
-    
+
     await ordersCollection.doc(orderId).update(updateData);
     return this.getById(orderId);
   }
@@ -173,11 +173,11 @@ class Order {
       status,
       updatedAt: new Date()
     };
-    
+
     if (staffId && status === 'delivering') {
       updateData.staffId = staffId;
     }
-    
+
     await ordersCollection.doc(orderId).update(updateData);
     return this.getById(orderId);
   }
@@ -189,6 +189,28 @@ class Order {
    */
   static async delete(orderId) {
     await ordersCollection.doc(orderId).delete();
+  }
+
+
+  /**
+ * Update order payment status
+ * @param {string} orderId - Order ID
+ * @param {string} paymentStatus - New payment status ('pending', 'paid', 'refunded')
+ * @returns {Promise<Object>} - Updated order
+ */
+  static async updatePaymentStatus(orderId, paymentStatus) {
+    // Validate the payment status
+    if (!['pending', 'paid', 'refunded'].includes(paymentStatus)) {
+      throw new Error('Invalid payment status');
+    }
+
+    const updateData = {
+      paymentStatus,
+      updatedAt: new Date()
+    };
+
+    await ordersCollection.doc(orderId).update(updateData);
+    return this.getById(orderId);
   }
 }
 

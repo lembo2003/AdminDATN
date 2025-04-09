@@ -668,14 +668,56 @@ exports.updateBookingPaymentStatus = async (req, res) => {
  * Order Management
  */
 
-// Render orders list
+
+/**
+ * Render orders list
+ */
 exports.getOrders = async (req, res) => {
   try {
-    const orders = await Order.getAll();
+    // Process filter parameters from the query string
+    const filters = {};
+
+    // Status filter
+    if (req.query.status && req.query.status !== '') {
+      filters.status = req.query.status;
+    }
+
+    // Payment status filter
+    if (req.query.paymentStatus && req.query.paymentStatus !== '') {
+      filters.paymentStatus = req.query.paymentStatus;
+    }
+
+    // Date range filter
+    if (req.query.dateRange && req.query.dateRange !== '') {
+      filters.dateRange = req.query.dateRange;
+
+      const now = new Date();
+      if (req.query.dateRange === 'today') {
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        filters.fromDate = today;
+      }
+      else if (req.query.dateRange === 'yesterday') {
+        const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        filters.fromDate = yesterday;
+      }
+      else if (req.query.dateRange === 'week') {
+        const lastWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+        filters.fromDate = lastWeek;
+      }
+      else if (req.query.dateRange === 'month') {
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        filters.fromDate = lastMonth;
+      }
+    }
+
+    // Get orders based on filters
+    const orders = await Order.getAll(filters);
+
     res.render('admin/orders/index', {
       title: 'Order Management',
       user: req.session.user,
       orders,
+      filters: req.query, // Pass the query parameters to the view
       path: '/admin/orders'
     });
   } catch (error) {
@@ -722,6 +764,33 @@ exports.updateOrderStatus = async (req, res) => {
   } catch (error) {
     console.error('Update order status error:', error);
     req.flash('error_msg', 'Error updating order status');
+    res.redirect(`/admin/orders/details/${req.params.orderId}`);
+  }
+};
+
+
+/**
+ * Update order payment status
+ */
+exports.updateOrderPaymentStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { paymentStatus } = req.body;
+
+    // Validate the payment status
+    if (!['pending', 'paid', 'refunded'].includes(paymentStatus)) {
+      req.flash('error_msg', 'Invalid payment status');
+      return res.redirect(`/admin/orders/details/${orderId}`);
+    }
+
+    // Update the payment status
+    await Order.updatePaymentStatus(orderId, paymentStatus);
+
+    req.flash('success_msg', `Payment status updated to ${paymentStatus}`);
+    res.redirect(`/admin/orders/details/${orderId}`);
+  } catch (error) {
+    console.error('Update order payment status error:', error);
+    req.flash('error_msg', 'Error updating payment status');
     res.redirect(`/admin/orders/details/${req.params.orderId}`);
   }
 };

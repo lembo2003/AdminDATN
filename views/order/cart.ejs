@@ -1,0 +1,344 @@
+<%- include('../partials/header') %>
+
+<div class="container py-5">
+  <!-- Page Header -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h1 class="fw-bold">Your Cart</h1>
+      <p class="lead text-muted">Review your items before checkout</p>
+    </div>
+    <div class="col-md-4 d-flex align-items-center justify-content-md-end">
+      <a href="/orders/menu" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-1"></i> Back to Menu
+      </a>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  <% if(success_msg != ''){ %>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <%= success_msg %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+  
+  <% if(error_msg != ''){ %>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <%= error_msg %>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <% } %>
+
+  <!-- Active Booking Alert - Only show in cart -->
+<% if (activeBooking) { %>
+    <div class="alert alert-info mb-4">
+      <div class="d-flex align-items-center">
+        <i class="fas fa-info-circle fa-2x me-3"></i>
+        <div>
+          <% if (activeBooking.rooms && activeBooking.rooms.length > 0) { %>
+            <p class="mb-1">Your order will be delivered to 
+              <strong>
+                <% if (activeBooking.rooms[0].roomName) { %>
+                  <%= activeBooking.rooms[0].roomName %>
+                <% } else if (activeBooking.rooms[0].roomTypeName) { %>
+                  <%= activeBooking.rooms[0].roomTypeName %>
+                <% } else { %>
+                  your room
+                <% } %>
+              </strong>
+            </p>
+            <% if (activeBooking.rooms.length > 1) { %>
+              <p class="small text-muted mb-2">You have <%= activeBooking.rooms.length %> rooms in your booking.</p>
+            <% } %>
+          <% } else { %>
+            <p class="mb-1">Your order will be delivered to your room</p>
+          <% } %>
+          <p class="mb-0">Room service will be added to your room bill unless you choose to pay with another method.</p>
+        </div>
+      </div>
+    </div>
+  <% } else if (user) { %>
+    <div class="alert alert-warning mb-4">
+      <div class="d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+        <div>
+          <p class="mb-1"><strong>You are not currently checked in to any room.</strong></p>
+          <p class="mb-0">You must be checked in to a room to place an order.</p>
+        </div>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="alert alert-warning mb-4">
+      <div class="d-flex align-items-center">
+        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+        <div>
+          <p class="mb-1"><strong>You need to log in to complete your order.</strong></p>
+          <p class="mb-0">Please <a href="/auth/login?redirect=/orders/cart" class="alert-link">log in</a> or <a href="/auth/signup?redirect=/orders/cart" class="alert-link">sign up</a> first.</p>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Cart Items -->
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+          <h5 class="mb-0">Order Items (<%= cartItems ? cartItems.length : 0 %>)</h5>
+        </div>
+        <div class="card-body">
+          <% if (!cartItems || cartItems.length === 0) { %>
+            <div class="text-center py-5">
+              <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+              <h5>Your cart is empty</h5>
+              <p class="text-muted">Add some delicious items from our menu!</p>
+              <a href="/orders/menu" class="btn btn-primary mt-2">
+                Browse Menu
+              </a>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th scope="col" width="60%">Item</th>
+                    <th scope="col" class="text-center">Quantity</th>
+                    <th scope="col" class="text-end">Price</th>
+                    <th scope="col" class="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% cartItems.forEach(item => { %>
+                    <tr>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <% if (item.imageUrl) { %>
+                            <img src="<%= item.imageUrl %>" class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;" alt="<%= item.name %>">
+                          <% } else { %>
+                            <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                              <i class="fas fa-utensils text-muted"></i>
+                            </div>
+                          <% } %>
+                          <div>
+                            <h6 class="mb-0"><%= item.name %></h6>
+                            <small class="text-muted"><%= item.category || 'General' %></small>
+                            <% if (item.isVegetarian || item.isVegan || item.isGlutenFree) { %>
+                              <div class="mt-1">
+                                <% if (item.isVegetarian) { %>
+                                  <span class="badge bg-success me-1">Vegetarian</span>
+                                <% } %>
+                                <% if (item.isVegan) { %>
+                                  <span class="badge bg-success me-1">Vegan</span>
+                                <% } %>
+                                <% if (item.isGlutenFree) { %>
+                                  <span class="badge bg-secondary me-1">Gluten-Free</span>
+                                <% } %>
+                              </div>
+                            <% } %>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <form action="/orders/cart/update/<%= item.id %>" method="POST" class="d-inline quantity-form">
+                          <div class="input-group input-group-sm" style="width: 100px;">
+                            <button class="btn btn-outline-secondary quantity-btn" type="button" data-action="decrease">
+                              <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" class="form-control text-center quantity-input" name="quantity" value="<%= item.quantity %>" min="1" max="10">
+                            <button class="btn btn-outline-secondary quantity-btn" type="button" data-action="increase">
+                              <i class="fas fa-plus"></i>
+                            </button>
+                          </div>
+                          <button type="submit" class="d-none update-btn">Update</button>
+                        </form>
+                      </td>
+                      <td class="text-end">$<%= (item.price * item.quantity).toFixed(2) %></td>
+                      <td class="text-center">
+                        <form action="/orders/cart/remove/<%= item.id %>" method="POST" class="d-inline">
+                          <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash"></i>
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Order Summary -->
+    <div class="col-lg-4">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+          <h5 class="mb-0">Order Summary</h5>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span>Subtotal</span>
+            <span>$<%= total ? total.toFixed(2) : '0.00' %></span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Service Charge (10%)</span>
+            <span>$<%= total ? (total * 0.1).toFixed(2) : '0.00' %></span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Delivery Fee</span>
+            <span>$0.00</span>
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between mb-4">
+            <strong>Total</strong>
+            <strong>$<%= total ? (total * 1.1).toFixed(2) : '0.00' %></strong>
+          </div>
+          
+          <% if (cartItems && cartItems.length > 0) { %>
+            <button type="button" class="btn btn-primary w-100 mb-3" data-bs-toggle="modal" data-bs-target="#checkoutModal" <%= (!user || (user && !activeBooking)) ? 'disabled' : '' %>>
+              Proceed to Checkout
+            </button>
+            
+            <% if (!user) { %>
+              <p class="text-center text-muted small mb-0">Please log in to checkout</p>
+            <% } else if (!activeBooking) { %>
+              <p class="text-center text-muted small mb-0">You must be checked in to order room service</p>
+            <% } %>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Checkout Modal -->
+<% if (user && activeBooking && cartItems && cartItems.length > 0) { %>
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-labelledby="checkoutModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <form action="/orders/checkout" method="POST">
+            <div class="modal-header">
+              <h5 class="modal-title" id="checkoutModalLabel">Complete Your Order</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <!-- Delivery Information -->
+              <div class="mb-4">
+                <h6 class="fw-bold mb-3">Delivery Information</h6>
+                
+                <div class="mb-3">
+                  <label for="roomNumber" class="form-label">Room</label>
+                  <% if (activeBooking.rooms && activeBooking.rooms.length > 0) { %>
+                    <% const firstRoom = activeBooking.rooms[0]; %>
+                    <input type="text" class="form-control" id="roomNumber" name="roomNumber" 
+                      value="<%= firstRoom.roomName || firstRoom.roomTypeName || 'Your Current Room' %>" 
+                      required readonly>
+                    
+                    <% if (activeBooking.rooms.length > 1) { %>
+                      <small class="form-text text-muted">
+                        Note: You have <%= activeBooking.rooms.length %> rooms. Order will be delivered to this room.
+                      </small>
+                    <% } %>
+                  <% } else { %>
+                    <input type="text" class="form-control" id="roomNumber" name="roomNumber" 
+                      value="Your Current Room" required readonly>
+                  <% } %>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="specialInstructions" class="form-label">Special Instructions (Optional)</label>
+                  <textarea class="form-control" id="specialInstructions" name="specialInstructions" rows="2" placeholder="Allergies, preferences, etc."></textarea>
+                </div>
+              </div>
+              
+              <!-- Payment Method -->
+              <div class="mb-4">
+                <h6 class="fw-bold mb-3">Payment Method</h6>
+                
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="paymentMethod" id="roomCharge" value="room" checked>
+                  <label class="form-check-label" for="roomCharge">
+                    <i class="fas fa-hotel me-2 text-primary"></i> Charge to Room
+                  </label>
+                </div>
+                
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="radio" name="paymentMethod" id="cashPayment" value="cash">
+                  <label class="form-check-label" for="cashPayment">
+                    <i class="fas fa-money-bill-wave me-2 text-success"></i> Cash on Delivery
+                  </label>
+                </div>
+                
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="paymentMethod" id="cardPayment" value="card">
+                  <label class="form-check-label" for="cardPayment">
+                    <i class="fas fa-credit-card me-2 text-danger"></i> Credit/Debit Card on Delivery
+                  </label>
+                </div>
+              </div>
+              
+              <!-- Order Summary -->
+              <div>
+                <h6 class="fw-bold mb-3">Order Summary</h6>
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Subtotal</span>
+                  <span>$<%= total ? total.toFixed(2) : '0.00' %></span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Service Charge (10%)</span>
+                  <span>$<%= total ? (total * 0.1).toFixed(2) : '0.00' %></span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                  <span>Total</span>
+                  <strong>$<%= total ? (total * 1.1).toFixed(2) : '0.00' %></strong>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Place Order</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <% } %>
+
+<!-- JavaScript for quantity buttons -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const quantityForms = document.querySelectorAll('.quantity-form');
+  
+  quantityForms.forEach(form => {
+    const decreaseBtn = form.querySelector('[data-action="decrease"]');
+    const increaseBtn = form.querySelector('[data-action="increase"]');
+    const inputField = form.querySelector('.quantity-input');
+    const updateBtn = form.querySelector('.update-btn');
+    
+    decreaseBtn.addEventListener('click', () => {
+      const currentValue = parseInt(inputField.value);
+      if (currentValue > 1) {
+        inputField.value = currentValue - 1;
+        updateBtn.click();
+      }
+    });
+    
+    increaseBtn.addEventListener('click', () => {
+      const currentValue = parseInt(inputField.value);
+      if (currentValue < 10) {
+        inputField.value = currentValue + 1;
+        updateBtn.click();
+      }
+    });
+    
+    inputField.addEventListener('change', () => {
+      if (inputField.value < 1) inputField.value = 1;
+      if (inputField.value > 10) inputField.value = 10;
+      updateBtn.click();
+    });
+  });
+});
+</script>
+
+<%- include('../partials/footer') %>

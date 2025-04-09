@@ -61,6 +61,7 @@ router.delete('/bookings/delete/:bookingId', adminController.deleteBooking);
 router.get('/orders', adminController.getOrders);
 router.get('/orders/details/:orderId', adminController.getOrderDetails);
 router.post('/orders/update-status/:orderId', adminController.updateOrderStatus);
+router.post('/orders/update-payment-status/:orderId', adminController.updateOrderPaymentStatus);
 router.delete('/orders/delete/:orderId', adminController.deleteOrder);
 
 // Order Items Management

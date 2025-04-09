@@ -34,32 +34,49 @@
     </div>
   <% } %>
 
-  <!-- Active Booking Alert -->
-  <% if (activeBooking) { %>
-    <div class="alert alert-info mb-4">
-      <div class="d-flex align-items-center">
-        <i class="fas fa-info-circle fa-2x me-3"></i>
-        <div>
-          <p class="mb-1">You are currently staying in <strong><%= activeBooking.room.roomName %></strong></p>
-          <p class="mb-0">Room service will be delivered directly to your room.</p>
-        </div>
+<!-- Active Booking Alert -->
+<% if (activeBooking) { %>
+  <div class="alert alert-info mb-4">
+    <div class="d-flex align-items-center">
+      <i class="fas fa-info-circle fa-2x me-3"></i>
+      <div>
+        <% if (activeBooking.rooms && activeBooking.rooms.length > 0) { %>
+          <p class="mb-1">You are currently staying in 
+            <strong>
+              <% if (activeBooking.rooms[0].roomName) { %>
+                <%= activeBooking.rooms[0].roomName %>
+              <% } else if (activeBooking.rooms[0].roomTypeName) { %>
+                <%= activeBooking.rooms[0].roomTypeName %>
+              <% } else { %>
+                a checked-in room
+              <% } %>
+            </strong>
+          </p>
+          <% if (activeBooking.rooms.length > 1) { %>
+            <p class="small text-muted mb-2">You have <%= activeBooking.rooms.length %> rooms in your booking.</p>
+          <% } %>
+        <% } else { %>
+          <p class="mb-1">You are currently checked in to a room</p>
+        <% } %>
+        <p class="mb-0">Room service will be delivered directly to your room.</p>
       </div>
     </div>
-  <% } else if (user) { %>
-    <div class="alert alert-warning mb-4">
-      <div class="d-flex align-items-center">
-        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
-        <div>
-          <p class="mb-1">You are not currently checked in to any room.</p>
-          <p class="mb-0">You will need to provide a delivery address during checkout.</p>
-        </div>
+  </div>
+<% } else if (user) { %>
+  <div class="alert alert-warning mb-4">
+    <div class="d-flex align-items-center">
+      <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+      <div>
+        <p class="mb-1">You are not currently checked in to any room.</p>
+        <p class="mb-0">You must be checked in to place an order.</p>
       </div>
     </div>
-  <% } %>
+  </div>
+<% } %>
 
   <!-- Menu Categories Tabs -->
   <ul class="nav nav-tabs mb-4" id="menuTabs" role="tablist">
-    <% if (categories) { %>
+    <% if (locals.categories && Object.keys(categories).length > 0) { %>
       <% Object.keys(categories).forEach((category, index) => { %>
         <li class="nav-item" role="presentation">
           <button class="nav-link <%= index === 0 ? 'active' : '' %>" 
@@ -74,12 +91,18 @@
           </button>
         </li>
       <% }); %>
+    <% } else { %>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="all-items-tab" data-bs-toggle="tab" data-bs-target="#all-items" type="button" role="tab" aria-controls="all-items" aria-selected="true">
+          All Items
+        </button>
+      </li>
     <% } %>
   </ul>
 
   <!-- Menu Items -->
   <div class="tab-content" id="menuTabsContent">
-    <% if (categories) { %>
+    <% if (locals.categories && Object.keys(categories).length > 0) { %>
       <% Object.entries(categories).forEach(([category, items], index) => { 
         const categoryId = category.toLowerCase().replace(/\s+/g, '-');
       %>
@@ -107,10 +130,13 @@
                         <span class="input-group-text">Qty</span>
                         <input type="number" class="form-control" name="quantity" value="1" min="1" max="10">
                       </div>
-                      <button type="submit" class="btn btn-primary flex-grow-1">
+                      <button type="submit" class="btn btn-primary flex-grow-1" <%= !activeBooking ? 'disabled' : '' %>>
                         <i class="fas fa-cart-plus me-1"></i> Add
                       </button>
                     </form>
+                    <% if (!activeBooking) { %>
+                      <small class="text-muted d-block text-center mt-2">Check-in to a room to order</small>
+                    <% } %>
                   </div>
                 </div>
               </div>
@@ -120,8 +146,10 @@
         </div>
       <% }); %>
     <% } else { %>
-      <div class="alert alert-info">
-        <p class="mb-0">No menu items available at the moment. Please check back later.</p>
+      <div class="tab-pane fade show active" id="all-items" role="tabpanel" aria-labelledby="all-items-tab">
+        <div class="alert alert-info">
+          <p class="mb-0">No menu items available at the moment. Please check back later.</p>
+        </div>
       </div>
     <% } %>
   </div>

@@ -6,6 +6,7 @@ const flash = require('connect-flash');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
 
+
 // Initialize Express
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,7 +15,23 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+
+const cors = require('cors');
+
+// Enable CORS for all routes
+
+app.use(cors({
+    origin: [
+        'http://10.0.2.2:3000',  // Android Emulator
+        'http://192.168.100.10:3000',  // Physical device
+        'http://localhost:3000'  // Local development
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 // Middleware
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(bodyParser.json({ limit: '10mb' }));
@@ -182,7 +199,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT,() => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Access application at http://localhost:${PORT}`);
 });

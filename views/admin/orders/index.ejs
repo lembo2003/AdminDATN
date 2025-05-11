@@ -19,14 +19,14 @@
     </div>
     
     <!-- Flash Messages -->
-    <% if(success_msg != ''){ %>
+    <% if(typeof success_msg !== 'undefined' && success_msg != ''){ %>
       <div class="alert alert-success alert-dismissible fade show" role="alert">
         <%= success_msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     <% } %>
     
-    <% if(error_msg != ''){ %>
+    <% if(typeof error_msg !== 'undefined' && error_msg != ''){ %>
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <%= error_msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -112,12 +112,22 @@
                   <tr>
                     <td>
                       <a href="/admin/orders/details/<%= order.id %>" class="text-decoration-none">
-                        #<%= order.orderId.substring(order.orderId.length - 6).toUpperCase() %>
+                        #<%= order.orderId ? order.orderId.substring(order.orderId.length - 6).toUpperCase() : order.id.substring(0, 6).toUpperCase() %>
                       </a>
                     </td>
                     <td>
-                      <%= new Date(order.createdAt.seconds * 1000).toLocaleDateString() %><br>
-                      <small class="text-muted"><%= new Date(order.createdAt.seconds * 1000).toLocaleTimeString() %></small>
+                      <% 
+                        let createdDate = new Date();
+                        if (order.createdAt) {
+                          if (order.createdAt.seconds) {
+                            createdDate = new Date(order.createdAt.seconds * 1000);
+                          } else if (order.createdAt instanceof Date) {
+                            createdDate = order.createdAt;
+                          }
+                        }
+                      %>
+                      <%= createdDate.toLocaleDateString() %><br>
+                      <small class="text-muted"><%= createdDate.toLocaleTimeString() %></small>
                     </td>
                     <td>
                       <% if (order.user) { %>
@@ -134,25 +144,27 @@
                         <%= order.userName || 'Guest' %>
                       <% } %>
                     </td>
-                    <td><%= order.roomNumber %></td>
-                    <td class="text-end">$<%= (order.totalPrice * 1.1).toFixed(2) %></td>
+                    <td><%= order.roomNumber || 'N/A' %></td>
+                    <td class="text-end">$<%= order.totalPrice ? (order.totalPrice * 1.1).toFixed(2) : '0.00' %></td>
                     <td>
+                      <% const status = order.status || 'unknown'; %>
                       <span class="badge rounded-pill <%= 
-                        order.status === 'ordered' ? 'bg-warning' : 
-                        order.status === 'delivering' ? 'bg-info' : 
-                        order.status === 'completed' ? 'bg-success' : 
+                        status === 'ordered' ? 'bg-warning' : 
+                        status === 'delivering' ? 'bg-info' : 
+                        status === 'completed' ? 'bg-success' : 
                         'bg-secondary' 
                       %>">
-                        <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                        <%= status.charAt(0).toUpperCase() + status.slice(1) %>
                       </span>
                     </td>
                     <td>
+                      <% const paymentStatus = order.paymentStatus || 'pending'; %>
                       <span class="badge rounded-pill <%= 
-                        order.paymentStatus === 'paid' ? 'bg-success' : 
-                        order.paymentStatus === 'pending' ? 'bg-warning' : 
+                        paymentStatus === 'paid' ? 'bg-success' : 
+                        paymentStatus === 'pending' ? 'bg-warning' : 
                         'bg-danger' 
                       %>">
-                        <%= order.paymentStatus.charAt(0).toUpperCase() + order.paymentStatus.slice(1) %>
+                        <%= paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1) %>
                       </span>
                     </td>
                     <td class="text-center">
